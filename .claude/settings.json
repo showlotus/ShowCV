@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(source ~/.nvm/nvm.sh)",
+      "Bash(nvm use 22)",
+      "Bash(npm create vite@latest temp-showcv -- --template react-ts)",
+      "Bash(mv temp-showcv/* temp-showcv/.* .)",
+      "Bash(pnpm install)",
+      "Bash(pnpm add -D tailwindcss @tailwindcss/vite)"
+    ]
+  }
+}

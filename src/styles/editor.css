@@ -1,0 +1,179 @@
+/* ByteMD 编辑器样式美化 */
+
+/* 编辑器容器 */
+.bytemd {
+  /* height: 100% !important; */
+  border: none !important;
+  border-radius: 0 !important;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
+    sans-serif;
+}
+
+/* 编辑器容器 */
+.markdown-editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.markdown-editor > div {
+  height: 100%;
+}
+
+.markdown-editor .bytemd {
+  flex: 1;
+  height: 100%;
+  border: none !important;
+}
+
+.bytemd-body {
+  height: 100% !important;
+}
+
+/* 隐藏工具栏 */
+.bytemd-toolbar {
+  display: none !important;
+}
+
+/* 隐藏状态栏 */
+.bytemd-status {
+  display: none !important;
+}
+
+/* 隐藏底部标签栏 */
+.bytemd-footer {
+  display: none !important;
+}
+
+/* 隐藏预览区域 */
+.bytemd-preview {
+  display: none !important;
+}
+
+/* 编辑区域占满 */
+.bytemd-editor {
+  flex: 1 !important;
+  width: 100% !important;
+  height: 100% !important;
+  overflow: hidden;
+}
+
+.bytemd-editor .CodeMirror {
+  font-size: 14px !important;
+  line-height: 1.8 !important;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', 'Monaco', monospace !important;
+  padding: 20px !important;
+  height: 100% !important;
+}
+
+/* 确保 CodeMirror 内容区域正确计算高度 */
+.bytemd-editor .CodeMirror-sizer {
+  min-height: 100% !important;
+}
+
+/* 滚动条始终可见 */
+.bytemd-editor .CodeMirror-vscrollbar {
+  display: block !important;
+}
+
+.bytemd-editor .CodeMirror-gutters {
+  background: #fafafa !important;
+  border-right: 1px solid #e5e7eb !important;
+  padding-right: 8px !important;
+}
+
+.bytemd-editor .CodeMirror-linenumber {
+  color: #9ca3af !important;
+}
+
+/* 光标行高亮 */
+.bytemd-editor .CodeMirror-activeline-background {
+  background: #f8fafc !important;
+}
+
+/* 选中文字样式 */
+.bytemd-editor .CodeMirror-selected {
+  background: #dbeafe !important;
+}
+
+/* placeholder 样式 */
+.CodeMirror-empty {
+  color: #9ca3af !important;
+}
+
+/* CodeMirror 语法高亮主题 */
+/* 必须使用 .cm-s-default 前缀才能覆盖默认样式 */
+
+/* 标题高亮 - 蓝色 */
+.cm-s-default .cm-header {
+  color: #2563eb !important;
+  font-weight: 600;
+}
+
+.cm-s-default .cm-header-1 {
+  font-size: 1.4em !important;
+}
+
+.cm-s-default .cm-header-2 {
+  font-size: 1.2em !important;
+}
+
+.cm-s-default .cm-header-3 {
+  font-size: 1.1em !important;
+}
+
+/* 强调（粗体/斜体） */
+.cm-s-default .cm-strong {
+  font-weight: 700;
+  color: #111827;
+}
+
+.cm-s-default .cm-em {
+  font-style: italic;
+  color: #4b5563;
+}
+
+/* 链接 */
+.cm-s-default .cm-link {
+  color: #2563eb;
+  text-decoration: underline;
+}
+
+.cm-s-default .cm-url {
+  color: #6b7280;
+}
+
+/* 代码 */
+.cm-s-default .cm-comment {
+  background-color: #f3f4f6;
+  color: #059669;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+  padding: 2px 4px;
+  border-radius: 4px;
+}
+
+/* 引用 - 绿色 */
+.cm-s-default .cm-quote {
+  color: #16a34a !important;
+}
+
+/* 列表标记 */
+.cm-s-default .cm-variable-2 {
+  color: #4b5563;
+}
+
+.cm-s-default .cm-variable-3 {
+  color: #6b7280;
+}
+
+/* 分隔线 */
+.cm-s-default .cm-hr {
+  color: #9ca3af;
+}
+
+/* 括号匹配 */
+.cm-s-default .CodeMirror-matchingbracket {
+  color: #2563eb !important;
+  background-color: #eff6ff;
+  font-weight: bold;
+}
