@@ -7,15 +7,15 @@ import App from './App.tsx'
 if (import.meta.env.DEV) {
   import('react-scan').then(({ scan }) => {
     scan({
-    enabled: true,
-    log: true,
-    showToolbar: true,
-  })
+      enabled: true,
+      log: true,
+      showToolbar: true,
+    })
   })
 }
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <App />
-  </StrictMode>,
+  </StrictMode>
 )

@@ -1,2 +1,2 @@
-export { Slider } from './Slider';
-export { ColorPicker } from './ColorPicker';
+export { Slider } from './Slider'
+export { ColorPicker } from './ColorPicker'

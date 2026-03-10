@@ -1,0 +1,157 @@
+/* CodeMirror 6 编辑器样式 */
+
+.codemirror-editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.codemirror-editor > div {
+  height: 100%;
+  overflow: hidden;
+}
+
+/* 编辑器容器 */
+.codemirror-editor .cm-editor {
+  height: 100%;
+  outline: none;
+  border: none;
+  background: white;
+}
+
+/* 滚动容器 */
+.codemirror-editor .cm-scroller {
+  overflow: auto;
+  height: 100%;
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', 'Monaco', monospace;
+}
+
+/* 占位符样式 */
+.codemirror-editor .cm-content[aria-placeholder]::before {
+  content: attr(aria-placeholder);
+  position: absolute;
+  color: #9ca3af;
+  pointer-events: none;
+  opacity: 0.5;
+}
+
+/* 当有内容时隐藏占位符 */
+.codemirror-editor .cm-content:not(:empty)::before {
+  display: none;
+}
+
+/* 行号区域 */
+.codemirror-editor .cm-gutters {
+  background-color: #fafafa;
+  border-right: 1px solid #e5e7eb;
+  user-select: none;
+}
+
+/* 行号样式 */
+.codemirror-editor .cm-lineNumbers .cm-gutterElement {
+  text-align: right;
+  padding: 0 8px;
+  font-size: 13px;
+}
+
+/* 光标行高亮 */
+.codemirror-editor .cm-activeLine {
+  background-color: #f8fafc;
+}
+
+/* 选中文字样式 */
+.codemirror-editor .cm-selectionBackground {
+  background-color: #dbeafe !important;
+}
+
+/* 光标样式 */
+.codemirror-editor .cm-cursor {
+  border-left-width: 2px;
+  border-left-color: #2563eb;
+}
+
+/* 搜索匹配高亮 */
+.codemirror-editor .cm-searchMatch {
+  background-color: #fef3c7;
+}
+
+.codemirror-editor .cm-searchMatch-selected {
+  background-color: #fbbf24;
+}
+
+/* 括号匹配 */
+.codemirror-editor .cm-matchingBracket {
+  background-color: #eff6ff;
+  color: #2563eb;
+  font-weight: bold;
+}
+
+/* 搜索面板样式美化 */
+.codemirror-editor .cm-panel.cm-search {
+  background-color: #f9fafb;
+  border-bottom: 1px solid #e5e7eb;
+  padding: 8px 12px;
+}
+
+.codemirror-editor .cm-panel.cm-search input {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 13px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+.codemirror-editor .cm-panel.cm-search input:focus {
+  border-color: #2563eb;
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+.codemirror-editor .cm-panel.cm-search button {
+  background-color: white;
+  border: 1px solid #d1d5db;
+  border-radius: 4px;
+  padding: 4px 12px;
+  font-size: 13px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.codemirror-editor .cm-panel.cm-search button:hover {
+  background-color: #f3f4f6;
+  border-color: #9ca3af;
+}
+
+/* 自动完成提示框 */
+.codemirror-editor .cm-tooltip.cm-tooltip-autocomplete {
+  background-color: white;
+  border: 1px solid #e5e7eb;
+  border-radius: 6px;
+  box-shadow:
+    0 4px 6px -1px rgba(0, 0, 0, 0.1),
+    0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  overflow: hidden;
+}
+
+.codemirror-editor .cm-tooltip.cm-tooltip-autocomplete > ul {
+  font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+}
+
+.codemirror-editor .cm-tooltip.cm-tooltip-autocomplete > ul > li {
+  padding: 6px 12px;
+  font-size: 13px;
+}
+
+.codemirror-editor .cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
+  background-color: #2563eb;
+  color: white;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+  .codemirror-editor .cm-content {
+    padding: 12px;
+  }
+}

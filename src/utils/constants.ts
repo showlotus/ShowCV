@@ -1,11 +1,12 @@
-import type { ResumeSettings, TemplateInfo } from '../types';
+import type { ResumeSettings, TemplateInfo } from '@/types'
 
 // 字体预设
 export const FONT_PRESETS = [
   {
     id: 'default',
     name: '默认',
-    value: '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+    value:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
   },
   {
     id: 'pingfang',
@@ -17,7 +18,7 @@ export const FONT_PRESETS = [
     name: '思源黑体',
     value: '"Noto Sans SC", "Source Han Sans SC", sans-serif',
   },
-];
+]
 
 // 默认字体设置
 export const DEFAULT_FONT_SETTINGS = {
@@ -27,7 +28,7 @@ export const DEFAULT_FONT_SETTINGS = {
   smallSize: 12,
   lineHeight: 1.6,
   fontFamily: FONT_PRESETS[0].value,
-};
+}
 
 // 默认颜色设置
 export const DEFAULT_COLOR_SETTINGS = {
@@ -35,21 +36,21 @@ export const DEFAULT_COLOR_SETTINGS = {
   text: '#1f2937',
   muted: '#6b7280',
   background: '#ffffff',
-};
+}
 
 // 默认间距设置
 export const DEFAULT_SPACING_SETTINGS = {
   sectionGap: 24,
   paragraphGap: 12,
   padding: 40,
-};
+}
 
 // 默认完整设置
 export const DEFAULT_SETTINGS: ResumeSettings = {
   font: DEFAULT_FONT_SETTINGS,
   color: DEFAULT_COLOR_SETTINGS,
   spacing: DEFAULT_SPACING_SETTINGS,
-};
+}
 
 // 预设主题色
 export const PRESET_COLORS = [
@@ -60,7 +61,7 @@ export const PRESET_COLORS = [
   { name: '红色', value: '#dc2626' },
   { name: '橙色', value: '#ea580c' },
   { name: '灰色', value: '#4b5563' },
-];
+]
 
 // 模板列表
 export const TEMPLATE_LIST: TemplateInfo[] = [
@@ -79,7 +80,7 @@ export const TEMPLATE_LIST: TemplateInfo[] = [
     name: '创意',
     description: '创意设计风格，适合设计/创意岗位',
   },
-];
+]
 
 // 默认简历内容
 export const DEFAULT_CONTENT = `# 张三
@@ -119,11 +120,11 @@ export const DEFAULT_CONTENT = `# 张三
 - **工程化**: Webpack, Vite, ESLint, Prettier
 - **工具**: Git, Docker, CI/CD
 - **其他**: Node.js, GraphQL, RESTful API
-`;
+`
 
 // localStorage 键名
 export const STORAGE_KEYS = {
   CURRENT_RESUME: 'showcv:current',
   RESUME_LIST: 'showcv:resumes',
   APP_SETTINGS: 'showcv:settings',
-} as const;
+} as const

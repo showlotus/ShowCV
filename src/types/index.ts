@@ -1,2 +1,2 @@
-export * from './settings';
-export * from './resume';
+export * from './settings'
+export * from './resume'

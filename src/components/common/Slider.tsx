@@ -1,14 +1,14 @@
-import { cn } from '../../utils';
+import { cn } from '@/utils'
 
 interface SliderProps {
-  label: string;
-  value: number;
-  min: number;
-  max: number;
-  step?: number;
-  unit?: string;
-  onChange: (value: number) => void;
-  className?: string;
+  label: string
+  value: number
+  min: number
+  max: number
+  step?: number
+  unit?: string
+  onChange: (value: number) => void
+  className?: string
 }
 
 export function Slider({
@@ -23,7 +23,7 @@ export function Slider({
 }: SliderProps) {
   return (
     <div className={cn('space-y-2', className)}>
-      <div className="flex justify-between items-center">
+      <div className="flex items-center justify-between">
         <label className="text-sm text-gray-600">{label}</label>
         <span className="text-sm font-medium text-gray-800">
           {value}
@@ -36,9 +36,9 @@ export function Slider({
         max={max}
         step={step}
         value={value}
-        onChange={(e) => onChange(Number(e.target.value))}
-        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+        onChange={e => onChange(Number(e.target.value))}
+        className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
       />
     </div>
-  );
+  )
 }
