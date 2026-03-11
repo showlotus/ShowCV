@@ -33,6 +33,52 @@
   background-color: var(--bg-color, #ffffff);
 }
 
+/* 分页控制 - 避免元素被截断 */
+.resume-template h1,
+.resume-template h2,
+.resume-template h3,
+.resume-template h4,
+.resume-template h5,
+.resume-template h6 {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-template p,
+.resume-template .resume-paragraph {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-template ul,
+.resume-template ol,
+.resume-template .resume-list {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+.resume-template li,
+.resume-template .resume-list-item {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
+/* 强制分页标记 - 在 markdown 中使用 <div class="page-break"></div> */
+.resume-template .page-break {
+  display: block;
+  page-break-after: always;
+  break-after: page;
+  height: 0;
+  margin: 0;
+  padding: 0;
+}
+
+/* 避免分页标记 - 将内容包裹在 <div class="no-break">...</div> 中 */
+.resume-template .no-break {
+  break-inside: avoid;
+  page-break-inside: avoid;
+}
+
 .resume-template .resume-title {
   font-size: var(--title-size, 28px);
   font-weight: 700;

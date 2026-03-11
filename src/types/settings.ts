@@ -39,3 +39,6 @@ export interface TemplateInfo {
   name: string
   description: string
 }
+
+// 主题相关类型 - 从 themes 模块重新导出
+export type { AppTheme, ThemeInfo, ThemeVariables } from '@/themes'

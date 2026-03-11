@@ -15,44 +15,49 @@ import { autocompletion, completionKeymap } from '@codemirror/autocomplete'
 import { lintKeymap } from '@codemirror/lint'
 import { tags } from '@lezer/highlight'
 import { useResumeStore } from '@/store'
+import { DEFAULT_CONTENT } from '@/utils/constants'
 
 import '@/styles/codemirror.css'
 
 // 防抖延迟时间（毫秒）
 const DEBOUNCE_DELAY = 0
 
-// 自定义语法高亮主题
-const customHighlightStyle = HighlightStyle.define([
-  { tag: tags.heading1, fontSize: '1.4em', fontWeight: '600', color: '#2563eb' },
-  { tag: tags.heading2, fontSize: '1.2em', fontWeight: '600', color: '#2563eb' },
-  { tag: tags.heading3, fontSize: '1.1em', fontWeight: '600', color: '#2563eb' },
-  { tag: tags.heading4, fontWeight: '600', color: '#2563eb' },
-  { tag: tags.heading5, fontWeight: '600', color: '#2563eb' },
-  { tag: tags.heading6, fontWeight: '600', color: '#2563eb' },
-  { tag: tags.strong, fontWeight: '700', color: '#111827' },
-  { tag: tags.emphasis, fontStyle: 'italic', color: '#4b5563' },
-  { tag: tags.link, color: '#2563eb', textDecoration: 'underline' },
-  { tag: tags.url, color: '#6b7280' },
+// 自定义语法高亮主题 - 使用 CSS 变量适配主题
+const createHighlightStyle = () => HighlightStyle.define([
+  { tag: tags.heading1, fontSize: '1.4em', fontWeight: '600', color: 'var(--accent)' },
+  { tag: tags.heading2, fontSize: '1.2em', fontWeight: '600', color: 'var(--accent)' },
+  { tag: tags.heading3, fontSize: '1.1em', fontWeight: '600', color: 'var(--accent)' },
+  { tag: tags.heading4, fontWeight: '600', color: 'var(--accent)' },
+  { tag: tags.heading5, fontWeight: '600', color: 'var(--accent)' },
+  { tag: tags.heading6, fontWeight: '600', color: 'var(--accent)' },
+  { tag: tags.strong, fontWeight: '700', color: 'var(--fg-primary)' },
+  { tag: tags.emphasis, fontStyle: 'italic', color: 'var(--fg-secondary)' },
+  { tag: tags.link, color: 'var(--accent)', textDecoration: 'underline' },
+  { tag: tags.url, color: 'var(--fg-muted)' },
   {
     tag: tags.monospace,
-    backgroundColor: '#f3f4f6',
-    color: '#059669',
+    backgroundColor: 'var(--bg-tertiary)',
+    color: 'var(--success)',
     padding: '2px 4px',
     borderRadius: '4px',
   },
-  { tag: tags.quote, color: '#16a34a' },
-  { tag: tags.list, color: '#4b5563' },
-  { tag: tags.strikethrough, textDecoration: 'line-through', color: '#9ca3af' },
+  { tag: tags.quote, color: 'var(--success)' },
+  { tag: tags.list, color: 'var(--fg-secondary)' },
+  { tag: tags.strikethrough, textDecoration: 'line-through', color: 'var(--fg-muted)' },
 ])
+
+const customHighlightStyle = createHighlightStyle()
 
 export function CodeMirrorEditor() {
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
-  // 只订阅 content 和 setContent，避免订阅整个 store
-  const content = useResumeStore(state => state.content)
-  const setContent = useResumeStore(state => state.setContent)
+  // 从当前简历获取内容
+  const currentResume = useResumeStore((state) => state.currentResume)
+  const setContent = useResumeStore((state) => state.setContent)
+
+  const content = currentResume?.content ?? DEFAULT_CONTENT
 
   // 使用 ref 保存最新的 setContent 函数，避免 useEffect 重新执行
   const setContentRef = useRef(setContent)
@@ -94,12 +99,13 @@ export function CodeMirrorEditor() {
           ...lintKeymap,
         ]),
 
-        // 编辑器样式
+        // 编辑器样式 - 适配主题
         EditorView.theme({
           '&': {
             height: '100%',
             fontSize: '14px',
             fontFamily: "'SF Mono', 'Fira Code', 'Consolas', 'Monaco', monospace",
+            color: 'var(--fg-primary)',
           },
           '.cm-scroller': {
             lineHeight: '1.8',
@@ -109,28 +115,28 @@ export function CodeMirrorEditor() {
             padding: '20px',
           },
           '.cm-gutters': {
-            backgroundColor: '#fafafa',
-            borderRight: '1px solid #e5e7eb',
+            backgroundColor: 'var(--bg-tertiary)',
+            borderRight: '1px solid var(--border)',
             paddingRight: '8px',
           },
           '.cm-lineNumbers .cm-gutterElement': {
-            color: '#9ca3af',
+            color: 'var(--fg-muted)',
             minWidth: '30px',
           },
           '.cm-activeLine': {
-            backgroundColor: '#f8fafc',
+            backgroundColor: 'var(--accent-soft)',
           },
           '.cm-activeLineGutter': {
-            backgroundColor: '#f8fafc',
+            backgroundColor: 'var(--accent-soft)',
           },
           '.cm-selectionBackground, ::selection': {
-            backgroundColor: '#dbeafe !important',
+            backgroundColor: 'var(--accent-soft) !important',
           },
           '&.cm-focused .cm-selectionBackground, &.cm-focused ::selection': {
-            backgroundColor: '#dbeafe !important',
+            backgroundColor: 'var(--accent-soft) !important',
           },
           '.cm-cursor': {
-            borderLeftColor: '#2563eb',
+            borderLeftColor: 'var(--accent)',
             borderLeftWidth: '2px',
           },
         }),
@@ -141,7 +147,7 @@ export function CodeMirrorEditor() {
         }),
 
         // 监听文档变化（带防抖）
-        EditorView.updateListener.of(update => {
+        EditorView.updateListener.of((update) => {
           if (update.docChanged) {
             const newContent = update.state.doc.toString()
 

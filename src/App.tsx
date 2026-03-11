@@ -1,8 +1,9 @@
 import { useState, useCallback, forwardRef, useRef, useEffect, useMemo, memo } from 'react'
-import { Header } from './components/layout'
+import { Header, Sidebar } from './components/layout'
 import { MarkdownEditor } from './components/editor'
 import { PreviewContainer } from './components/preview'
 import { SettingsPanel } from './components/settings'
+import { Background, Toast } from './components/common'
 import { SimpleLayout, ModernLayout, CreativeLayout } from './layouts'
 import { useResumeStore } from './store'
 import {
@@ -59,13 +60,15 @@ const PrintablePaginatedResume = forwardRef<HTMLDivElement, ResumePreviewProps>(
       [settings]
     )
 
+    // 每页可用内容高度 = A4高度 - 上下边距
+    const availableHeight = A4_HEIGHT_PX - padding * 2
+
     // 计算页数（同步计算，确保打印时已确定）
     useEffect(() => {
       const calculatePages = () => {
         if (!containerRef.current) return
 
         const contentHeight = containerRef.current.scrollHeight
-        const availableHeight = A4_HEIGHT_PX - padding * 2
         const pages = Math.max(1, Math.ceil(contentHeight / availableHeight))
 
         setPageCount(pages)
@@ -76,18 +79,19 @@ const PrintablePaginatedResume = forwardRef<HTMLDivElement, ResumePreviewProps>(
 
       const timer = setTimeout(calculatePages, 100)
       return () => clearTimeout(timer)
-    }, [content, settings, padding])
+    }, [content, settings, padding, availableHeight])
 
     return (
-      <div ref={ref} className="print:shadow-none">
+      <div ref={ref} className="paginated-preview print:shadow-none">
         {/* 隐藏的测量容器 */}
         <div
           ref={containerRef}
           style={{
             position: 'absolute',
             left: '-9999px',
-            width: `${A4_WIDTH_PX}px`,
+            width: `${A4_WIDTH_PX - padding * 2}px`,
             visibility: 'hidden',
+            pointerEvents: 'none',
           }}
         >
           <ResumePreview
@@ -101,7 +105,7 @@ const PrintablePaginatedResume = forwardRef<HTMLDivElement, ResumePreviewProps>(
         {Array.from({ length: pageCount }).map((_, pageIndex) => (
           <div
             key={pageIndex}
-            className="print-page"
+            className="preview-page"
             style={{
               width: `${A4_WIDTH_PX}px`,
               height: `${A4_HEIGHT_PX}px`,
@@ -110,26 +114,24 @@ const PrintablePaginatedResume = forwardRef<HTMLDivElement, ResumePreviewProps>(
               overflow: 'hidden',
               backgroundColor: 'white',
               position: 'relative',
-              pageBreakAfter: pageIndex < pageCount - 1 ? 'always' : 'auto',
             }}
           >
-            {/* 内容层 */}
+            {/* 内容层 - 通过 transform 定位到对应页面位置 */}
             <div
+              className="preview-page-content"
               style={{
                 position: 'absolute',
-                top: 0,
-                left: 0,
-                right: 0,
-                bottom: 0,
+                top: padding,
+                left: padding,
+                right: padding,
+                bottom: padding,
                 overflow: 'hidden',
               }}
             >
               <div
                 style={{
-                  transform: `translateY(-${pageIndex * (A4_HEIGHT_PX - padding * 2)}px)`,
+                  transform: `translateY(-${pageIndex * availableHeight}px)`,
                   width: '100%',
-                  padding: `${padding}px`,
-                  boxSizing: 'border-box',
                 }}
               >
                 <ResumePreview
@@ -150,17 +152,20 @@ PrintablePaginatedResume.displayName = 'PrintablePaginatedResume'
 
 function App() {
   const [isSettingsOpen, setIsSettingsOpen] = useState(false)
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true)
 
-  // 只订阅 actions 和打印需要的状态，不订阅会频繁变化的 content
-  const templateId = useResumeStore(state => state.templateId)
-  const content = useResumeStore(state => state.content)
-  const settings = useResumeStore(state => state.settings)
-  const exportData = useResumeStore(state => state.exportData)
-  const setTemplate = useResumeStore(state => state.setTemplate)
-  const setContent = useResumeStore(state => state.setContent)
-  const updateFontSettings = useResumeStore(state => state.updateFontSettings)
-  const updateColorSettings = useResumeStore(state => state.updateColorSettings)
-  const updateSpacingSettings = useResumeStore(state => state.updateSpacingSettings)
+  // 从 store 获取状态
+  const currentResume = useResumeStore((state) => state.currentResume)
+  const templateId = currentResume?.templateId || 'simple'
+  const content = currentResume?.content || ''
+  const settings = currentResume?.settings
+
+  const exportData = useResumeStore((state) => state.exportData)
+  const setTemplate = useResumeStore((state) => state.setTemplate)
+  const setContent = useResumeStore((state) => state.setContent)
+  const updateFontSettings = useResumeStore((state) => state.updateFontSettings)
+  const updateColorSettings = useResumeStore((state) => state.updateColorSettings)
+  const updateSpacingSettings = useResumeStore((state) => state.updateSpacingSettings)
 
   const { contentRef, handlePrint } = usePDFExport()
   const { contentRef: reactToPrintRef, handlePrint: handleReactToPrint } = useReactToPrintExport()
@@ -188,6 +193,10 @@ function App() {
     setIsSettingsOpen(false)
   }, [])
 
+  const handleToggleSidebar = useCallback(() => {
+    setIsSidebarOpen((prev) => !prev)
+  }, [])
+
   const handleExportPDF = useCallback(() => {
     handlePrint()
   }, [handlePrint])
@@ -202,24 +211,88 @@ function App() {
     downloadFile(json, `${data.title}.json`, 'application/json')
   }, [exportData])
 
+  // 如果没有设置，显示加载状态
+  if (!settings) {
+    return (
+      <div className="flex h-screen items-center justify-center" style={{ background: 'var(--bg-primary)' }}>
+        <p style={{ color: 'var(--fg-muted)' }}>加载中...</p>
+      </div>
+    )
+  }
+
   return (
-    <div className="flex h-screen flex-col bg-gray-100">
+    <div className="relative z-10 flex flex-col h-screen overflow-hidden">
+      {/* 动态背景 */}
+      <Background />
+
+      {/* Header */}
       <Header
         onOpenSettings={handleOpenSettings}
         onExportPDF={handleExportPDF}
         onExportJSON={handleExportJSON}
         onPrintWithReactToPrint={handlePrintWithReactToPrint}
+        onToggleSidebar={handleToggleSidebar}
       />
 
-      <main className="flex min-h-0 flex-1">
-        {/* 左侧编辑区 */}
-        <div className="flex min-h-0 w-1/2 flex-col border-r border-gray-200 bg-white">
-          <MarkdownEditor />
+      {/* 主内容区 */}
+      <div className="flex-1 flex overflow-hidden relative z-10">
+        {/* 左侧边栏 */}
+        <Sidebar isOpen={isSidebarOpen} />
+
+        {/* 编辑区 */}
+        <div
+          className="flex-1 flex flex-col p-4 min-w-0"
+          style={{ background: 'transparent' }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <div className="flex items-center gap-2">
+              <div className="flex gap-1.5">
+                <div className="w-3 h-3 rounded-full" style={{ background: '#ff5f57' }} />
+                <div className="w-3 h-3 rounded-full" style={{ background: '#febc2e' }} />
+                <div className="w-3 h-3 rounded-full" style={{ background: '#28c840' }} />
+              </div>
+              <span
+                className="ml-3 text-sm font-medium"
+                style={{ color: 'var(--fg-muted)' }}
+              >
+                Markdown 编辑器
+              </span>
+            </div>
+          </div>
+          <div
+            className="flex-1 rounded-xl overflow-hidden"
+            style={{ background: 'var(--bg-secondary)', border: '1px solid var(--border)' }}
+          >
+            <MarkdownEditor />
+          </div>
         </div>
 
-        {/* 右侧预览区 - 使用独立的预览容器组件 */}
-        <PreviewContainer />
-      </main>
+        {/* 预览区 */}
+        <div
+          className="flex-1 flex flex-col p-4 min-w-0 hidden md:flex"
+          style={{ background: 'transparent' }}
+        >
+          <div className="flex items-center justify-between mb-3">
+            <span className="text-sm font-medium" style={{ color: 'var(--fg-muted)' }}>
+              实时预览
+            </span>
+            <div className="flex items-center gap-2">
+              <span
+                className="text-xs px-2 py-1 rounded"
+                style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
+              >
+                A4
+              </span>
+            </div>
+          </div>
+          <div
+            className="flex-1 overflow-auto rounded-xl p-4"
+            style={{ background: 'var(--bg-tertiary)' }}
+          >
+            <PreviewContainer />
+          </div>
+        </div>
+      </div>
 
       {/* 隐藏的打印内容 */}
       <div className="hidden print:block">
@@ -239,7 +312,11 @@ function App() {
         />
       </div>
 
+      {/* 配置面板 */}
       <SettingsPanel isOpen={isSettingsOpen} onClose={handleCloseSettings} />
+
+      {/* Toast 通知 */}
+      <Toast />
     </div>
   )
 }

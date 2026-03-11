@@ -1,10 +1,10 @@
-import { useRef, useEffect, useState, useMemo } from 'react'
+import { useRef, useEffect, useState, useMemo, useCallback } from 'react'
 import type { TemplateId, ResumeSettings } from '@/types'
 import { SimpleLayout, ModernLayout, CreativeLayout } from '@/layouts'
 
 // A4 纸张尺寸 (像素，96dpi: 1mm ≈ 3.78px)
-const A4_HEIGHT_PX = Math.round(297 * 3.78) // ≈ 1122px
-const A4_WIDTH_PX = Math.round(210 * 3.78) // ≈ 794px
+export const A4_HEIGHT_PX = Math.round(297 * 3.78) // ≈ 1122px
+export const A4_WIDTH_PX = Math.round(210 * 3.78) // ≈ 794px
 
 interface ResumePreviewProps {
   templateId: TemplateId
@@ -43,35 +43,37 @@ export const PaginatedPreview = ({ templateId, content, settings }: ResumePrevie
     [settings]
   )
 
+  // 每页可用内容高度 = A4高度 - 上下边距
+  const availableHeight = A4_HEIGHT_PX - padding * 2
+
   // 计算页数
+  const calculatePages = useCallback(() => {
+    if (!containerRef.current) return 1
+
+    const contentHeight = containerRef.current.scrollHeight
+    const pages = Math.max(1, Math.ceil(contentHeight / availableHeight))
+
+    return pages
+  }, [availableHeight])
+
   useEffect(() => {
-    const calculatePages = () => {
-      if (!containerRef.current) return
-
-      const contentHeight = containerRef.current.scrollHeight
-      // 可用高度 = A4高度 - 上下边距
-      const availableHeight = A4_HEIGHT_PX - padding * 2
-      const pages = Math.max(1, Math.ceil(contentHeight / availableHeight))
-
-      setPageCount(pages)
-    }
-
-    const timer = setTimeout(calculatePages, 200)
+    const timer = setTimeout(() => {
+      setPageCount(calculatePages())
+    }, 200)
     return () => clearTimeout(timer)
-  }, [content, settings, padding])
+  }, [content, settings, padding, calculatePages])
 
   return (
-    <div className="space-y-6">
-      {/* 隐藏的测量容器 - 使用不带 padding 的设置 */}
+    <div className="paginated-preview flex flex-col gap-6" data-page-count={pageCount}>
+      {/* 隐藏的测量容器 - 用于测量完整内容高度 */}
       <div
         ref={containerRef}
         style={{
           position: 'absolute',
           left: '-9999px',
-          width: `${A4_WIDTH_PX}px`,
+          width: `${A4_WIDTH_PX - padding * 2}px`,
           visibility: 'hidden',
-          padding: `${padding}px`,
-          boxSizing: 'border-box',
+          pointerEvents: 'none',
         }}
       >
         <ResumePreview
@@ -81,11 +83,12 @@ export const PaginatedPreview = ({ templateId, content, settings }: ResumePrevie
         />
       </div>
 
-      {/* 分页展示 - 每页是一个带边距的视窗 */}
+      {/* 分页展示 - 每页是一个带边距的 A4 视窗 */}
       {Array.from({ length: pageCount }).map((_, pageIndex) => (
         <div
           key={pageIndex}
-          className="relative bg-white shadow-lg"
+          className="preview-page relative bg-white shadow-lg rounded-lg"
+          data-page={pageIndex + 1}
           style={{
             width: `${A4_WIDTH_PX}px`,
             height: `${A4_HEIGHT_PX}px`,
@@ -96,21 +99,20 @@ export const PaginatedPreview = ({ templateId, content, settings }: ResumePrevie
         >
           {/* 内容层 - 通过 transform 定位到对应页面位置 */}
           <div
+            className="preview-page-content"
             style={{
               position: 'absolute',
-              top: 0,
-              left: 0,
-              right: 0,
-              bottom: 0,
+              top: padding,
+              left: padding,
+              right: padding,
+              bottom: padding,
               overflow: 'hidden',
             }}
           >
             <div
               style={{
-                transform: `translateY(-${pageIndex * (A4_HEIGHT_PX - padding * 2)}px)`,
+                transform: `translateY(-${pageIndex * availableHeight}px)`,
                 width: '100%',
-                padding: `${padding}px`,
-                boxSizing: 'border-box',
               }}
             >
               <ResumePreview
@@ -122,7 +124,7 @@ export const PaginatedPreview = ({ templateId, content, settings }: ResumePrevie
           </div>
           {/* 页码指示 */}
           {pageCount > 1 && (
-            <div className="absolute right-4 bottom-2 z-10 text-xs text-gray-400 print:hidden">
+            <div className="page-number absolute right-4 bottom-2 z-10 text-xs text-gray-400 print:hidden">
               {pageIndex + 1} / {pageCount}
             </div>
           )}

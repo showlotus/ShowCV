@@ -1,5 +1,9 @@
 import type { ResumeSettings, TemplateInfo } from '@/types'
 
+// 主题相关 - 从 themes 模块重新导出
+export { THEME_LIST, getThemeById, applyTheme } from '@/themes'
+export type { AppTheme, ThemeInfo, ThemeVariables } from '@/themes'
+
 // 字体预设
 export const FONT_PRESETS = [
   {

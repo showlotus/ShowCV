@@ -3,7 +3,8 @@
     "allow": [
       "WebSearch",
       "Bash(npm create vite@latest . -- --template react-ts)",
-      "Bash(npm create vite@5 . -- --template react-ts)"
+      "Bash(npm create vite@5 . -- --template react-ts)",
+      "Bash(pnpm run:*)"
     ]
   }
 }

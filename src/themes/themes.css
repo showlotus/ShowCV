@@ -1,0 +1,74 @@
+/* 主题系统 - CSS 变量 */
+
+:root,
+[data-theme='dark'] {
+  --bg-primary: #09090b;
+  --bg-secondary: #18181b;
+  --bg-tertiary: #27272a;
+  --fg-primary: #fafafa;
+  --fg-secondary: #a1a1aa;
+  --fg-muted: #71717a;
+  --accent: #f59e0b;
+  --accent-soft: rgba(245, 158, 11, 0.15);
+  --border: #3f3f46;
+  --card: #1c1c1f;
+  --glow: rgba(245, 158, 11, 0.4);
+  --danger: #ef4444;
+  --danger-soft: rgba(239, 68, 68, 0.15);
+  --success: #22c55e;
+  --success-soft: rgba(34, 197, 94, 0.15);
+}
+
+[data-theme='light'] {
+  --bg-primary: #f8f7f4;
+  --bg-secondary: #ffffff;
+  --bg-tertiary: #e8e6e1;
+  --fg-primary: #18181b;
+  --fg-secondary: #52525b;
+  --fg-muted: #a1a1aa;
+  --accent: #d97706;
+  --accent-soft: rgba(217, 119, 6, 0.1);
+  --border: #d4d4d8;
+  --card: #ffffff;
+  --glow: rgba(217, 119, 6, 0.3);
+  --danger: #dc2626;
+  --danger-soft: rgba(220, 38, 38, 0.1);
+  --success: #16a34a;
+  --success-soft: rgba(22, 163, 74, 0.1);
+}
+
+[data-theme='ocean'] {
+  --bg-primary: #0c1222;
+  --bg-secondary: #131c31;
+  --bg-tertiary: #1a2744;
+  --fg-primary: #e2e8f0;
+  --fg-secondary: #94a3b8;
+  --fg-muted: #64748b;
+  --accent: #06b6d4;
+  --accent-soft: rgba(6, 182, 212, 0.15);
+  --border: #334155;
+  --card: #1a2744;
+  --glow: rgba(6, 182, 212, 0.4);
+  --danger: #f43f5e;
+  --danger-soft: rgba(244, 63, 94, 0.15);
+  --success: #10b981;
+  --success-soft: rgba(16, 185, 129, 0.15);
+}
+
+[data-theme='forest'] {
+  --bg-primary: #0f1410;
+  --bg-secondary: #171f1a;
+  --bg-tertiary: #1f2b23;
+  --fg-primary: #ecfdf5;
+  --fg-secondary: #a7f3d0;
+  --fg-muted: #6ee7b7;
+  --accent: #10b981;
+  --accent-soft: rgba(16, 185, 129, 0.15);
+  --border: #2d4a3a;
+  --card: #1a2720;
+  --glow: rgba(16, 185, 129, 0.4);
+  --danger: #f87171;
+  --danger-soft: rgba(248, 113, 113, 0.15);
+  --success: #34d399;
+  --success-soft: rgba(52, 211, 153, 0.15);
+}

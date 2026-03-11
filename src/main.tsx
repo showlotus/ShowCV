@@ -7,7 +7,7 @@ import App from './App.tsx'
 if (import.meta.env.DEV) {
   import('react-scan').then(({ scan }) => {
     scan({
-      enabled: true,
+      enabled: false,
       log: true,
       showToolbar: true,
     })
