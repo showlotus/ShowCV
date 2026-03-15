@@ -1,4 +1,15 @@
-/* CodeMirror 6 编辑器样式 */
+/* 编辑器外层聚焦时的阴影 */
+.editor-wrapper {
+  border: 1px solid var(--border);
+  transition:
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.editor-wrapper:has(.cm-focused) {
+  border-color: var(--accent);
+  box-shadow: 0 0 16px var(--glow);
+}
 
 .codemirror-editor {
   height: 100%;
@@ -17,7 +28,9 @@
   height: 100%;
   outline: none;
   border: none;
-  background: white;
+  border-radius: 0.75rem;
+  background: var(--bg-secondary);
+  color: var(--fg-primary);
 }
 
 /* 滚动容器 */
@@ -43,8 +56,9 @@
 
 /* 行号区域 */
 .codemirror-editor .cm-gutters {
-  background-color: #fafafa;
-  border-right: 1px solid #e5e7eb;
+  background-color: var(--bg-tertiary);
+  border-right: 1px solid var(--border);
+  color: var(--fg-muted);
   user-select: none;
 }
 
@@ -57,46 +71,74 @@
 
 /* 光标行高亮 */
 .codemirror-editor .cm-activeLine {
-  background-color: #f8fafc;
+  background-color: var(--accent-soft);
+  position: relative;
+}
+
+.codemirror-editor .cm-activeLine::before {
+  content: '>';
+  position: absolute;
+  top: 0;
+  left: -20px;
+  width: 26px;
+  height: 100%;
+  background: linear-gradient(to right, var(--accent-soft) 20px, transparent 20px);
+  text-align: center;
+  color: var(--accent);
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.codemirror-editor .cm-activeLine::after {
+  content: '';
+  position: absolute;
+  top: 0;
+  right: -20px;
+  width: 20px;
+  height: 100%;
+  background-color: var(--accent-soft);
 }
 
 /* 选中文字样式 */
 .codemirror-editor .cm-selectionBackground {
-  background-color: #dbeafe !important;
+  background-color: var(--accent-soft) !important;
 }
 
 /* 光标样式 */
 .codemirror-editor .cm-cursor {
   border-left-width: 2px;
-  border-left-color: #2563eb;
+  border-left-color: var(--accent);
 }
 
 /* 搜索匹配高亮 */
 .codemirror-editor .cm-searchMatch {
-  background-color: #fef3c7;
+  background-color: var(--accent-soft);
 }
 
 .codemirror-editor .cm-searchMatch-selected {
-  background-color: #fbbf24;
+  background-color: var(--accent);
 }
 
 /* 括号匹配 */
 .codemirror-editor .cm-matchingBracket {
-  background-color: #eff6ff;
-  color: #2563eb;
+  background-color: var(--accent-soft);
+  color: var(--accent);
   font-weight: bold;
 }
 
 /* 搜索面板样式美化 */
 .codemirror-editor .cm-panel.cm-search {
-  background-color: #f9fafb;
-  border-bottom: 1px solid #e5e7eb;
+  background-color: var(--bg-tertiary);
+  border-bottom: 1px solid var(--border);
   padding: 8px 12px;
 }
 
 .codemirror-editor .cm-panel.cm-search input {
-  background-color: white;
-  border: 1px solid #d1d5db;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--fg-primary);
   border-radius: 4px;
   padding: 4px 8px;
   font-size: 13px;
@@ -105,13 +147,14 @@
 }
 
 .codemirror-editor .cm-panel.cm-search input:focus {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+  border-color: var(--accent);
+  box-shadow: 0 0 0 2px var(--accent-soft);
 }
 
 .codemirror-editor .cm-panel.cm-search button {
-  background-color: white;
-  border: 1px solid #d1d5db;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
+  color: var(--fg-primary);
   border-radius: 4px;
   padding: 4px 12px;
   font-size: 13px;
@@ -120,14 +163,14 @@
 }
 
 .codemirror-editor .cm-panel.cm-search button:hover {
-  background-color: #f3f4f6;
-  border-color: #9ca3af;
+  background-color: var(--bg-tertiary);
+  border-color: var(--fg-muted);
 }
 
 /* 自动完成提示框 */
 .codemirror-editor .cm-tooltip.cm-tooltip-autocomplete {
-  background-color: white;
-  border: 1px solid #e5e7eb;
+  background-color: var(--bg-secondary);
+  border: 1px solid var(--border);
   border-radius: 6px;
   box-shadow:
     0 4px 6px -1px rgba(0, 0, 0, 0.1),
@@ -145,8 +188,14 @@
 }
 
 .codemirror-editor .cm-tooltip.cm-tooltip-autocomplete > ul > li[aria-selected] {
-  background-color: #2563eb;
-  color: white;
+  background-color: var(--accent);
+  color: var(--accent-fg);
+}
+
+/* || 分隔符高亮 */
+.codemirror-editor .cm-pipe-separator {
+  color: var(--accent);
+  font-weight: bold;
 }
 
 /* 响应式调整 */

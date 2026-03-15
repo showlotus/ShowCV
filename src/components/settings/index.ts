@@ -1,1 +1,1 @@
-export { SettingsPanel } from './SettingsPanel'
+export { SettingsPanel, SETTINGS_PANEL_WIDTH } from './SettingsPanel'

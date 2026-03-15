@@ -1,224 +1,410 @@
-import { X, RotateCcw } from 'lucide-react'
-import { useResumeStore, useToastStore } from '@/store'
-import { PRESET_COLORS, FONT_PRESETS } from '@/utils/constants'
-import { Slider } from '../common'
+import { useRef, useEffect, useState, memo } from 'react'
+import { RotateCcw } from 'lucide-react'
+import { toast } from 'sonner'
+import { useResumeStore } from '@/store'
+import { PRESET_COLORS, FONT_PRESETS, TEMPLATE_LIST, DEFAULT_SETTINGS } from '@/utils/constants'
+import { Slider, ColorPicker } from '../common'
+import { ResumePreview } from '../preview'
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
+import { Button } from '@/components/ui/button'
+import { Popover, PopoverContent, PopoverAnchor } from '@/components/ui/popover'
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select'
+import { cn } from '@/lib/utils'
+import type { TemplateId } from '@/types'
 
-interface SettingsPanelProps {
-  isOpen: boolean
-  onClose: () => void
+/** 面板展开宽度 */
+export const SETTINGS_PANEL_WIDTH = 300
+
+/** 大图预览的固定宽度（px） */
+const PREVIEW_POPUP_WIDTH = 320
+
+/**
+ * 模板缩略图卡片 - 用真实模板组件 + CSS scale 实现缩略图
+ * 鼠标悬浮时在左侧弹出气泡展示大图预览
+ */
+const TemplateCard = memo(
+  ({
+    templateId,
+    name,
+    content,
+    isActive,
+    onSelect,
+  }: {
+    templateId: TemplateId
+    name: string
+    content: string
+    isActive: boolean
+    onSelect: () => void
+  }) => {
+    const containerRef = useRef<HTMLDivElement>(null)
+    // null 表示尚未计算，避免初始值错误导致首帧闪动
+    const [scale, setScale] = useState<number | null>(null)
+    const [isHovered, setIsHovered] = useState(false)
+    // 懒挂载：首次悬浮后保持挂载，避免关闭动画被卸载打断
+    const [isMounted, setIsMounted] = useState(false)
+
+    // 动态计算缩放比例，使缩略图宽度撑满卡片容器
+    useEffect(() => {
+      const el = containerRef.current
+      if (!el) return
+      const observer = new ResizeObserver(() => {
+        setScale(el.offsetWidth / 794)
+      })
+      observer.observe(el)
+      return () => observer.disconnect()
+    }, [])
+
+    return (
+      <Popover open={isHovered}>
+        <div
+          onClick={onSelect}
+          onMouseEnter={() => {
+            setIsHovered(true)
+            setIsMounted(true)
+          }}
+          onMouseLeave={() => setIsHovered(false)}
+          className="relative w-full cursor-pointer overflow-hidden rounded-lg text-left transition-all"
+          style={{
+            border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
+            background: 'var(--bg-tertiary)',
+          }}
+        >
+          <PopoverAnchor asChild>
+            {/* 缩略图区域，A4 比例 1:1.414 */}
+            <div
+              ref={containerRef}
+              className="w-full overflow-hidden bg-white"
+              style={{ aspectRatio: '1 / 1.414' }}
+            >
+              {scale !== null && (
+                <div
+                  style={{
+                    width: '794px',
+                    transformOrigin: 'top left',
+                    transform: `scale(${scale})`,
+                    pointerEvents: 'none',
+                    userSelect: 'none',
+                  }}
+                >
+                  <ResumePreview
+                    templateId={templateId}
+                    content={content}
+                    settings={DEFAULT_SETTINGS}
+                  />
+                </div>
+              )}
+            </div>
+          </PopoverAnchor>
+
+          {/* 模板名 */}
+          <div
+            className="flex items-center gap-1.5 px-2 py-1.5"
+            style={{
+              color: isActive ? 'var(--accent)' : 'var(--fg-secondary)',
+              background: isActive ? 'var(--accent-soft)' : undefined,
+            }}
+          >
+            {/* 左侧装饰线 */}
+            <div
+              className="h-[2px] flex-1 rounded-full transition-all"
+              style={{ background: isActive ? 'var(--accent)' : 'transparent' }}
+            />
+            <span className="shrink-0 text-center text-xs font-medium">{name}</span>
+            {/* 右侧装饰线 */}
+            <div
+              className="h-[2px] flex-1 rounded-full transition-all"
+              style={{ background: isActive ? 'var(--accent)' : 'transparent' }}
+            />
+          </div>
+        </div>
+
+        {/* 大图预览气泡，挂载到 body，悬浮时懒渲染 */}
+        <PopoverContent
+          side="left"
+          align="start"
+          sideOffset={8}
+          alignOffset={-1}
+          className="overflow-hidden p-0"
+          style={{ width: `${PREVIEW_POPUP_WIDTH}px` }}
+          onOpenAutoFocus={e => e.preventDefault()}
+        >
+          {isMounted && (
+            <div className="overflow-hidden bg-white" style={{ aspectRatio: '1 / 1.414' }}>
+              <div
+                style={{
+                  width: '794px',
+                  transformOrigin: 'top left',
+                  transform: `scale(${PREVIEW_POPUP_WIDTH / 794})`,
+                  pointerEvents: 'none',
+                  userSelect: 'none',
+                }}
+              >
+                <ResumePreview
+                  templateId={templateId}
+                  content={content}
+                  settings={DEFAULT_SETTINGS}
+                />
+              </div>
+            </div>
+          )}
+        </PopoverContent>
+      </Popover>
+    )
+  }
+)
+
+TemplateCard.displayName = 'TemplateCard'
+
+/** 设置分区标题，左侧带 accent 竖线装饰 */
+function SectionTitle({ children }: { children: React.ReactNode }) {
+  return (
+    <div className="mb-3 flex items-center gap-2">
+      <div className="h-3.5 w-[3px] rounded-full" style={{ background: 'var(--accent)' }} />
+      <span className="text-sm font-semibold" style={{ color: 'var(--fg-primary)' }}>
+        {children}
+      </span>
+    </div>
+  )
 }
 
-export function SettingsPanel({ isOpen, onClose }: SettingsPanelProps) {
-  const { currentResume, updateFontSettings, updateColorSettings, updateSpacingSettings, resetSettings } =
-    useResumeStore()
-  const { showToast } = useToastStore()
+/** 设置分区卡片容器，统一背景和圆角 */
+function SectionCard({ children, className }: { children: React.ReactNode; className?: string }) {
+  return (
+    <div
+      className={cn('rounded-lg border p-3', className)}
+      style={{
+        borderColor: 'var(--border)',
+        background: 'color-mix(in srgb, var(--bg-tertiary) 50%, transparent)',
+      }}
+    >
+      {children}
+    </div>
+  )
+}
 
-  const settings = currentResume?.settings
+/** 带标签和当前值的 Slider 行 */
+function SliderRow({
+  label,
+  value,
+  min,
+  max,
+  step,
+  unit,
+  onChange,
+}: {
+  label: string
+  value: number
+  min: number
+  max: number
+  step?: number
+  unit?: string
+  onChange: (v: number) => void
+}) {
+  return (
+    <div className="space-y-2.5">
+      <div className="flex items-center justify-between">
+        <span className="text-xs font-medium" style={{ color: 'var(--fg-secondary)' }}>
+          {label}
+        </span>
+        <span className="text-xs font-medium tabular-nums" style={{ color: 'var(--fg-primary)' }}>
+          {value}
+          {unit ?? 'px'}
+        </span>
+      </div>
+      <Slider
+        label=""
+        value={value}
+        min={min}
+        max={max}
+        step={step}
+        unit={undefined}
+        onChange={onChange}
+      />
+    </div>
+  )
+}
+
+export function SettingsPanel({ open }: { open: boolean }) {
+  const settings = useResumeStore(state => state.currentResume?.settings)
+  const templateId = useResumeStore(state => state.currentResume?.templateId ?? 'simple')
+  const previewContent = useResumeStore(state => state.currentResume?.content ?? '')
+  const updateFontSettings = useResumeStore(state => state.updateFontSettings)
+  const updateColorSettings = useResumeStore(state => state.updateColorSettings)
+  const updateSpacingSettings = useResumeStore(state => state.updateSpacingSettings)
+  const resetSettings = useResumeStore(state => state.resetSettings)
+  const setTemplate = useResumeStore(state => state.setTemplate)
 
   if (!settings) return null
 
   const handleReset = () => {
     resetSettings()
-    showToast('设置已重置', 'success')
+    toast.success('配置已重置')
   }
 
   return (
-    <>
-      {/* 遮罩层 */}
-      {isOpen && (
-        <div
-          className="fixed inset-0 z-40 bg-black/30 transition-opacity"
-          style={{ opacity: isOpen ? 1 : 0 }}
-          onClick={onClose}
-        />
-      )}
-
-      {/* 侧边栏 */}
-      <aside
-        className="fixed top-0 right-0 z-50 h-full w-72 overflow-y-auto transition-transform duration-300"
-        style={{
-          background: 'var(--bg-secondary)',
-          borderLeft: '1px solid var(--border)',
-          transform: isOpen ? 'translateX(0)' : 'translateX(100%)',
-        }}
+    <aside
+      className="hidden shrink-0 flex-col overflow-hidden transition-all duration-300 xl:flex"
+      style={{
+        width: open ? `${SETTINGS_PANEL_WIDTH}px` : '0px',
+        borderLeft: open ? '1px solid var(--border)' : 'none',
+        background: 'var(--bg-secondary)',
+      }}
+    >
+      <Tabs
+        defaultValue="settings"
+        className="flex flex-1 flex-col overflow-hidden"
+        style={{ width: `${SETTINGS_PANEL_WIDTH}px` }}
       >
         {/* 标题栏 */}
         <div
-          className="flex items-center justify-between border-b p-4"
+          className="flex h-[44px] shrink-0 items-center border-b"
           style={{ borderColor: 'var(--border)' }}
         >
-          <h2
-            className="font-display font-semibold text-sm"
-            style={{ color: 'var(--fg-primary)' }}
-          >
-            简历配置
-          </h2>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={handleReset}
-              className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-              style={{ background: 'var(--bg-tertiary)' }}
-              title="重置设置"
-            >
-              <RotateCcw className="h-4 w-4" style={{ color: 'var(--fg-muted)' }} />
-            </button>
-            <button
-              onClick={onClose}
-              className="w-7 h-7 rounded-lg flex items-center justify-center transition-colors"
-              style={{ background: 'var(--bg-tertiary)' }}
-            >
-              <X className="h-4 w-4" style={{ color: 'var(--fg-muted)' }} />
-            </button>
-          </div>
+          <TabsList variant="line">
+            <TabsTrigger value="settings" className="after:hidden">
+              配置
+            </TabsTrigger>
+            <TabsTrigger value="template" className="after:hidden">
+              模板
+            </TabsTrigger>
+          </TabsList>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 space-y-5">
-          {/* 字体设置 */}
-          <div className="space-y-3">
-            <h3
-              className="text-xs font-semibold uppercase tracking-wide"
-              style={{ color: 'var(--fg-muted)' }}
-            >
-              字体设置
-            </h3>
-            <div>
-              <label className="text-xs mb-1 block" style={{ color: 'var(--fg-muted)' }}>
-                正文字体
-              </label>
-              <div className="flex gap-2">
-                {FONT_PRESETS.map((font) => (
-                  <button
-                    key={font.id}
-                    onClick={() => updateFontSettings({ fontFamily: font.value })}
-                    className="flex-1 rounded-lg border px-2 py-1.5 text-xs transition-all"
-                    style={{
-                      fontFamily: font.value,
-                      borderColor:
-                        settings.font.fontFamily === font.value
-                          ? 'var(--accent)'
-                          : 'var(--border)',
-                      background:
-                        settings.font.fontFamily === font.value
-                          ? 'var(--accent-soft)'
-                          : 'var(--bg-tertiary)',
-                      color:
-                        settings.font.fontFamily === font.value
-                          ? 'var(--accent)'
-                          : 'var(--fg-secondary)',
-                    }}
-                  >
-                    {font.name}
-                  </button>
-                ))}
-              </div>
-            </div>
-            <Slider
-              label="标题字号"
-              value={settings.font.titleSize}
-              min={20}
-              max={36}
-              onChange={(v) => updateFontSettings({ titleSize: v })}
-            />
-            <Slider
-              label="二级标题字号"
-              value={settings.font.headingSize}
-              min={14}
-              max={24}
-              onChange={(v) => updateFontSettings({ headingSize: v })}
-            />
-            <Slider
-              label="正文字号"
-              value={settings.font.bodySize}
-              min={12}
-              max={18}
-              onChange={(v) => updateFontSettings({ bodySize: v })}
-            />
-            <Slider
-              label="行高"
-              value={settings.font.lineHeight}
-              min={1.2}
-              max={2.0}
-              step={0.1}
-              unit=""
-              onChange={(v) => updateFontSettings({ lineHeight: v })}
-            />
-          </div>
-
-          {/* 颜色设置 */}
-          <div className="space-y-3">
-            <h3
-              className="text-xs font-semibold uppercase tracking-wide"
-              style={{ color: 'var(--fg-muted)' }}
-            >
-              颜色设置
-            </h3>
-            <div>
-              <label className="text-xs mb-2 block" style={{ color: 'var(--fg-muted)' }}>
-                主题色
-              </label>
-              <div className="flex gap-2 flex-wrap mb-2">
-                {PRESET_COLORS.map((color) => (
-                  <button
-                    key={color.value}
-                    onClick={() => updateColorSettings({ primary: color.value })}
-                    className="w-7 h-7 rounded-lg border-2 border-transparent hover:border-white/50 transition-all"
-                    style={{
-                      background: color.value,
-                      borderColor:
-                        settings.color.primary === color.value
-                          ? 'var(--fg-primary)'
-                          : 'transparent',
-                      boxShadow:
-                        settings.color.primary === color.value
-                          ? '0 0 0 2px var(--accent-soft)'
-                          : 'none',
-                    }}
-                    title={color.name}
-                  />
-                ))}
-              </div>
-              <input
-                type="color"
-                value={settings.color.primary}
-                onChange={(e) => updateColorSettings({ primary: e.target.value })}
-                className="w-full h-9 rounded-lg cursor-pointer"
-                style={{ background: 'var(--bg-tertiary)' }}
+        {/* 模板 Tab */}
+        <TabsContent value="template" className="mt-0 flex-1 overflow-y-auto p-3">
+          <div className="grid grid-cols-2 gap-2">
+            {TEMPLATE_LIST.map(template => (
+              <TemplateCard
+                key={template.id}
+                templateId={template.id as TemplateId}
+                name={template.name}
+                content={previewContent}
+                isActive={templateId === template.id}
+                onSelect={() => setTemplate(template.id as TemplateId)}
               />
-            </div>
+            ))}
+          </div>
+        </TabsContent>
+
+        {/* 配置 Tab */}
+        <TabsContent value="settings" className="mt-0 flex flex-1 flex-col overflow-hidden">
+          <div className="flex-1 space-y-2 overflow-y-auto p-3">
+            {/* 颜色设置 */}
+            <SectionCard>
+              <SectionTitle>主题色</SectionTitle>
+              <ColorPicker
+                label=""
+                value={settings.color.primary}
+                presetColors={PRESET_COLORS}
+                onChange={v => updateColorSettings({ primary: v })}
+              />
+            </SectionCard>
+
+            {/* 字体设置 */}
+            <SectionCard>
+              <SectionTitle>字体</SectionTitle>
+              <div className="space-y-3">
+                <Select
+                  value={settings.font.fontFamily}
+                  onValueChange={v => updateFontSettings({ fontFamily: v })}
+                >
+                  <SelectTrigger
+                    className="focus-visible:border-border border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground h-8 w-full text-sm transition-[color,background-color,border-color,box-shadow] focus-visible:ring-0"
+                    style={{ background: 'var(--bg-secondary)' }}
+                  >
+                    <SelectValue />
+                  </SelectTrigger>
+                  <SelectContent position="popper" sideOffset={4}>
+                    {FONT_PRESETS.map(font => (
+                      <SelectItem
+                        key={font.id}
+                        value={font.value}
+                        style={{ fontFamily: font.value }}
+                      >
+                        {font.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <div className="space-y-3 pt-1">
+                  <SliderRow
+                    label="一级标题字号"
+                    value={settings.font.titleSize}
+                    min={20}
+                    max={36}
+                    onChange={v => updateFontSettings({ titleSize: v })}
+                  />
+                  <hr style={{ borderColor: 'var(--border)' }} />
+                  <SliderRow
+                    label="二级标题字号"
+                    value={settings.font.headingSize}
+                    min={14}
+                    max={24}
+                    onChange={v => updateFontSettings({ headingSize: v })}
+                  />
+                  <hr style={{ borderColor: 'var(--border)' }} />
+                  <SliderRow
+                    label="正文字号"
+                    value={settings.font.bodySize}
+                    min={10}
+                    max={18}
+                    onChange={v => updateFontSettings({ bodySize: v })}
+                  />
+                  <hr style={{ borderColor: 'var(--border)' }} />
+                  <SliderRow
+                    label="行高"
+                    value={settings.font.lineHeight}
+                    min={12}
+                    max={28}
+                    onChange={v => updateFontSettings({ lineHeight: v })}
+                  />
+                </div>
+              </div>
+            </SectionCard>
+
+            {/* 间距设置 */}
+            <SectionCard>
+              <SectionTitle>间距</SectionTitle>
+              <div className="space-y-3">
+                <SliderRow
+                  label="页边距"
+                  value={settings.spacing.padding}
+                  min={20}
+                  max={60}
+                  onChange={v => updateSpacingSettings({ padding: v })}
+                />
+                <hr style={{ borderColor: 'var(--border)' }} />
+                <SliderRow
+                  label="章节间距"
+                  value={settings.spacing.sectionGap}
+                  min={8}
+                  max={40}
+                  onChange={v => updateSpacingSettings({ sectionGap: v })}
+                />
+              </div>
+            </SectionCard>
           </div>
 
-          {/* 间距设置 */}
-          <div className="space-y-3">
-            <h3
-              className="text-xs font-semibold uppercase tracking-wide"
-              style={{ color: 'var(--fg-muted)' }}
+          {/* 底部重置按钮 */}
+          <div className="shrink-0 border-t p-3" style={{ borderColor: 'var(--border)' }}>
+            <Button
+              variant="outline"
+              className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground w-full gap-2 border-dashed text-(--fg-secondary)"
+              onClick={handleReset}
             >
-              间距设置
-            </h3>
-            <Slider
-              label="区块间距"
-              value={settings.spacing.sectionGap}
-              min={16}
-              max={40}
-              onChange={(v) => updateSpacingSettings({ sectionGap: v })}
-            />
-            <Slider
-              label="段落间距"
-              value={settings.spacing.paragraphGap}
-              min={8}
-              max={20}
-              onChange={(v) => updateSpacingSettings({ paragraphGap: v })}
-            />
-            <Slider
-              label="内边距"
-              value={settings.spacing.padding}
-              min={20}
-              max={60}
-              onChange={(v) => updateSpacingSettings({ padding: v })}
-            />
+              <RotateCcw className="h-4 w-4" />
+              重置配置
+            </Button>
           </div>
-        </div>
-      </aside>
-    </>
+        </TabsContent>
+      </Tabs>
+    </aside>
   )
 }

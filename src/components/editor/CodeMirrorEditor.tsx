@@ -1,12 +1,7 @@
 import { useEffect, useRef } from 'react'
-import {
-  EditorView,
-  keymap,
-  lineNumbers,
-  highlightActiveLineGutter,
-  highlightActiveLine,
-} from '@codemirror/view'
-import { EditorState } from '@codemirror/state'
+import { EditorView, keymap, highlightActiveLine, ViewPlugin, Decoration } from '@codemirror/view'
+import { EditorState, Compartment } from '@codemirror/state'
+import type { DecorationSet, ViewUpdate } from '@codemirror/view'
 import { markdown, markdownLanguage } from '@codemirror/lang-markdown'
 import { defaultKeymap, history, historyKeymap } from '@codemirror/commands'
 import { syntaxHighlighting, defaultHighlightStyle, HighlightStyle } from '@codemirror/language'
@@ -14,6 +9,7 @@ import { search, searchKeymap } from '@codemirror/search'
 import { autocompletion, completionKeymap } from '@codemirror/autocomplete'
 import { lintKeymap } from '@codemirror/lint'
 import { tags } from '@lezer/highlight'
+import { oneDark } from '@codemirror/theme-one-dark'
 import { useResumeStore } from '@/store'
 import { DEFAULT_CONTENT } from '@/utils/constants'
 
@@ -22,31 +18,73 @@ import '@/styles/codemirror.css'
 // 防抖延迟时间（毫秒）
 const DEBOUNCE_DELAY = 0
 
+// || 分隔符高亮装饰
+const pipeMark = Decoration.mark({ class: 'cm-pipe-separator' })
+
+/**
+ * 扫描文档中所有 || 并返回对应的 Decoration 集合
+ */
+function buildPipeDecorations(view: EditorView): DecorationSet {
+  const builder: ReturnType<typeof Decoration.set> extends never
+    ? never
+    : Parameters<typeof Decoration.set>[0] = [] as import('@codemirror/state').Range<Decoration>[]
+  for (const { from, to } of view.visibleRanges) {
+    const text = view.state.doc.sliceString(from, to)
+    let idx = text.indexOf('||')
+    while (idx !== -1) {
+      ;(builder as import('@codemirror/state').Range<Decoration>[]).push(
+        pipeMark.range(from + idx, from + idx + 2)
+      )
+      idx = text.indexOf('||', idx + 2)
+    }
+  }
+  return Decoration.set(builder as import('@codemirror/state').Range<Decoration>[])
+}
+
+/** ViewPlugin：实时高亮 || 分隔符 */
+const pipeSeparatorPlugin = ViewPlugin.fromClass(
+  class {
+    decorations: DecorationSet
+    constructor(view: EditorView) {
+      this.decorations = buildPipeDecorations(view)
+    }
+    update(update: ViewUpdate) {
+      if (update.docChanged || update.viewportChanged) {
+        this.decorations = buildPipeDecorations(update.view)
+      }
+    }
+  },
+  { decorations: v => v.decorations }
+)
+
+// 用于动态切换深色主题的 Compartment
+const themeCompartment = new Compartment()
+
 // 自定义语法高亮主题 - 使用 CSS 变量适配主题
-const createHighlightStyle = () => HighlightStyle.define([
+const customHighlightStyle = HighlightStyle.define([
   { tag: tags.heading1, fontSize: '1.4em', fontWeight: '600', color: 'var(--accent)' },
   { tag: tags.heading2, fontSize: '1.2em', fontWeight: '600', color: 'var(--accent)' },
   { tag: tags.heading3, fontSize: '1.1em', fontWeight: '600', color: 'var(--accent)' },
   { tag: tags.heading4, fontWeight: '600', color: 'var(--accent)' },
   { tag: tags.heading5, fontWeight: '600', color: 'var(--accent)' },
   { tag: tags.heading6, fontWeight: '600', color: 'var(--accent)' },
-  { tag: tags.strong, fontWeight: '700', color: 'var(--fg-primary)' },
-  { tag: tags.emphasis, fontStyle: 'italic', color: 'var(--fg-secondary)' },
-  { tag: tags.link, color: 'var(--accent)', textDecoration: 'underline' },
-  { tag: tags.url, color: 'var(--fg-muted)' },
+  { tag: tags.strong, fontWeight: '700', color: 'var(--accent-dim)' },
+  { tag: tags.emphasis, fontStyle: 'italic', color: 'var(--accent-dim)' },
+  { tag: tags.link, color: 'var(--accent-dim)', textDecoration: 'underline' },
+  { tag: tags.url, color: 'var(--accent-dim)' },
+  { tag: tags.atom, color: 'var(--accent-dim)' },
   {
     tag: tags.monospace,
-    backgroundColor: 'var(--bg-tertiary)',
-    color: 'var(--success)',
+    backgroundColor: 'var(--danger-soft)',
+    color: 'var(--danger)',
     padding: '2px 4px',
     borderRadius: '4px',
   },
-  { tag: tags.quote, color: 'var(--success)' },
-  { tag: tags.list, color: 'var(--fg-secondary)' },
+  { tag: tags.quote, fontStyle: 'italic', color: 'var(--accent-dim)' },
   { tag: tags.strikethrough, textDecoration: 'line-through', color: 'var(--fg-muted)' },
+  { tag: tags.processingInstruction, color: 'var(--accent-dim)' },
+  { tag: tags.contentSeparator, color: 'var(--accent)', fontWeight: '600' },
 ])
-
-const customHighlightStyle = createHighlightStyle()
 
 export function CodeMirrorEditor() {
   const editorRef = useRef<HTMLDivElement>(null)
@@ -54,8 +92,9 @@ export function CodeMirrorEditor() {
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
 
   // 从当前简历获取内容
-  const currentResume = useResumeStore((state) => state.currentResume)
-  const setContent = useResumeStore((state) => state.setContent)
+  const currentResume = useResumeStore(state => state.currentResume)
+  const setContent = useResumeStore(state => state.setContent)
+  const appTheme = useResumeStore(state => state.theme)
 
   const content = currentResume?.content ?? DEFAULT_CONTENT
 
@@ -74,8 +113,6 @@ export function CodeMirrorEditor() {
       doc: content,
       extensions: [
         // 基础功能
-        lineNumbers(),
-        highlightActiveLineGutter(),
         highlightActiveLine(),
         history(),
         search(),
@@ -98,6 +135,12 @@ export function CodeMirrorEditor() {
           ...completionKeymap,
           ...lintKeymap,
         ]),
+
+        // || 分隔符高亮
+        pipeSeparatorPlugin,
+
+        // 可动态切换的深色主题
+        themeCompartment.of(appTheme === 'dark' ? oneDark : []),
 
         // 编辑器样式 - 适配主题
         EditorView.theme({
@@ -147,7 +190,7 @@ export function CodeMirrorEditor() {
         }),
 
         // 监听文档变化（带防抖）
-        EditorView.updateListener.of((update) => {
+        EditorView.updateListener.of(update => {
           if (update.docChanged) {
             const newContent = update.state.doc.toString()
 
@@ -183,6 +226,15 @@ export function CodeMirrorEditor() {
       viewRef.current = null
     }
   }, []) // 只在组件挂载时创建一次
+
+  // 主题变化时动态切换 CodeMirror 深色主题
+  useEffect(() => {
+    const view = viewRef.current
+    if (!view) return
+    view.dispatch({
+      effects: themeCompartment.reconfigure(appTheme === 'dark' ? oneDark : []),
+    })
+  }, [appTheme])
 
   // 当外部 content 变化时更新编辑器（比如从分享链接导入）
   useEffect(() => {

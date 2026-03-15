@@ -1,2 +1,3 @@
 export { PreviewContainer } from './PreviewContainer'
-export { PaginatedPreview } from './PaginatedPreview'
+export { PaginatedPreview, ResumePreview } from './PaginatedPreview'
+export type { ResumePreviewProps } from './PaginatedPreview'

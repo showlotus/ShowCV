@@ -1,4 +1,5 @@
 import { cn } from '@/utils'
+import { Slider as ShadcnSlider } from '@/components/ui/slider'
 
 interface SliderProps {
   label: string
@@ -17,27 +18,32 @@ export function Slider({
   min,
   max,
   step = 1,
-  unit = 'px',
+  unit,
   onChange,
   className,
 }: SliderProps) {
   return (
-    <div className={cn('space-y-2', className)}>
-      <div className="flex items-center justify-between">
-        <label className="text-sm text-gray-600">{label}</label>
-        <span className="text-sm font-medium text-gray-800">
-          {value}
-          {unit}
-        </span>
-      </div>
-      <input
-        type="range"
+    <div className={cn('space-y-1.5', className)}>
+      {(label || unit !== undefined) && (
+        <div className="flex items-center justify-between">
+          {label && (
+            <label className="text-sm" style={{ color: 'var(--fg-muted)' }}>
+              {label}
+            </label>
+          )}
+          <span className={cn('text-sm font-medium', !label && 'ml-auto')} style={{ color: 'var(--fg-primary)' }}>
+            {value}
+            {unit ?? 'px'}
+          </span>
+        </div>
+      )}
+      <ShadcnSlider
         min={min}
         max={max}
         step={step}
-        value={value}
-        onChange={e => onChange(Number(e.target.value))}
-        className="slider h-2 w-full cursor-pointer appearance-none rounded-lg bg-gray-200"
+        value={[value]}
+        onValueChange={vals => onChange(vals[0])}
+        className="**:data-[slot=slider-track]:bg-muted **:data-[slot=slider-range]:bg-accent-foreground **:data-[slot=slider-thumb]:border-accent-foreground **:data-[slot=slider-thumb]:ring-accent-foreground"
       />
     </div>
   )

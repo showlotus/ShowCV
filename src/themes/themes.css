@@ -9,7 +9,9 @@
   --fg-secondary: #a1a1aa;
   --fg-muted: #71717a;
   --accent: #f59e0b;
+  --accent-fg: #000;
   --accent-soft: rgba(245, 158, 11, 0.15);
+  --accent-dim: rgba(245, 158, 11, 0.8);
   --border: #3f3f46;
   --card: #1c1c1f;
   --glow: rgba(245, 158, 11, 0.4);
@@ -27,7 +29,9 @@
   --fg-secondary: #52525b;
   --fg-muted: #a1a1aa;
   --accent: #d97706;
+  --accent-fg: #000;
   --accent-soft: rgba(217, 119, 6, 0.1);
+  --accent-dim: rgba(217, 119, 6, 0.85);
   --border: #d4d4d8;
   --card: #ffffff;
   --glow: rgba(217, 119, 6, 0.3);
@@ -45,7 +49,9 @@
   --fg-secondary: #94a3b8;
   --fg-muted: #64748b;
   --accent: #06b6d4;
+  --accent-fg: #fff;
   --accent-soft: rgba(6, 182, 212, 0.15);
+  --accent-dim: rgba(6, 182, 212, 0.6);
   --border: #334155;
   --card: #1a2744;
   --glow: rgba(6, 182, 212, 0.4);
@@ -63,7 +69,9 @@
   --fg-secondary: #a7f3d0;
   --fg-muted: #6ee7b7;
   --accent: #10b981;
+  --accent-fg: #fff;
   --accent-soft: rgba(16, 185, 129, 0.15);
+  --accent-dim: rgba(16, 185, 129, 0.6);
   --border: #2d4a3a;
   --card: #1a2720;
   --glow: rgba(16, 185, 129, 0.4);

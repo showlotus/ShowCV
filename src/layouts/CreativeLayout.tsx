@@ -1,7 +1,9 @@
-import { useMemo } from 'react'
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { ResumeSettings } from '@/types'
+import { remarkGroupSection } from './utils/remarkGroupSection'
+import { PipeSplit } from './utils/PipeSplit'
+import { useCssVars } from './utils/useCssVars'
 
 interface CreativeLayoutProps {
   content: string
@@ -10,27 +12,8 @@ interface CreativeLayoutProps {
 }
 
 export function CreativeLayout({ content, settings, className }: CreativeLayoutProps) {
-  const { font, color, spacing } = settings
-
-  const style = useMemo(
-    () =>
-      ({
-        '--primary-color': color.primary,
-        '--text-color': color.text,
-        '--muted-color': color.muted,
-        '--bg-color': color.background,
-        '--title-size': `${font.titleSize}px`,
-        '--heading-size': `${font.headingSize}px`,
-        '--body-size': `${font.bodySize}px`,
-        '--small-size': `${font.smallSize}px`,
-        '--line-height': font.lineHeight,
-        '--section-gap': `${spacing.sectionGap}px`,
-        '--paragraph-gap': `${spacing.paragraphGap}px`,
-        '--padding': `${spacing.padding}px`,
-        '--font-family': font.fontFamily,
-      }) as React.CSSProperties,
-    [font, color, spacing]
-  )
+  const { color, spacing } = settings
+  const style = useCssVars(settings)
 
   return (
     <div
@@ -49,7 +32,10 @@ export function CreativeLayout({ content, settings, className }: CreativeLayoutP
       ></div>
 
       <div className="relative" style={{ padding: spacing.padding }}>
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents(color)}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm, remarkGroupSection]}
+          components={markdownComponents(color)}
+        >
           {content}
         </ReactMarkdown>
       </div>
@@ -74,16 +60,21 @@ const markdownComponents = (color: ResumeSettings['color']): Components => ({
       style={{ color: color.primary }}
     >
       <span className="h-0.5 w-8" style={{ backgroundColor: color.primary }}></span>
-      {children}
+      <PipeSplit>{children}</PipeSplit>
     </h2>
   ),
   h3: ({ children }) => (
     <h3 className="mt-4 mb-2 flex items-center gap-2 font-semibold">
       <span className="h-2 w-2 rounded-full" style={{ backgroundColor: color.primary }}></span>
-      {children}
+      <PipeSplit>{children}</PipeSplit>
     </h3>
   ),
-  p: ({ children }) => <p className="mb-2 text-sm leading-relaxed">{children}</p>,
+  section: ({ children }) => <section className="resume-section">{children}</section>,
+  p: ({ children }) => (
+    <p className="mb-2 text-sm leading-relaxed">
+      <PipeSplit>{children}</PipeSplit>
+    </p>
+  ),
   ul: ({ children }) => <ul className="ml-4 space-y-2 text-sm">{children}</ul>,
   ol: ({ children }) => (
     <ol className="ml-4 list-inside list-decimal space-y-2 text-sm">{children}</ol>

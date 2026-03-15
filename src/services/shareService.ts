@@ -7,7 +7,8 @@ interface ShareData {
   t: TemplateId // templateId - 模板 ID
   ft: [number, number, number, number, number, string] // font: titleSize, headingSize, bodySize, smallSize, lineHeight, fontFamily
   cl: [string, string, string, string] // color: primary, text, muted, background
-  sp: [number, number, number] // spacing: sectionGap, paragraphGap, padding
+  sp: [number, number] // spacing: sectionGap, padding
+  n: string // name - 简历名称
 }
 
 /**
@@ -17,12 +18,13 @@ function compressSettings(settings: ResumeSettings): ShareData {
   return {
     c: '', // 由调用者填充
     t: '' as TemplateId, // 由调用者填充
+    n: '', // 由调用者填充
     ft: [
       settings.font.titleSize,
       settings.font.headingSize,
       settings.font.bodySize,
       settings.font.smallSize,
-      Math.round(settings.font.lineHeight * 10), // 乘10存储避免小数
+      Math.round(settings.font.lineHeight), // lineHeight px 整数存储
       settings.font.fontFamily,
     ],
     cl: [
@@ -31,7 +33,7 @@ function compressSettings(settings: ResumeSettings): ShareData {
       settings.color.muted,
       settings.color.background,
     ],
-    sp: [settings.spacing.sectionGap, settings.spacing.paragraphGap, settings.spacing.padding],
+    sp: [settings.spacing.sectionGap, settings.spacing.padding],
   }
 }
 
@@ -42,17 +44,19 @@ function decompressSettings(data: ShareData): {
   settings: ResumeSettings
   content: string
   templateId: TemplateId
+  name: string
 } {
   return {
     content: data.c,
     templateId: data.t,
+    name: data.n,
     settings: {
       font: {
         titleSize: data.ft[0],
         headingSize: data.ft[1],
         bodySize: data.ft[2],
         smallSize: data.ft[3],
-        lineHeight: data.ft[4] / 10,
+        lineHeight: data.ft[4],
         fontFamily: data.ft[5],
       },
       color: {
@@ -63,8 +67,7 @@ function decompressSettings(data: ShareData): {
       },
       spacing: {
         sectionGap: data.sp[0],
-        paragraphGap: data.sp[1],
-        padding: data.sp[2],
+        padding: data.sp[1],
       },
     },
   }
@@ -74,14 +77,21 @@ function decompressSettings(data: ShareData): {
  * 压缩并编码数据为 URL Hash 字符串
  * 使用 fflate zlib 压缩 + Base64 编码（参考 Vue SFC Playground）
  */
-export function encodeShareData(
-  content: string,
-  templateId: TemplateId,
+export function encodeShareData({
+  content,
+  templateId,
+  settings,
+  name,
+}: {
+  content: string
+  templateId: TemplateId
   settings: ResumeSettings
-): string {
+  name: string
+}): string {
   const data = compressSettings(settings)
   data.c = content
   data.t = templateId
+  data.n = name
 
   const json = JSON.stringify(data)
   const buffer = strToU8(json)
@@ -97,18 +107,15 @@ export function decodeShareData(hash: string): {
   content: string
   templateId: TemplateId
   settings: ResumeSettings
+  name: string
 } | null {
   try {
     const binary = atob(hash)
-    // 检查 zlib header (0x78 0xDA 表示 zlib level 9)
-    if (binary.startsWith('\x78\xDA')) {
-      const buffer = strToU8(binary, true)
-      const unzipped = unzlibSync(buffer)
-      const json = strFromU8(unzipped)
-      const data = JSON.parse(json) as ShareData
-      return decompressSettings(data)
-    }
-    return null
+    const buffer = strToU8(binary, true)
+    const unzipped = unzlibSync(buffer)
+    const json = strFromU8(unzipped)
+    const data = JSON.parse(json) as ShareData
+    return decompressSettings(data)
   } catch (error) {
     console.error('Failed to decode share data:', error)
     return null
@@ -118,12 +125,13 @@ export function decodeShareData(hash: string): {
 /**
  * 生成分享链接
  */
-export function generateShareUrl(
-  content: string,
-  templateId: TemplateId,
+export function generateShareUrl(params: {
+  content: string
+  templateId: TemplateId
   settings: ResumeSettings
-): string {
-  const hash = encodeShareData(content, templateId, settings)
+  name: string
+}): string {
+  const hash = encodeShareData(params)
   return `${window.location.origin}${window.location.pathname}#${hash}`
 }
 
@@ -134,6 +142,7 @@ export function getShareDataFromUrl(): {
   content: string
   templateId: TemplateId
   settings: ResumeSettings
+  name: string
 } | null {
   const hash = window.location.hash.slice(1) // 移除 # 前缀
   if (!hash) return null

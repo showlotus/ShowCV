@@ -1,7 +1,9 @@
-import { useMemo } from 'react'
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { ResumeSettings } from '@/types'
+import { remarkGroupSection } from './utils/remarkGroupSection'
+import { PipeSplit } from './utils/PipeSplit'
+import { useCssVars } from './utils/useCssVars'
 
 interface ModernLayoutProps {
   content: string
@@ -10,27 +12,8 @@ interface ModernLayoutProps {
 }
 
 export function ModernLayout({ content, settings, className }: ModernLayoutProps) {
-  const { font, color, spacing } = settings
-
-  const style = useMemo(
-    () =>
-      ({
-        '--primary-color': color.primary,
-        '--text-color': color.text,
-        '--muted-color': color.muted,
-        '--bg-color': color.background,
-        '--title-size': `${font.titleSize}px`,
-        '--heading-size': `${font.headingSize}px`,
-        '--body-size': `${font.bodySize}px`,
-        '--small-size': `${font.smallSize}px`,
-        '--line-height': font.lineHeight,
-        '--section-gap': `${spacing.sectionGap}px`,
-        '--paragraph-gap': `${spacing.paragraphGap}px`,
-        '--padding': `${spacing.padding}px`,
-        '--font-family': font.fontFamily,
-      }) as React.CSSProperties,
-    [font, color, spacing]
-  )
+  const { color, spacing } = settings
+  const style = useCssVars(settings)
 
   return (
     <div
@@ -52,7 +35,10 @@ export function ModernLayout({ content, settings, className }: ModernLayoutProps
 
       {/* 右侧主体 */}
       <main className="flex-1" style={{ padding: spacing.padding }}>
-        <ReactMarkdown remarkPlugins={[remarkGfm]} components={mainComponents(color)}>
+        <ReactMarkdown
+          remarkPlugins={[remarkGfm, remarkGroupSection]}
+          components={mainComponents(color)}
+        >
           {content}
         </ReactMarkdown>
       </main>
@@ -64,9 +50,15 @@ export function ModernLayout({ content, settings, className }: ModernLayoutProps
 const sidebarComponents: Components = {
   h1: ({ children }) => <h1 className="mb-4 text-2xl font-bold">{children}</h1>,
   h2: ({ children }) => (
-    <h2 className="mt-6 mb-3 border-b border-white/30 pb-1 text-lg font-semibold">{children}</h2>
+    <h2 className="mt-6 mb-3 border-b border-white/30 pb-1 text-lg font-semibold">
+      <PipeSplit>{children}</PipeSplit>
+    </h2>
   ),
-  p: ({ children }) => <p className="mb-2 text-sm opacity-90">{children}</p>,
+  p: ({ children }) => (
+    <p className="mb-2 text-sm opacity-90">
+      <PipeSplit>{children}</PipeSplit>
+    </p>
+  ),
   ul: ({ children }) => <ul className="space-y-1 text-sm">{children}</ul>,
   li: ({ children }) => (
     <li className="flex items-start gap-2">
@@ -82,13 +74,18 @@ const mainComponents = (color: ResumeSettings['color']): Components => ({
   h2: ({ children }) => (
     <h2 className="mt-6 mb-3 flex items-center gap-2 text-lg font-semibold">
       <span className="h-5 w-1 rounded-sm" style={{ backgroundColor: color.primary }}></span>
-      {children}
+      <PipeSplit>{children}</PipeSplit>
     </h2>
   ),
-  h3: ({ children }) => <h3 className="mt-4 mb-1 font-semibold">{children}</h3>,
+  h3: ({ children }) => (
+    <h3 className="mt-4 mb-1 font-semibold">
+      <PipeSplit>{children}</PipeSplit>
+    </h3>
+  ),
+  section: ({ children }) => <section className="resume-section">{children}</section>,
   p: ({ children }) => (
     <p className="mb-2 text-sm" style={{ color: color.text }}>
-      {children}
+      <PipeSplit>{children}</PipeSplit>
     </p>
   ),
   ul: ({ children }) => (

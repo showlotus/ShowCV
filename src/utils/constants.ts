@@ -15,7 +15,7 @@ export const FONT_PRESETS = [
   {
     id: 'pingfang',
     name: '苹方',
-    value: '"PingFang SC", "PingFang TC", -apple-system, BlinkMacSystemFont, sans-serif',
+    value: '"PingFang TC", -apple-system, BlinkMacSystemFont, sans-serif',
   },
   {
     id: 'notosanssc',
@@ -26,11 +26,11 @@ export const FONT_PRESETS = [
 
 // 默认字体设置
 export const DEFAULT_FONT_SETTINGS = {
-  titleSize: 28,
-  headingSize: 18,
-  bodySize: 14,
+  titleSize: 24,
+  headingSize: 16,
+  bodySize: 12,
   smallSize: 12,
-  lineHeight: 1.6,
+  lineHeight: 14,
   fontFamily: FONT_PRESETS[0].value,
 }
 
@@ -45,7 +45,6 @@ export const DEFAULT_COLOR_SETTINGS = {
 // 默认间距设置
 export const DEFAULT_SPACING_SETTINGS = {
   sectionGap: 24,
-  paragraphGap: 12,
   padding: 40,
 }
 
@@ -58,13 +57,14 @@ export const DEFAULT_SETTINGS: ResumeSettings = {
 
 // 预设主题色
 export const PRESET_COLORS = [
-  { name: '蓝色', value: '#2563eb' },
-  { name: '青色', value: '#0891b2' },
-  { name: '绿色', value: '#059669' },
-  { name: '紫色', value: '#7c3aed' },
-  { name: '红色', value: '#dc2626' },
-  { name: '橙色', value: '#ea580c' },
-  { name: '灰色', value: '#4b5563' },
+  { name: '橘黄', value: '#d97706' },
+  { name: '烟蓝', value: '#2d5fa0' },
+  { name: '深青', value: '#0e7490' },
+  { name: '墨绿', value: '#166534' },
+  { name: '藏蓝', value: '#1e3a5f' },
+  { name: '暗紫', value: '#5b21b6' },
+  { name: '深红', value: '#991b1b' },
+  { name: '黑色', value: '#000000' },
 ]
 
 // 模板列表

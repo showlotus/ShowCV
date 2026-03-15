@@ -13,6 +13,7 @@ export interface ResumeItem {
   settings: ResumeSettings
   createdAt: number
   updatedAt: number
+  fromShare?: boolean // 是否来自分享链接
 }
 
 interface ResumeStore {
@@ -30,7 +31,7 @@ interface ResumeStore {
   setTheme: (theme: AppTheme) => void
 
   // Resume List Actions
-  createResume: (name?: string) => string
+  createResume: (initial?: Partial<Omit<ResumeItem, 'id' | 'createdAt' | 'updatedAt'>>) => string
   deleteResume: (id: string) => void
   renameResume: (id: string, name: string) => void
   selectResume: (id: string) => void
@@ -62,8 +63,8 @@ const createDefaultResume = (): ResumeItem => ({
 export const useResumeStore = create<ResumeStore>()(
   persist(
     (set, get) => ({
-      // 初始状态
-      theme: 'dark' as AppTheme,
+      // 初始状态：读取系统主题偏好
+      theme: (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') as AppTheme,
       resumes: [createDefaultResume()],
       currentResumeId: null,
       currentResume: null,
@@ -75,13 +76,14 @@ export const useResumeStore = create<ResumeStore>()(
       },
 
       // 创建新简历
-      createResume: (name) => {
+      createResume: (initial) => {
         const newResume: ResumeItem = {
           id: generateId(),
-          name: name || `简历 ${(get().resumes.length || 0) + 1}`,
-          content: '',
-          templateId: 'simple',
-          settings: { ...DEFAULT_SETTINGS },
+          name: initial?.name || `简历 ${(get().resumes.length || 0) + 1}`,
+          content: initial?.content ?? '',
+          templateId: initial?.templateId ?? 'simple',
+          settings: initial?.settings ?? { ...DEFAULT_SETTINGS },
+          fromShare: initial?.fromShare,
           createdAt: Date.now(),
           updatedAt: Date.now(),
         }

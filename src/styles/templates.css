@@ -1,7 +1,7 @@
 /* 字体定义 */
 @font-face {
-  font-family: 'PingFang SC';
-  src: url('/fonts/PingFang-SC-Regular.ttf') format('truetype');
+  font-family: 'PingFang TC';
+  src: url('/fonts/PingFangTC-Regular.otf') format('opentype');
   font-weight: 400;
   font-style: normal;
   font-display: swap;
@@ -34,6 +34,12 @@
 }
 
 /* 分页控制 - 避免元素被截断 */
+.resume-template .resume-section {
+  break-inside: avoid;
+  page-break-inside: avoid;
+  margin-bottom: var(--section-gap, 24px);
+}
+
 .resume-template h1,
 .resume-template h2,
 .resume-template h3,
@@ -42,6 +48,10 @@
 .resume-template h6 {
   break-inside: avoid;
   page-break-inside: avoid;
+}
+
+.resume-template h1 {
+  line-height: normal;
 }
 
 .resume-template p,
@@ -79,11 +89,43 @@
   page-break-inside: avoid;
 }
 
+/* 打印时的分页控制 */
+@media print {
+  html,
+  body {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+    margin: 0;
+    padding: 0;
+  }
+
+  /* 打印时移除最小高度，避免空白第二页 */
+  .preview-page {
+    min-height: 0 !important;
+  }
+
+  /* 每个 h2 章节前避免孤立标题出现在页底 */
+  .resume-template h2 {
+    break-before: avoid-page;
+    page-break-before: avoid;
+  }
+
+  /* h3 和其后紧跟的内容保持在一起 */
+  .resume-template h3 {
+    break-after: avoid-page;
+    page-break-after: avoid;
+  }
+
+  /* 打印时重置分页推移，避免影响 PDF 排版 */
+  .resume-template .page-first {
+    padding-top: 0 !important;
+  }
+}
+
 .resume-template .resume-title {
   font-size: var(--title-size, 28px);
   font-weight: 700;
   color: var(--text-color, #1f2937);
-  margin-bottom: 4px;
 }
 
 .resume-template .section-title {
@@ -98,11 +140,11 @@
 }
 
 .resume-template .resume-paragraph {
-  margin-bottom: var(--paragraph-gap, 12px);
+  margin-bottom: 5px;
 }
 
 .resume-template .resume-list {
-  margin: var(--paragraph-gap, 12px) 0;
+  margin: 5px 0;
 }
 
 /* 现代模板 */
@@ -146,7 +188,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #2563eb;
+  background: var(--accent);
   cursor: pointer;
   border: 2px solid white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
@@ -156,7 +198,7 @@
   width: 16px;
   height: 16px;
   border-radius: 50%;
-  background: #2563eb;
+  background: var(--accent);
   cursor: pointer;
   border: 2px solid white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);

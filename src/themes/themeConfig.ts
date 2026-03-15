@@ -10,6 +10,7 @@ export interface ThemeVariables {
   fgSecondary: string
   fgMuted: string
   accent: string
+  accentFg: string
   accentSoft: string
   border: string
   card: string
@@ -41,6 +42,7 @@ const darkTheme: ThemeInfo = {
     fgSecondary: '#a1a1aa',
     fgMuted: '#71717a',
     accent: '#f59e0b',
+    accentFg: '#000',
     accentSoft: 'rgba(245, 158, 11, 0.15)',
     border: '#3f3f46',
     card: '#1c1c1f',
@@ -65,6 +67,7 @@ const lightTheme: ThemeInfo = {
     fgSecondary: '#52525b',
     fgMuted: '#a1a1aa',
     accent: '#d97706',
+    accentFg: '#000',
     accentSoft: 'rgba(217, 119, 6, 0.1)',
     border: '#d4d4d8',
     card: '#ffffff',
@@ -77,6 +80,7 @@ const lightTheme: ThemeInfo = {
 }
 
 /** 海洋主题 */
+// @ts-ignore
 const oceanTheme: ThemeInfo = {
   id: 'ocean',
   name: '海洋',
@@ -89,6 +93,7 @@ const oceanTheme: ThemeInfo = {
     fgSecondary: '#94a3b8',
     fgMuted: '#64748b',
     accent: '#06b6d4',
+    accentFg: '#fff',
     accentSoft: 'rgba(6, 182, 212, 0.15)',
     border: '#334155',
     card: '#1a2744',
@@ -101,6 +106,7 @@ const oceanTheme: ThemeInfo = {
 }
 
 /** 森林主题 */
+// @ts-ignore
 const forestTheme: ThemeInfo = {
   id: 'forest',
   name: '森林',
@@ -113,6 +119,7 @@ const forestTheme: ThemeInfo = {
     fgSecondary: '#a7f3d0',
     fgMuted: '#6ee7b7',
     accent: '#10b981',
+    accentFg: '#fff',
     accentSoft: 'rgba(16, 185, 129, 0.15)',
     border: '#2d4a3a',
     card: '#1a2720',
@@ -125,11 +132,11 @@ const forestTheme: ThemeInfo = {
 }
 
 /** 主题列表 */
-export const THEME_LIST: ThemeInfo[] = [darkTheme, lightTheme, oceanTheme, forestTheme]
+export const THEME_LIST: ThemeInfo[] = [lightTheme, darkTheme /*  oceanTheme, forestTheme */]
 
 /** 根据 ID 获取主题信息 */
 export function getThemeById(id: AppTheme): ThemeInfo | undefined {
-  return THEME_LIST.find((theme) => theme.id === id)
+  return THEME_LIST.find(theme => theme.id === id)
 }
 
 /** 应用主题到 DOM */

@@ -1,7 +1,9 @@
-import { useMemo } from 'react'
 import ReactMarkdown, { type Components } from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import type { ResumeSettings } from '@/types'
+import { remarkGroupSection } from './utils/remarkGroupSection'
+import { PipeSplit } from './utils/PipeSplit'
+import { useCssVars } from './utils/useCssVars'
 
 interface SimpleLayoutProps {
   content: string
@@ -10,35 +12,18 @@ interface SimpleLayoutProps {
 }
 
 export function SimpleLayout({ content, settings, className }: SimpleLayoutProps) {
-  const { font, color, spacing } = settings
-
-  const style = useMemo(
-    () =>
-      ({
-        '--primary-color': color.primary,
-        '--text-color': color.text,
-        '--muted-color': color.muted,
-        '--bg-color': color.background,
-        '--title-size': `${font.titleSize}px`,
-        '--heading-size': `${font.headingSize}px`,
-        '--body-size': `${font.bodySize}px`,
-        '--small-size': `${font.smallSize}px`,
-        '--line-height': font.lineHeight,
-        '--section-gap': `${spacing.sectionGap}px`,
-        '--paragraph-gap': `${spacing.paragraphGap}px`,
-        '--padding': `${spacing.padding}px`,
-        '--font-family': font.fontFamily,
-      }) as React.CSSProperties,
-    [font, color, spacing]
-  )
+  const style = useCssVars(settings)
 
   return (
     <div
       id="resume-preview"
       className={`resume-template bg-white ${className || ''}`}
-      style={{ ...style, padding: spacing.padding }}
+      style={{ ...style, padding: settings.spacing.padding }}
     >
-      <ReactMarkdown remarkPlugins={[remarkGfm]} components={markdownComponents}>
+      <ReactMarkdown
+        remarkPlugins={[remarkGfm, remarkGroupSection]}
+        components={markdownComponents}
+      >
         {content}
       </ReactMarkdown>
     </div>
@@ -56,16 +41,30 @@ const markdownComponents: Components = {
     </h1>
   ),
   h2: ({ children }) => (
-    <h2 className="section-title mt-6 mb-3 flex items-center gap-2">
-      <span
-        className="h-5 w-1.5 rounded-sm"
-        style={{ backgroundColor: 'var(--primary-color)' }}
-      ></span>
-      {children}
-    </h2>
+    <section className="resume-section">
+      <h2 className="section-title flex items-center gap-2">
+        <span
+          className="h-5 w-1.5 rounded-sm"
+          style={{ backgroundColor: 'var(--primary-color)' }}
+        ></span>
+        <PipeSplit>{children}</PipeSplit>
+      </h2>
+    </section>
   ),
-  h3: ({ children }) => <h3 className="subsection-title mt-4 mb-2 font-semibold">{children}</h3>,
-  p: ({ children }) => <p className="resume-paragraph mb-2">{children}</p>,
+  h3: ({ children }) => (
+    <h3 className="subsection-title mb-1.5 font-semibold">
+      <PipeSplit>{children}</PipeSplit>
+    </h3>
+  ),
+  // 自定义 section 节点渲染，包裹 h3 及其子内容
+  section: ({ children, className }) => (
+    <section className={`resume-section ${className || ''}`}>{children}</section>
+  ),
+  p: ({ children }) => (
+    <p className="resume-paragraph mb-2">
+      <PipeSplit>{children}</PipeSplit>
+    </p>
+  ),
   ul: ({ children }) => (
     <ul className="resume-list ml-2 list-inside list-disc space-y-1">{children}</ul>
   ),
@@ -80,7 +79,10 @@ const markdownComponents: Components = {
   ),
   strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
   hr: () => (
-    <hr className="my-4 border-t" style={{ borderColor: 'var(--primary-color)', opacity: 0.3 }} />
+    <hr
+      className="border-t"
+      style={{ borderColor: 'var(--primary-color)', opacity: 0.3, margin: `var(--section-gap) 0` }}
+    />
   ),
   a: ({ href, children }) => (
     <a href={href} className="hover:underline" style={{ color: 'var(--primary-color)' }}>

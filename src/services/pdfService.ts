@@ -1,101 +1,77 @@
-import { useRef, useCallback } from 'react'
+import { useRef, useCallback, type RefObject } from 'react'
 import { useReactToPrint } from 'react-to-print'
 
-// 打印样式常量 - 与 PaginatedPreview 保持一致
-const PRINT_STYLES = `
-  @page {
-    size: A4;
-    margin: 0;
-  }
-  @media print {
-    html, body {
-      -webkit-print-color-adjust: exact;
-      print-color-adjust: exact;
-      margin: 0;
-      padding: 0;
-      background: white !important;
+/**
+ * 生成打印样式字符串
+ * @param padding 每页四周的边距（像素），与预览的 spacing.padding 保持一致
+ */
+function buildPrintStyles(padding: number) {
+  return `
+    @page {
+      size: A4;
+      margin: ${padding}px;
     }
-    /* 隐藏不需要打印的元素 */
-    .no-print,
-    .page-number {
-      display: none !important;
+    @media print {
+      html, body {
+        -webkit-print-color-adjust: exact;
+        print-color-adjust: exact;
+        margin: 0;
+        padding: 0;
+        background: white !important;
+      }
+      .no-print,
+      .page-number {
+        display: none !important;
+      }
+      /* 移除预览容器的装饰样式 */
+      .resume-preview {
+        max-width: none !important;
+        margin: 0 !important;
+        border: none !important;
+        border-radius: 0 !important;
+        background: transparent !important;
+      }
+      /* 去掉 .preview-page 的装饰样式和最小高度，由 @page margin 控制边距 */
+      .preview-page {
+        padding: 0 !important;
+        min-height: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+      }
     }
-    /* 分页容器样式 - 移除间距 */
-    .paginated-preview {
-      display: block !important;
-      gap: 0 !important;
-    }
-    .preview-page {
-      page-break-after: always;
-      page-break-inside: avoid;
-      box-shadow: none !important;
-      margin: 0 !important;
-      border-radius: 0 !important;
-      background: white !important;
-    }
-    .preview-page:last-child {
-      page-break-after: auto;
-    }
-    /* 确保内容不会被截断在页面中间 */
-    .preview-page-content {
-      overflow: visible !important;
-      background: white !important;
-    }
-    /* 确保简历模板背景是白色 */
-    .resume-template {
-      background: white !important;
-    }
-    /* 分页控制 - 避免元素被截断 */
-    .resume-template h1,
-    .resume-template h2,
-    .resume-template h3,
-    .resume-template h4,
-    .resume-template h5,
-    .resume-template h6,
-    .resume-template p,
-    .resume-template ul,
-    .resume-template ol,
-    .resume-template li,
-    .resume-template .resume-paragraph,
-    .resume-template .resume-list,
-    .resume-template .resume-list-item,
-    .resume-template .no-break {
-      break-inside: avoid !important;
-      page-break-inside: avoid !important;
-    }
-    /* 强制分页标记 */
-    .resume-template .page-break {
-      page-break-after: always !important;
-      break-after: page !important;
-    }
-  }
-`
+  `
+}
 
-// 使用 react-to-print 的打印方案
-export function useReactToPrintExport() {
-  const contentRef = useRef<HTMLDivElement>(null)
+/**
+ * 使用 react-to-print 的打印方案
+ * @param ref 外部传入的 ref，指向预览 DOM 节点，不传则内部创建
+ * @param padding 打印边距（像素），与预览 spacing.padding 保持一致
+ */
+export function useReactToPrintExport(ref?: RefObject<HTMLDivElement | null>, padding = 0) {
+  const internalRef = useRef<HTMLDivElement>(null)
+  const contentRef = ref ?? internalRef
 
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: '简历',
-    pageStyle: PRINT_STYLES,
+    pageStyle: buildPrintStyles(padding),
   })
 
-  return {
-    contentRef,
-    handlePrint,
-  }
+  return { handlePrint }
 }
 
-// 原有的 iframe 打印方案
-export function usePDFExport() {
-  const contentRef = useRef<HTMLDivElement>(null)
+/**
+ * 基于 iframe 的 PDF 导出方案
+ * @param ref 外部传入的 ref，指向预览 DOM 节点，不传则内部创建
+ * @param padding 打印边距（像素），与预览 spacing.padding 保持一致
+ */
+export function usePDFExport(ref?: RefObject<HTMLDivElement | null>, padding = 0) {
+  const internalRef = useRef<HTMLDivElement>(null)
+  const contentRef = ref ?? internalRef
 
   const handlePrint = useCallback(() => {
-    // 优先使用分页预览容器，确保打印分页内容
     const content =
       contentRef.current ||
-      document.querySelector('.paginated-preview') ||
       document.getElementById('resume-preview')
 
     if (!content) {
@@ -149,7 +125,7 @@ export function usePDFExport() {
           <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
           <style>
             ${styles}
-            ${PRINT_STYLES}
+            ${buildPrintStyles(padding)}
           </style>
         </head>
         <body>
@@ -164,12 +140,32 @@ export function usePDFExport() {
       printIframe.contentWindow?.focus()
       printIframe.contentWindow?.print()
     }, 800)
-  }, [])
+  }, [padding])
 
   return {
-    contentRef,
     handlePrint,
   }
+}
+
+/**
+ * 将预览区 DOM 截图为 PNG 并写入剪贴板
+ * @param ref 指向预览 DOM 节点的 ref
+ */
+export function useCopyImageExport(ref?: RefObject<HTMLDivElement | null>) {
+  const internalRef = useRef<HTMLDivElement>(null)
+  const contentRef = ref ?? internalRef
+
+  const handleCopyImage = useCallback(async () => {
+    const el = contentRef.current
+    if (!el) throw new Error('未找到预览元素')
+
+    const { domToBlob } = await import('modern-screenshot')
+    const blob = await domToBlob(el, { scale: 2 })
+    if (!blob) throw new Error('生成图片失败')
+    await navigator.clipboard.write([new ClipboardItem({ 'image/png': blob })])
+  }, [contentRef])
+
+  return { handleCopyImage }
 }
 
 // 保留 html2canvas 方案作为备用

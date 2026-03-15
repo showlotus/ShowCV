@@ -1,5 +1,5 @@
 export { Slider } from './Slider'
 export { ColorPicker } from './ColorPicker'
 export { Background } from './Background'
-export { Toast } from './Toast'
 export { Modal, DeleteConfirmModal, ShareModal } from './Modal'
+export { WaveIndicator } from './WaveIndicator'
