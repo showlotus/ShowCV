@@ -54,6 +54,7 @@
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-markdown": "^10.1.0",
+    "react-resizable-panels": "^4",
     "react-to-print": "^3.3.0",
     "remark-gfm": "^4.0.1",
     "sonner": "^2.0.7",

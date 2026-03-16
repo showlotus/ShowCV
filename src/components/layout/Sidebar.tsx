@@ -267,11 +267,11 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
   return (
     <>
       <aside
-        className="sidebar absolute top-0 left-0 z-10 flex h-full w-[300px] shrink-0 flex-col overflow-hidden transition-all duration-300"
+        className="sidebar relative z-10 flex h-full w-[300px] shrink-0 flex-col overflow-hidden transition-all duration-300"
         style={{
-          transform: open ? 'translateX(0)' : 'translateX(-300px)',
+          width: open ? undefined : '0px',
           background: 'var(--bg-secondary)',
-          borderRight: '1px solid var(--border)',
+          borderRight: open ? '1px solid var(--border)' : 'none',
         }}
       >
         <div className="flex w-[300px] flex-1 flex-col overflow-hidden">

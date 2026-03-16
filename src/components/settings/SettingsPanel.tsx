@@ -263,17 +263,16 @@ export function SettingsPanel({ open }: { open: boolean }) {
 
   return (
     <aside
-      className="hidden shrink-0 flex-col overflow-hidden transition-all duration-300 xl:flex"
+      className="hidden w-[300px] shrink-0 flex-col overflow-hidden transition-all duration-300 xl:flex"
       style={{
-        width: open ? `${SETTINGS_PANEL_WIDTH}px` : '0px',
+        width: open ? undefined : '0px',
         borderLeft: open ? '1px solid var(--border)' : 'none',
         background: 'var(--bg-secondary)',
       }}
     >
       <Tabs
         defaultValue="settings"
-        className="flex flex-1 flex-col overflow-hidden"
-        style={{ width: `${SETTINGS_PANEL_WIDTH}px` }}
+        className="flex flex-1 flex-col overflow-hidden w-[300px]"
       >
         {/* 标题栏 */}
         <div

@@ -5,6 +5,11 @@ import { PreviewContainer } from './components/preview'
 import { SettingsPanel } from './components/settings'
 import { Background } from './components/common'
 import { Toaster } from './components/ui/sonner'
+import {
+  ResizablePanelGroup,
+  ResizablePanel,
+  ResizableHandle,
+} from './components/ui/resizable'
 import { useResumeStore } from './store'
 import {
   useReactToPrintExport,
@@ -14,6 +19,9 @@ import {
 } from './services'
 // import { downloadFile } from './utils'
 import './index.css'
+
+/** A4 宽度基准像素值（暂未使用，预留给后续缩放功能） */
+// const A4_WIDTH_PX = 794
 
 function App() {
   // 只订阅 padding，避免其他 settings 变化触发 App 重渲染
@@ -28,6 +36,14 @@ function App() {
   const previewRef = useRef<HTMLDivElement>(null)
   const { handlePrint } = useReactToPrintExport(previewRef, padding)
   const { handleCopyImage } = useCopyImageExport(previewRef)
+
+  /** 根据预览面板像素宽度实时计算缩放比例，上限为 1 */
+  // const [scale, setScale] = useState(1)
+
+  /** onResize 回调，PanelSize.inPixels 直接提供像素宽度 */
+  // const handlePreviewResize = useCallback(({ inPixels }: { inPixels: number }) => {
+  //   setScale(Math.min(inPixels / A4_WIDTH_PX, 1))
+  // }, [])
 
   // 页面加载时检查 URL Hash 中的分享数据
   useEffect(() => {
@@ -76,49 +92,44 @@ function App() {
         onToggleSettingsPanel={() => setSettingsPanelOpen((v: boolean) => !v)}
       />
 
-      {/* 三栏常驻布局 */}
+      {/* 三栏布局：Sidebar + [编辑器 | 分割线 | 预览] + SettingsPanel */}
       <div className="relative z-10 flex flex-1 overflow-hidden">
-        {/* 简历列表：固定宽度 */}
+        {/* 简历列表 */}
         <Sidebar open={sidebarOpen} />
 
-        {/* 编辑区：弹性填充剩余空间 */}
-        <div
-          className="flex min-w-[300px] flex-1 flex-col p-4 transition-all duration-300"
-          style={{ marginLeft: sidebarOpen ? '300px' : '0px' }}
+        {/* 中间区域：编辑器 + 可拖动分割线 + 预览区 */}
+        <ResizablePanelGroup
+          orientation="horizontal"
+          className="flex-1 transition-all duration-300"
         >
-          {/* <span className="mb-3 ml-3 text-sm font-medium" style={{ color: 'var(--fg-muted)' }}>
-            Markdown 编辑器
-          </span> */}
-          <div
-            className="editor-wrapper flex-1 overflow-hidden rounded-lg"
-            style={{ background: 'var(--bg-secondary)' }}
-          >
-            <MarkdownEditor />
-          </div>
-        </div>
-
-        {/* 预览区：固定 A4 宽度，不参与 flex 压缩 */}
-        <div className="hidden shrink-0 flex-col p-4 xl:flex" style={{ width: '210mm' }}>
-          {/* <div className="mb-3 flex items-center justify-between">
-            <span className="text-sm font-medium" style={{ color: 'var(--fg-muted)' }}>
-              实时预览
-            </span>
-            <span
-              className="rounded px-2 py-1 text-xs"
-              style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
+          {/* 编辑区 */}
+          <ResizablePanel defaultSize={50} minSize={20} className="flex flex-col p-4">
+            <div
+              className="editor-wrapper flex-1 overflow-hidden rounded-lg"
+              style={{ background: 'var(--bg-secondary)' }}
             >
-              A4
-            </span>
-          </div> */}
-          <div
-            className="flex-1 overflow-auto rounded-lg p-4"
-            style={{ background: 'var(--bg-tertiary)' }}
-          >
-            <PreviewContainer ref={previewRef} />
-          </div>
-        </div>
+              <MarkdownEditor />
+            </div>
+          </ResizablePanel>
 
-        {/* 配置面板：固定宽度，小屏隐藏 */}
+          <ResizableHandle withHandle style={{ background: 'var(--border)' }} />
+
+          {/* 预览区 */}
+          <ResizablePanel
+            defaultSize={50}
+            minSize={15}
+            className="flex flex-col p-4"
+          >
+            <div
+              className="flex-1 overflow-auto rounded-lg p-4"
+              style={{ background: 'var(--bg-tertiary)' }}
+            >
+              <PreviewContainer ref={previewRef} />
+            </div>
+          </ResizablePanel>
+        </ResizablePanelGroup>
+
+        {/* 配置面板：固定宽度 */}
         <SettingsPanel open={settingsPanelOpen} />
       </div>
 
