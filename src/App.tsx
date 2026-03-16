@@ -6,7 +6,12 @@ import { SettingsPanel } from './components/settings'
 import { Background } from './components/common'
 import { Toaster } from './components/ui/sonner'
 import { useResumeStore } from './store'
-import { useReactToPrintExport, useCopyImageExport, getShareDataFromUrl, clearShareHash } from './services'
+import {
+  useReactToPrintExport,
+  useCopyImageExport,
+  getShareDataFromUrl,
+  clearShareHash,
+} from './services'
 // import { downloadFile } from './utils'
 import './index.css'
 

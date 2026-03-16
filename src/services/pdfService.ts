@@ -70,9 +70,7 @@ export function usePDFExport(ref?: RefObject<HTMLDivElement | null>, padding = 0
   const contentRef = ref ?? internalRef
 
   const handlePrint = useCallback(() => {
-    const content =
-      contentRef.current ||
-      document.getElementById('resume-preview')
+    const content = contentRef.current || document.getElementById('resume-preview')
 
     if (!content) {
       alert('未找到简历内容')

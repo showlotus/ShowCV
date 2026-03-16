@@ -2,6 +2,7 @@ import { useRef, useEffect, useState, memo } from 'react'
 import { RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
+import { useShallow } from 'zustand/react/shallow'
 import { PRESET_COLORS, FONT_PRESETS, TEMPLATE_LIST, DEFAULT_SETTINGS } from '@/utils/constants'
 import { Slider, ColorPicker } from '../common'
 import { ResumePreview } from '../preview'
@@ -231,14 +232,27 @@ function SliderRow({
 }
 
 export function SettingsPanel({ open }: { open: boolean }) {
-  const settings = useResumeStore(state => state.currentResume?.settings)
-  const templateId = useResumeStore(state => state.currentResume?.templateId ?? 'simple')
-  const previewContent = useResumeStore(state => state.currentResume?.content ?? '')
-  const updateFontSettings = useResumeStore(state => state.updateFontSettings)
-  const updateColorSettings = useResumeStore(state => state.updateColorSettings)
-  const updateSpacingSettings = useResumeStore(state => state.updateSpacingSettings)
-  const resetSettings = useResumeStore(state => state.resetSettings)
-  const setTemplate = useResumeStore(state => state.setTemplate)
+  const {
+    settings,
+    templateId,
+    previewContent,
+    updateFontSettings,
+    updateColorSettings,
+    updateSpacingSettings,
+    resetSettings,
+    setTemplate,
+  } = useResumeStore(
+    useShallow(state => ({
+      settings: state.currentResume?.settings,
+      templateId: state.currentResume?.templateId ?? 'simple',
+      previewContent: state.currentResume?.content ?? '',
+      updateFontSettings: state.updateFontSettings,
+      updateColorSettings: state.updateColorSettings,
+      updateSpacingSettings: state.updateSpacingSettings,
+      resetSettings: state.resetSettings,
+      setTemplate: state.setTemplate,
+    }))
+  )
 
   if (!settings) return null
 

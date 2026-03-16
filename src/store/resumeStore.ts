@@ -64,19 +64,21 @@ export const useResumeStore = create<ResumeStore>()(
   persist(
     (set, get) => ({
       // 初始状态：读取系统主题偏好
-      theme: (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light') as AppTheme,
+      theme: (window.matchMedia('(prefers-color-scheme: dark)').matches
+        ? 'dark'
+        : 'light') as AppTheme,
       resumes: [createDefaultResume()],
       currentResumeId: null,
       currentResume: null,
 
       // 设置主题
-      setTheme: (theme) => {
+      setTheme: theme => {
         set({ theme })
         document.documentElement.setAttribute('data-theme', theme)
       },
 
       // 创建新简历
-      createResume: (initial) => {
+      createResume: initial => {
         const newResume: ResumeItem = {
           id: generateId(),
           name: initial?.name || `简历 ${(get().resumes.length || 0) + 1}`,
@@ -87,7 +89,7 @@ export const useResumeStore = create<ResumeStore>()(
           createdAt: Date.now(),
           updatedAt: Date.now(),
         }
-        set((state) => ({
+        set(state => ({
           resumes: [newResume, ...state.resumes],
           currentResumeId: newResume.id,
           currentResume: newResume,
@@ -96,26 +98,24 @@ export const useResumeStore = create<ResumeStore>()(
       },
 
       // 删除简历
-      deleteResume: (id) => {
-        set((state) => {
-          const newResumes = state.resumes.filter((r) => r.id !== id)
+      deleteResume: id => {
+        set(state => {
+          const newResumes = state.resumes.filter(r => r.id !== id)
           // 如果删除的是当前选中的，选择第一个
           const newCurrentId =
-            state.currentResumeId === id
-              ? newResumes[0]?.id || null
-              : state.currentResumeId
+            state.currentResumeId === id ? newResumes[0]?.id || null : state.currentResumeId
           return {
             resumes: newResumes.length > 0 ? newResumes : [createDefaultResume()],
             currentResumeId: newCurrentId,
-            currentResume: newResumes.find((r) => r.id === newCurrentId) || null,
+            currentResume: newResumes.find(r => r.id === newCurrentId) || null,
           }
         })
       },
 
       // 重命名简历
       renameResume: (id, name) => {
-        set((state) => ({
-          resumes: state.resumes.map((r) =>
+        set(state => ({
+          resumes: state.resumes.map(r =>
             r.id === id ? { ...r, name, updatedAt: Date.now() } : r
           ),
           currentResume:
@@ -126,16 +126,16 @@ export const useResumeStore = create<ResumeStore>()(
       },
 
       // 选择简历
-      selectResume: (id) => {
-        set((state) => ({
+      selectResume: id => {
+        set(state => ({
           currentResumeId: id,
-          currentResume: state.resumes.find((r) => r.id === id) || null,
+          currentResume: state.resumes.find(r => r.id === id) || null,
         }))
       },
 
       // 更新当前简历内容
-      setContent: (content) => {
-        set((state) => {
+      setContent: content => {
+        set(state => {
           if (!state.currentResumeId) return state
           const updatedResume = {
             ...state.currentResume!,
@@ -144,16 +144,14 @@ export const useResumeStore = create<ResumeStore>()(
           }
           return {
             currentResume: updatedResume,
-            resumes: state.resumes.map((r) =>
-              r.id === state.currentResumeId ? updatedResume : r
-            ),
+            resumes: state.resumes.map(r => (r.id === state.currentResumeId ? updatedResume : r)),
           }
         })
       },
 
       // 设置模板
-      setTemplate: (templateId) => {
-        set((state) => {
+      setTemplate: templateId => {
+        set(state => {
           if (!state.currentResumeId) return state
           const updatedResume = {
             ...state.currentResume!,
@@ -162,16 +160,14 @@ export const useResumeStore = create<ResumeStore>()(
           }
           return {
             currentResume: updatedResume,
-            resumes: state.resumes.map((r) =>
-              r.id === state.currentResumeId ? updatedResume : r
-            ),
+            resumes: state.resumes.map(r => (r.id === state.currentResumeId ? updatedResume : r)),
           }
         })
       },
 
       // 更新字体设置
-      updateFontSettings: (font) => {
-        set((state) => {
+      updateFontSettings: font => {
+        set(state => {
           if (!state.currentResumeId) return state
           const updatedResume = {
             ...state.currentResume!,
@@ -183,16 +179,14 @@ export const useResumeStore = create<ResumeStore>()(
           }
           return {
             currentResume: updatedResume,
-            resumes: state.resumes.map((r) =>
-              r.id === state.currentResumeId ? updatedResume : r
-            ),
+            resumes: state.resumes.map(r => (r.id === state.currentResumeId ? updatedResume : r)),
           }
         })
       },
 
       // 更新颜色设置
-      updateColorSettings: (color) => {
-        set((state) => {
+      updateColorSettings: color => {
+        set(state => {
           if (!state.currentResumeId) return state
           const updatedResume = {
             ...state.currentResume!,
@@ -204,16 +198,14 @@ export const useResumeStore = create<ResumeStore>()(
           }
           return {
             currentResume: updatedResume,
-            resumes: state.resumes.map((r) =>
-              r.id === state.currentResumeId ? updatedResume : r
-            ),
+            resumes: state.resumes.map(r => (r.id === state.currentResumeId ? updatedResume : r)),
           }
         })
       },
 
       // 更新间距设置
-      updateSpacingSettings: (spacing) => {
-        set((state) => {
+      updateSpacingSettings: spacing => {
+        set(state => {
           if (!state.currentResumeId) return state
           const updatedResume = {
             ...state.currentResume!,
@@ -225,16 +217,14 @@ export const useResumeStore = create<ResumeStore>()(
           }
           return {
             currentResume: updatedResume,
-            resumes: state.resumes.map((r) =>
-              r.id === state.currentResumeId ? updatedResume : r
-            ),
+            resumes: state.resumes.map(r => (r.id === state.currentResumeId ? updatedResume : r)),
           }
         })
       },
 
       // 重置设置
       resetSettings: () => {
-        set((state) => {
+        set(state => {
           if (!state.currentResumeId) return state
           const updatedResume = {
             ...state.currentResume!,
@@ -243,9 +233,7 @@ export const useResumeStore = create<ResumeStore>()(
           }
           return {
             currentResume: updatedResume,
-            resumes: state.resumes.map((r) =>
-              r.id === state.currentResumeId ? updatedResume : r
-            ),
+            resumes: state.resumes.map(r => (r.id === state.currentResumeId ? updatedResume : r)),
           }
         })
       },
@@ -277,8 +265,8 @@ export const useResumeStore = create<ResumeStore>()(
       },
 
       // 导入数据
-      importData: (data) => {
-        set((state) => {
+      importData: data => {
+        set(state => {
           const newResume: ResumeItem = {
             id: generateId(),
             name: data.title,
@@ -298,19 +286,18 @@ export const useResumeStore = create<ResumeStore>()(
     }),
     {
       name: 'showcv-resume',
-      partialize: (state) => ({
+      partialize: state => ({
         theme: state.theme,
         resumes: state.resumes,
         currentResumeId: state.currentResumeId,
       }),
-      onRehydrateStorage: () => (state) => {
+      onRehydrateStorage: () => state => {
         if (state) {
           // 恢复主题
           document.documentElement.setAttribute('data-theme', state.theme)
           // 恢复当前简历
           if (state.currentResumeId) {
-            state.currentResume =
-              state.resumes.find((r) => r.id === state.currentResumeId) || null
+            state.currentResume = state.resumes.find(r => r.id === state.currentResumeId) || null
           } else if (state.resumes.length > 0) {
             state.currentResumeId = state.resumes[0].id
             state.currentResume = state.resumes[0]

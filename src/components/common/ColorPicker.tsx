@@ -152,7 +152,7 @@ export function ColorPicker({ label, value, presetColors, onChange, className }:
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
-            className="flex h-9 w-full cursor-pointer items-center gap-2 rounded-md border border-border px-2 text-sm transition-[color,background-color,border-color,box-shadow] hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground"
+            className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground flex h-9 w-full cursor-pointer items-center gap-2 rounded-md border px-2 text-sm transition-[color,background-color,border-color,box-shadow]"
             style={{ background: 'var(--bg-secondary)' }}
           >
             {/* 色块预览 */}
@@ -224,7 +224,7 @@ export function ColorPicker({ label, value, presetColors, onChange, className }:
             <Input
               value={hexInput}
               onChange={e => handleHexChange(e.target.value)}
-              className="h-8 uppercase focus-visible:ring-0 transition-[color,background-color,border-color,box-shadow]"
+              className="h-8 uppercase transition-[color,background-color,border-color,box-shadow] focus-visible:ring-0"
               style={{
                 background: 'var(--bg-primary)',
                 color: 'var(--fg-primary)',

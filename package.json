@@ -67,7 +67,7 @@
     "@types/node": "^24.10.1",
     "@types/react": "^19.2.7",
     "@types/react-dom": "^19.2.3",
-    "@vitejs/plugin-react": "^5.1.1",
+    "@vitejs/plugin-react": "^6.0.1",
     "code-inspector-plugin": "1.4.2",
     "eslint": "^9.39.1",
     "eslint-plugin-react-hooks": "^7.0.1",
@@ -82,6 +82,6 @@
     "typescript": "~5.9.3",
     "typescript-eslint": "^8.48.0",
     "unified": "^11.0.5",
-    "vite": "^7.3.1"
+    "vite": "^8.0.0"
   }
 }

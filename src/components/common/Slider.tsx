@@ -31,7 +31,10 @@ export function Slider({
               {label}
             </label>
           )}
-          <span className={cn('text-sm font-medium', !label && 'ml-auto')} style={{ color: 'var(--fg-primary)' }}>
+          <span
+            className={cn('text-sm font-medium', !label && 'ml-auto')}
+            style={{ color: 'var(--fg-primary)' }}
+          >
             {value}
             {unit ?? 'px'}
           </span>

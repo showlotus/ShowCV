@@ -1,7 +1,19 @@
 import { useState, useCallback, memo } from 'react'
-import { Download, Share2, Check, FileText, Sun, Moon, Github, Image, PanelLeft, PanelRight } from 'lucide-react'
+import {
+  Download,
+  Share2,
+  Check,
+  FileText,
+  Sun,
+  Moon,
+  Github,
+  Image,
+  PanelLeft,
+  PanelRight,
+} from 'lucide-react'
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
+import { useShallow } from 'zustand/react/shallow'
 import { generateShareUrl } from '@/services'
 import { cn } from '@/utils'
 import { Button } from '@/components/ui/button'
@@ -18,7 +30,12 @@ interface HeaderProps {
 
 // 深色/浅色主题切换
 const ThemeToggle = memo(() => {
-  const { theme, setTheme } = useResumeStore()
+  const { theme, setTheme } = useResumeStore(
+    useShallow(state => ({
+      theme: state.theme,
+      setTheme: state.setTheme,
+    }))
+  )
 
   return (
     <ToggleGroup
@@ -40,7 +57,14 @@ const ThemeToggle = memo(() => {
 
 ThemeToggle.displayName = 'ThemeToggle'
 
-export function Header({ onExportPDF, onCopyImage, sidebarOpen, settingsPanelOpen, onToggleSidebar, onToggleSettingsPanel }: HeaderProps) {
+export function Header({
+  onExportPDF,
+  onCopyImage,
+  sidebarOpen,
+  settingsPanelOpen,
+  onToggleSidebar,
+  onToggleSettingsPanel,
+}: HeaderProps) {
   const [copySuccess, setCopySuccess] = useState(false)
   const [copyImageSuccess, setCopyImageSuccess] = useState(false)
 
