@@ -30,8 +30,9 @@ function App() {
   // const exportData = useResumeStore(state => state.exportData)
   const createResume = useResumeStore(state => state.createResume)
 
-  const [sidebarOpen, setSidebarOpen] = useState(true)
-  const [settingsPanelOpen, setSettingsPanelOpen] = useState(true)
+  const isWideScreen = window.innerWidth > 1600
+  const [sidebarOpen, setSidebarOpen] = useState(isWideScreen)
+  const [settingsPanelOpen, setSettingsPanelOpen] = useState(isWideScreen)
 
   const previewRef = useRef<HTMLDivElement>(null)
   const { handlePrint } = useReactToPrintExport(previewRef, padding)
