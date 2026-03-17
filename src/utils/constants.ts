@@ -15,12 +15,22 @@ export const FONT_PRESETS = [
   {
     id: 'pingfang',
     name: '苹方',
-    value: '"PingFang TC", -apple-system, BlinkMacSystemFont, sans-serif',
+    value: '"PingFang SC", -apple-system, BlinkMacSystemFont, sans-serif',
   },
   {
     id: 'notosanssc',
     name: '思源黑体',
-    value: '"Noto Sans SC", "Source Han Sans SC", sans-serif',
+    value: '"Noto Sans SC", sans-serif',
+  },
+  {
+    id: 'weiruanyahei',
+    name: '微软雅黑',
+    value: '"Microsoft YaHei", "WeiRuanYaHei", sans-serif',
+  },
+  {
+    id: 'timesnewroman',
+    name: 'Times New Roman',
+    value: '"Times New Roman", Times, serif',
   },
 ]
 

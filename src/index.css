@@ -6,6 +6,39 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* 自定义字体 */
+@font-face {
+  font-family: 'PingFang SC';
+  src: url('/fonts/PingFangSC-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Noto Sans SC';
+  src: url('/fonts/NotoSansSC-Regular.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'WeiRuanYaHei';
+  src: url('/fonts/WeiRuanYaHei.woff2') format('woff2');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
+@font-face {
+  font-family: 'Times New Roman';
+  src: url('/fonts/Times New Roman.ttf') format('truetype');
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+
 * {
   box-sizing: border-box;
 }
