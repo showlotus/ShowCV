@@ -1,6 +1,6 @@
 import { useMemo, memo, useRef } from 'react'
 import type { ResumeSettings } from '@/types'
-import { TemplateRenderer } from '@/layouts'
+import { TemplateRenderer } from '@/templates'
 
 export interface ResumePreviewProps {
   templateId: string

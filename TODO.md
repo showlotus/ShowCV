@@ -38,4 +38,5 @@
   [ ] 性能优化
   [ ] 更新 README.md 文档
   [ ] 在主题颜色选择器上添加提示：如果需要实体纸张打印，请尽量选择颜色较深的主题色，效果更佳～
-  [ ] 发布 Github Pages
+  [ ] 添加 Github Actions 自动发布 Github Pages
+  [ ] 清理项目中无用文件

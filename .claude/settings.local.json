@@ -4,7 +4,11 @@
       "WebSearch",
       "Bash(npm create vite@latest . -- --template react-ts)",
       "Bash(npm create vite@5 . -- --template react-ts)",
-      "Bash(pnpm run:*)"
+      "Bash(pnpm run:*)",
+      "Bash(pnpm tsc:*)",
+      "Bash(ls -la /Users/q123/Desktop/Code/showcv/src/layouts/index.*)",
+      "Bash(pnpm exec:*)",
+      "Bash(echo \"Exit code: $?\")"
     ]
   }
 }

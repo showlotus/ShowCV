@@ -43,12 +43,13 @@ pnpm format:check # 检查代码格式
 
 ### 简历模板
 
-三个模板位于 `src/layouts/` 目录：
-- `SimpleLayout.tsx` - 经典简约风格
-- `ModernLayout.tsx` - 现代专业风格
-- `CreativeLayout.tsx` - 创意设计风格
+三个模板位于 `src/templates/` 目录：
+- `T1.tsx` - 经典简约风格
+- `T2.tsx` - 现代专业风格
+- `T3.tsx` - 创意设计风格
 
 模板使用 CSS 变量实现主题化，接收 `content`（Markdown 字符串）和 `settings`（ResumeSettings）作为 props。
+`src/templates/utils/` 下存放模板共用工具：`useCssVars`、`remarkGroupSection`、`PipeSplit`。
 
 ### PDF 导出
 
