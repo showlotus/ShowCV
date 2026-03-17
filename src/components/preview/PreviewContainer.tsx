@@ -1,7 +1,7 @@
 import { memo, useRef, useEffect, useState, useCallback } from 'react'
 import type { RefObject } from 'react'
 import { useResumeStore } from '@/store'
-import { PaginatedPreview } from './PaginatedPreview'
+import { PreviewModeRenderer } from './PreviewModeRenderer'
 import { DEFAULT_SETTINGS } from '@/utils/constants'
 
 /** A4 纸宽度像素值 (210mm ≈ 794px) */
@@ -64,7 +64,7 @@ export const PreviewContainer = memo(({ ref }: { ref?: RefObject<HTMLDivElement 
       }}
     >
       <div className="resume-preview">
-        <PaginatedPreview
+        <PreviewModeRenderer
           ref={ref}
           templateId={currentResume.templateId}
           content={currentResume.content}

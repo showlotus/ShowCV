@@ -36,7 +36,7 @@ export const DEFAULT_FONT_SETTINGS = {
 
 // 默认颜色设置
 export const DEFAULT_COLOR_SETTINGS = {
-  primary: '#2563eb',
+  primary: '#d97706',
   text: '#1f2937',
   muted: '#6b7280',
   background: '#ffffff',
@@ -44,8 +44,8 @@ export const DEFAULT_COLOR_SETTINGS = {
 
 // 默认间距设置
 export const DEFAULT_SPACING_SETTINGS = {
-  sectionGap: 24,
-  padding: 40,
+  padding: 30,
+  sectionGap: 10,
 }
 
 // 默认完整设置
@@ -69,42 +69,80 @@ export const PRESET_COLORS = [
 
 // 默认简历内容
 export const DEFAULT_CONTENT = `# 张三
-软件工程师 | 北京 | 138-xxxx-xxxx | email@example.com
+
+**前端开发工程师**
+
+所在地：杭州 | 电话: 138-xxxx-1111 | 邮箱: zhangsan@email.com  
+
+年龄：26 | 性别：男
+
+---
 
 ## 个人简介
-5年前端开发经验，专注于 React 生态系统和前端工程化。热爱技术，追求代码质量和用户体验。
+
+- 具备较强的问题分析与解决能力，能够快速定位问题根因并提供有效解决方案。
+- 热爱开源，持续关注前沿前端技术动态，积极参与开源社区，保持技术敏感度。
+- 保持技术输出习惯，在个人网站分享技术博客、阅读笔记及实践心得，沉淀技术经验。
+
+---
+
+## 技能
+
+- **基础**：HTML5, CSS3, JavaScript (ES6+), TypeScript。
+- **框架/库**：React (Redux, React Router, Next.js), Vue (Vuex, Vue Router, Nuxt.js)。
+- **工程化**：Webpack, Vite, Babel, ESLint, Prettier, Gulp。
+- **样式/UI**：Ant Design, Element UI, Tailwind CSS, SCSS, Styled Components。
+- **测试**：Jest, React Testing Library, Cypress。
+- **网络/协议**：HTTP/HTTPS, WebSocket, RESTful API, GraphQL (基础)。
+- **后端/运维**：Node.js (Express), Nginx, Docker, Git, CI/CD (GitHub Actions)。
+- **其他**：性能优化 (Lighthouse, 首屏加载), 浏览器原理, 前端安全 (XSS, CSRF), 移动端适配, 小程序开发。
+
+---
 
 ## 工作经历
 
-### 高级前端工程师 - 某科技公司
-*2021.03 - 至今*
+### XX信息技术有限公司 · 前端开发工程师  ||  2021.07 – 至今
 
-- 负责核心产品前端架构设计，主导技术选型
-- 主导微前端改造项目，将构建时间从 5 分钟优化到 1 分钟
-- 建立前端监控体系，问题发现率提升 60%
-- 指导团队成员进行代码审查和技术分享
+- 参与公司主要产品“电商X”商家后台和H5商城的开发，基于 **Vue + Element UI**，实现商品管理、订单处理等核心模块。
+- 重构旧项目，使用 **Webpack** 优化打包配置，引入 **ESLint + Prettier** 规范代码，提高可维护性。
+- 开发可复用的组件库，包括图片上传、富文本编辑器等，提升开发效率 **40%**。
+- 配合产品优化页面交互，通过懒加载、虚拟滚动等技术优化长列表渲染，页面流畅度显著提升。
 
-### 前端工程师 - 某互联网公司
-*2019.07 - 2021.02*
+---
 
-- 参与电商平台前端开发，负责商品详情页和购物车模块
-- 使用 React + TypeScript 重构老旧项目，代码可维护性显著提升
-- 优化首屏加载速度，LCP 从 3.2s 降至 1.8s
+## 项目经验
+
+### XX云管理后台  ||  2023.01 – 至今
+
+- 技术栈：React 18, TypeScript, Ant Design, Redux Toolkit, ECharts。
+- 负责整体架构设计，采用模块化组织路由和状态管理，使用 **RTK Query** 处理API请求，简化数据同步逻辑。
+- 实现动态权限控制（RBAC），根据用户角色动态生成菜单和路由，保证系统安全性。
+- 开发数据可视化大屏，使用 **ECharts** 展示实时监控数据，通过 **WebSocket** 实现数据更新。
+- 优化打包配置，启用gzip压缩、Tree Shaking，将构建产物减少 **40%**。
+
+### XX商家后台  ||  2021.07 – 2022.12
+
+- 技术栈：Vue 2, Vuex, Element UI, Webpack, Axios。
+- 独立完成商品管理模块，包括商品列表、编辑、分类选择等复杂交互，封装通用表格和表单组件，复用率提高 **60%**。
+- 基于 **ECharts** 实现销售数据统计图表，支持多维度切换，数据加载性能提升 **25%**。
+- 优化首屏加载，使用路由懒加载和CDN加速，使首屏时间从 **2.5s降至1.5s**。
+- 编写单元测试（Jest）和端到端测试（Cypress），代码覆盖率从50%提升至 **85%**。
+
+---
 
 ## 教育背景
+**XX大学** · 计算机科学与技术 · 本科  ||  2017.09 – 2021.06
 
-### 计算机科学与技术学士 - 某大学
-*2015.09 - 2019.06*
+- 主修课程：数据结构、操作系统、计算机网络、Web开发基础。
+- 毕业设计：《基于Vue的在线考试系统》获优秀毕设。
 
-- GPA: 3.8/4.0
-- 主修课程：数据结构、算法、计算机网络、操作系统
+---
 
-## 专业技能
-- **前端框架**: React, Vue, Next.js
-- **语言**: TypeScript, JavaScript, HTML, CSS
-- **工程化**: Webpack, Vite, ESLint, Prettier
-- **工具**: Git, Docker, CI/CD
-- **其他**: Node.js, GraphQL, RESTful API
+## 自我评价
+
+- 热爱技术，持续学习，关注前端前沿动态，定期输出技术博客。
+- 良好的沟通能力和团队合作精神，善于推动跨部门协作。
+- 有责任心和执行力，能独立承担复杂模块的开发与维护。
 `
 
 // localStorage 键名

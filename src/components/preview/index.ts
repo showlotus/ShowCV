@@ -1,3 +1,3 @@
 export { PreviewContainer } from './PreviewContainer'
-export { PaginatedPreview, ResumePreview } from './PaginatedPreview'
-export type { ResumePreviewProps } from './PaginatedPreview'
+export { PreviewModeRenderer, ResumePreview } from './PreviewModeRenderer'
+export type { ResumePreviewProps } from './PreviewModeRenderer'

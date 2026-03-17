@@ -1,7 +1,9 @@
 import { useState, useEffect, useRef, useCallback } from 'react'
+import { Info } from 'lucide-react'
 import { cn } from '@/utils'
 import { Input } from '@/components/ui/input'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 
 // HSV 颜色模型，H: 0-360，S: 0-1，V: 0-1
 interface HSV {
@@ -90,10 +92,19 @@ interface ColorPickerProps {
   presetColors?: { name: string; value: string }[]
   onChange: (value: string) => void
   className?: string
+  /** 悬浮提示信息，不为空时在右侧显示 info icon */
+  tooltip?: string
 }
 
 /** Sketch 风格颜色选择器，包含色域面板、色相滑条、十六进制输入和预设色板 */
-export function ColorPicker({ label, value, presetColors, onChange, className }: ColorPickerProps) {
+export function ColorPicker({
+  label,
+  value,
+  presetColors,
+  onChange,
+  className,
+  tooltip,
+}: ColorPickerProps) {
   const [open, setOpen] = useState(false)
   // 本地 HSV 状态，避免每次拖拽都触发外部更新
   const [hsv, setHsv] = useState<HSV>(() =>
@@ -152,7 +163,7 @@ export function ColorPicker({ label, value, presetColors, onChange, className }:
       <Popover open={open} onOpenChange={setOpen}>
         <PopoverTrigger asChild>
           <button
-            className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground flex h-9 w-full cursor-pointer items-center gap-2 rounded-md border px-2 text-sm transition-[color,background-color,border-color,box-shadow]"
+            className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground flex h-9 w-full cursor-pointer items-center gap-2 rounded-md border px-3 text-sm transition-[color,background-color,border-color,box-shadow]"
             style={{ background: 'var(--bg-secondary)' }}
           >
             {/* 色块预览 */}
@@ -160,7 +171,28 @@ export function ColorPicker({ label, value, presetColors, onChange, className }:
               className="h-5 w-5 shrink-0 rounded"
               style={{ backgroundColor: currentHex, border: '1px solid var(--border)' }}
             />
-            <span style={{ color: 'var(--fg-primary)' }}>{currentHex.toUpperCase()}</span>
+            <span className="flex-1 text-left" style={{ color: 'var(--fg-primary)' }}>
+              {currentHex.toUpperCase()}
+            </span>
+            {/* Tooltip 提示 icon */}
+            {tooltip && (
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info
+                    className="h-4 w-4 shrink-0 cursor-help"
+                    style={{ color: 'var(--fg-muted)' }}
+                    onClick={e => e.stopPropagation()}
+                  />
+                </TooltipTrigger>
+                <TooltipContent
+                  side="top"
+                  sideOffset={8}
+                  className="max-w-[200px] text-(--fg-secondary)"
+                >
+                  {tooltip}
+                </TooltipContent>
+              </Tooltip>
+            )}
           </button>
         </PopoverTrigger>
 

@@ -5,12 +5,10 @@ import { PreviewContainer } from './components/preview'
 import { SettingsPanel } from './components/settings'
 import { Background } from './components/common'
 import { Toaster } from './components/ui/sonner'
-import {
-  ResizablePanelGroup,
-  ResizablePanel,
-  ResizableHandle,
-} from './components/ui/resizable'
+import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './components/ui/resizable'
+import { Switch } from './components/ui/switch'
 import { useResumeStore } from './store'
+import { useShallow } from 'zustand/react/shallow'
 import {
   useReactToPrintExport,
   useCopyImageExport,
@@ -33,6 +31,12 @@ function App() {
   const isWideScreen = window.innerWidth > 1600
   const [sidebarOpen, setSidebarOpen] = useState(isWideScreen)
   const [settingsPanelOpen, setSettingsPanelOpen] = useState(isWideScreen)
+  const { previewMode, setPreviewMode } = useResumeStore(
+    useShallow(state => ({
+      previewMode: state.previewMode,
+      setPreviewMode: state.setPreviewMode,
+    }))
+  )
 
   const previewRef = useRef<HTMLDivElement>(null)
   const { handlePrint } = useReactToPrintExport(previewRef, padding)
@@ -105,6 +109,11 @@ function App() {
         >
           {/* 编辑区 */}
           <ResizablePanel defaultSize={50} minSize={20} className="flex flex-col p-4">
+            <div className="mx-3 mb-3 flex items-center justify-between">
+              <span className="text-sm font-medium" style={{ color: 'var(--fg-primary)' }}>
+                Markdown 编辑器
+              </span>
+            </div>
             <div
               className="editor-wrapper flex-1 overflow-hidden rounded-lg"
               style={{ background: 'var(--bg-secondary)' }}
@@ -116,11 +125,36 @@ function App() {
           <ResizableHandle withHandle style={{ background: 'var(--border)' }} />
 
           {/* 预览区 */}
-          <ResizablePanel
-            defaultSize={50}
-            minSize={15}
-            className="flex flex-col p-4"
-          >
+          <ResizablePanel defaultSize={50} minSize={15} className="flex flex-col p-4">
+            <div className="mx-3 mb-3 flex items-center justify-between">
+              <span className="text-sm font-medium" style={{ color: 'var(--fg-primary)' }}>
+                实时预览
+              </span>
+              <span className="inline-flex items-center gap-2">
+                <span
+                  className="cursor-pointer text-xs transition-colors"
+                  style={{
+                    color: previewMode === 'flat' ? 'var(--accent)' : 'var(--fg-muted)',
+                  }}
+                  onClick={() => setPreviewMode('flat')}
+                >
+                  平铺
+                </span>
+                <Switch
+                  checked={previewMode === 'paginated'}
+                  onCheckedChange={checked => setPreviewMode(checked ? 'paginated' : 'flat')}
+                />
+                <span
+                  className="cursor-pointer text-xs transition-colors"
+                  style={{
+                    color: previewMode === 'paginated' ? 'var(--accent)' : 'var(--fg-muted)',
+                  }}
+                  onClick={() => setPreviewMode('paginated')}
+                >
+                  分页
+                </span>
+              </span>
+            </div>
             <div
               className="flex-1 overflow-x-hidden overflow-y-auto rounded-lg p-4"
               style={{ background: 'var(--bg-tertiary)' }}

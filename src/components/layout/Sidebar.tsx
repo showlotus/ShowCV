@@ -248,7 +248,7 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
   /** 根据占用比例返回对应颜色变量 */
   const storageColor = useMemo(() => {
     if (storageUsage.percent >= 80) return 'var(--danger)'
-    if (storageUsage.percent >= 50) return '#f59e0b'
+    if (storageUsage.percent >= 50) return 'var(--warning)'
     return 'var(--success)'
   }, [storageUsage.percent])
 
@@ -280,7 +280,7 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
             className="flex h-[44px] shrink-0 items-center justify-between border-b p-3"
             style={{ borderColor: 'var(--border)' }}
           >
-            <span className="text-sm font-semibold" style={{ color: 'var(--fg-secondary)' }}>
+            <span className="text-sm font-semibold" style={{ color: 'var(--fg-primary)' }}>
               我的简历
             </span>
             <Badge
@@ -314,8 +314,12 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
                     toast.success('已复制简历')
                   }}
                   onDelete={() => {
+                    if (resumes.length <= 1) {
+                      toast.warning('至少保留一份简历')
+                      return
+                    }
                     deleteResume(resume.id)
-                    toast(`「${resume.name}」已删除`)
+                    toast.success(`「${resume.name}」已删除`)
                   }}
                 />
               </div>

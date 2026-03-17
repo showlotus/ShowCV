@@ -314,6 +314,7 @@ export function SettingsPanel({ open }: { open: boolean }) {
                 value={settings.color.primary}
                 presetColors={PRESET_COLORS}
                 onChange={v => updateColorSettings({ primary: v })}
+                tooltip="如需打印，建议选择较深主题色"
               />
             </SectionCard>
 
@@ -326,7 +327,7 @@ export function SettingsPanel({ open }: { open: boolean }) {
                   onValueChange={v => updateFontSettings({ fontFamily: v })}
                 >
                   <SelectTrigger
-                    className="focus-visible:border-border border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground h-8 w-full text-sm transition-[color,background-color,border-color,box-shadow] focus-visible:ring-0"
+                    className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground focus-visible:border-border h-8 w-full text-sm transition-[color,background-color,border-color,box-shadow] focus-visible:ring-0 focus-visible:outline-none"
                     style={{ background: 'var(--bg-secondary)' }}
                   >
                     <SelectValue />

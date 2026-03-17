@@ -20,6 +20,9 @@ interface ResumeStore {
   // 主题
   theme: AppTheme
 
+  // 预览模式：平铺 | 分页
+  previewMode: 'flat' | 'paginated'
+
   // 简历列表
   resumes: ResumeItem[]
   currentResumeId: string | null
@@ -29,6 +32,9 @@ interface ResumeStore {
 
   // Theme Actions
   setTheme: (theme: AppTheme) => void
+
+  // Preview Mode Actions
+  setPreviewMode: (mode: 'flat' | 'paginated') => void
 
   // Resume List Actions
   createResume: (initial?: Partial<Omit<ResumeItem, 'id' | 'createdAt' | 'updatedAt'>>) => string
@@ -54,7 +60,7 @@ const createDefaultResume = (): ResumeItem => ({
   id: generateId(),
   name: '我的简历',
   content: DEFAULT_CONTENT,
-  templateId: 'simple',
+  templateId: 'T1',
   settings: DEFAULT_SETTINGS,
   createdAt: Date.now(),
   updatedAt: Date.now(),
@@ -67,6 +73,8 @@ export const useResumeStore = create<ResumeStore>()(
       theme: (window.matchMedia('(prefers-color-scheme: dark)').matches
         ? 'dark'
         : 'light') as AppTheme,
+      // 预览模式默认为平铺
+      previewMode: 'flat',
       resumes: [createDefaultResume()],
       currentResumeId: null,
       currentResume: null,
@@ -77,13 +85,18 @@ export const useResumeStore = create<ResumeStore>()(
         document.documentElement.setAttribute('data-theme', theme)
       },
 
+      // 设置预览模式
+      setPreviewMode: mode => {
+        set({ previewMode: mode })
+      },
+
       // 创建新简历
       createResume: initial => {
         const newResume: ResumeItem = {
           id: generateId(),
           name: initial?.name || `简历 ${(get().resumes.length || 0) + 1}`,
           content: initial?.content ?? '',
-          templateId: initial?.templateId ?? 'simple',
+          templateId: initial?.templateId ?? 'T1',
           settings: initial?.settings ?? { ...DEFAULT_SETTINGS },
           fromShare: initial?.fromShare,
           createdAt: Date.now(),
@@ -248,7 +261,7 @@ export const useResumeStore = create<ResumeStore>()(
             title: '未命名简历',
             content: '',
             settings: DEFAULT_SETTINGS,
-            templateId: 'simple' as TemplateId,
+            templateId: 'T1' as TemplateId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
           }
@@ -288,6 +301,7 @@ export const useResumeStore = create<ResumeStore>()(
       name: 'showcv-resume',
       partialize: state => ({
         theme: state.theme,
+        previewMode: state.previewMode,
         resumes: state.resumes,
         currentResumeId: state.currentResumeId,
       }),

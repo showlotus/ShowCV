@@ -181,10 +181,10 @@ body {
 }
 
 /* Focus 可见性 */
-*:focus-visible {
+/* *:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 2px;
-}
+} */
 
 input:focus-visible {
   outline: none;
@@ -305,4 +305,42 @@ input:focus-visible {
     @apply bg-background text-foreground;
     @apply bg-background text-foreground;
   }
+}
+
+/* Sonner Toast 主题化样式 */
+[data-sonner-toaster] {
+  --normal-bg: var(--bg-secondary) !important;
+  --normal-border: var(--border) !important;
+  --normal-text: var(--fg-primary) !important;
+  --success-bg: var(--success-soft) !important;
+  --success-border: var(--success) !important;
+  --success-text: var(--success) !important;
+  --error-bg: var(--danger-soft) !important;
+  --error-border: var(--danger) !important;
+  --error-text: var(--danger) !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast] {
+  border-radius: var(--radius) !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type='success'] {
+  border-left: 3px solid var(--success) !important;
+  color: var(--success) !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type='error'] {
+  border-left: 3px solid var(--danger) !important;
+  color: var(--danger) !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type='info'] {
+  border-left: 3px solid var(--accent) !important;
+  color: var(--accent) !important;
+}
+
+[data-sonner-toaster] [data-sonner-toast][data-type='warning'] {
+  border-left: 3px solid var(--warning) !important;
+  color: var(--warning) !important;
 }
