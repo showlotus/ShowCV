@@ -29,15 +29,8 @@ export interface ResumeSettings {
   spacing: SpacingSettings
 }
 
-// 模板 ID
-export type TemplateId = 'simple' | 'modern' | 'creative'
-
-// 模板信息
-export interface TemplateInfo {
-  id: TemplateId
-  name: string
-  description: string
-}
+// 模板 ID - 从 layouts 模块导出
+export type { TemplateId } from '@/layouts'
 
 // 主题相关类型 - 从 themes 模块重新导出
 export type { AppTheme, ThemeInfo, ThemeVariables } from '@/themes'

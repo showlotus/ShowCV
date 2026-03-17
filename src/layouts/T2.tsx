@@ -5,13 +5,13 @@ import { remarkGroupSection } from './utils/remarkGroupSection'
 import { PipeSplit } from './utils/PipeSplit'
 import { useCssVars } from './utils/useCssVars'
 
-interface ModernLayoutProps {
+export interface LayoutProps {
   content: string
   settings: ResumeSettings
   className?: string
 }
 
-export function ModernLayout({ content, settings, className }: ModernLayoutProps) {
+function T2({ content, settings, className }: LayoutProps) {
   const { color, spacing } = settings
   const style = useCssVars(settings)
 
@@ -99,3 +99,5 @@ const mainComponents = (color: ResumeSettings['color']): Components => ({
   ),
   strong: ({ children }) => <strong className="font-semibold">{children}</strong>,
 })
+
+export default T2

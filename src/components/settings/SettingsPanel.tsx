@@ -3,7 +3,8 @@ import { RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
 import { useShallow } from 'zustand/react/shallow'
-import { PRESET_COLORS, FONT_PRESETS, TEMPLATE_LIST, DEFAULT_SETTINGS } from '@/utils/constants'
+import { PRESET_COLORS, FONT_PRESETS, DEFAULT_SETTINGS } from '@/utils/constants'
+import { TEMPLATE_IDS } from '@/layouts'
 import { Slider, ColorPicker } from '../common'
 import { ResumePreview } from '../preview'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
@@ -289,14 +290,14 @@ export function SettingsPanel({ open }: { open: boolean }) {
         {/* 模板 Tab */}
         <TabsContent value="template" className="mt-0 flex-1 overflow-y-auto p-3">
           <div className="grid grid-cols-2 gap-2">
-            {TEMPLATE_LIST.map(template => (
+            {TEMPLATE_IDS.map((id: TemplateId) => (
               <TemplateCard
-                key={template.id}
-                templateId={template.id as TemplateId}
-                name={template.name}
+                key={id}
+                templateId={id}
+                name={id}
                 content={previewContent}
-                isActive={templateId === template.id}
-                onSelect={() => setTemplate(template.id as TemplateId)}
+                isActive={templateId === id}
+                onSelect={() => setTemplate(id)}
               />
             ))}
           </div>

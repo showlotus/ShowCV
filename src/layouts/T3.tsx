@@ -5,13 +5,13 @@ import { remarkGroupSection } from './utils/remarkGroupSection'
 import { PipeSplit } from './utils/PipeSplit'
 import { useCssVars } from './utils/useCssVars'
 
-interface CreativeLayoutProps {
+export interface LayoutProps {
   content: string
   settings: ResumeSettings
   className?: string
 }
 
-export function CreativeLayout({ content, settings, className }: CreativeLayoutProps) {
+function T3({ content, settings, className }: LayoutProps) {
   const { color, spacing } = settings
   const style = useCssVars(settings)
 
@@ -112,3 +112,5 @@ const markdownComponents = (color: ResumeSettings['color']): Components => ({
     </div>
   ),
 })
+
+export default T3

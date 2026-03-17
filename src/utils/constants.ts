@@ -1,4 +1,4 @@
-import type { ResumeSettings, TemplateInfo } from '@/types'
+import type { ResumeSettings } from '@/types'
 
 // 主题相关 - 从 themes 模块重新导出
 export { THEME_LIST, getThemeById, applyTheme } from '@/themes'
@@ -65,25 +65,6 @@ export const PRESET_COLORS = [
   { name: '暗紫', value: '#5b21b6' },
   { name: '深红', value: '#991b1b' },
   { name: '黑色', value: '#000000' },
-]
-
-// 模板列表
-export const TEMPLATE_LIST: TemplateInfo[] = [
-  {
-    id: 'simple',
-    name: '简约',
-    description: '经典简约风格，适合传统行业',
-  },
-  {
-    id: 'modern',
-    name: '现代',
-    description: '现代专业风格，适合互联网/科技',
-  },
-  {
-    id: 'creative',
-    name: '创意',
-    description: '创意设计风格，适合设计/创意岗位',
-  },
 ]
 
 // 默认简历内容

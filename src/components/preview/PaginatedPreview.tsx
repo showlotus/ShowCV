@@ -1,9 +1,9 @@
-import { useMemo, memo, useRef, useState, useEffect } from 'react'
-import type { TemplateId, ResumeSettings } from '@/types'
-import { SimpleLayout, ModernLayout, CreativeLayout } from '@/layouts'
+import { useMemo, memo, useRef } from 'react'
+import type { ResumeSettings } from '@/types'
+import { TemplateRenderer } from '@/layouts'
 
 export interface ResumePreviewProps {
-  templateId: TemplateId
+  templateId: string
   content: string
   settings: ResumeSettings
 }
@@ -19,14 +19,7 @@ const A4_HEIGHT_PX = 297 * MM_TO_PX
  * 独立导出供缩略图等场景复用
  */
 export const ResumePreview = memo(({ templateId, content, settings }: ResumePreviewProps) => {
-  switch (templateId) {
-    case 'modern':
-      return <ModernLayout content={content} settings={settings} />
-    case 'creative':
-      return <CreativeLayout content={content} settings={settings} />
-    default:
-      return <SimpleLayout content={content} settings={settings} />
-  }
+  return <TemplateRenderer templateId={templateId} content={content} settings={settings} />
 })
 
 ResumePreview.displayName = 'ResumePreview'

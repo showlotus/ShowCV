@@ -5,13 +5,13 @@ import { remarkGroupSection } from './utils/remarkGroupSection'
 import { PipeSplit } from './utils/PipeSplit'
 import { useCssVars } from './utils/useCssVars'
 
-interface SimpleLayoutProps {
+export interface LayoutProps {
   content: string
   settings: ResumeSettings
   className?: string
 }
 
-export function SimpleLayout({ content, settings, className }: SimpleLayoutProps) {
+function T1({ content, settings, className }: LayoutProps) {
   const style = useCssVars(settings)
 
   return (
@@ -90,3 +90,5 @@ const markdownComponents: Components = {
     </a>
   ),
 }
+
+export default T1
