@@ -121,7 +121,7 @@ function App() {
             className="flex flex-col p-4"
           >
             <div
-              className="flex-1 overflow-auto rounded-lg p-4"
+              className="flex-1 overflow-x-hidden overflow-y-auto rounded-lg p-4"
               style={{ background: 'var(--bg-tertiary)' }}
             >
               <PreviewContainer ref={previewRef} />

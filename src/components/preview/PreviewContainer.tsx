@@ -1,8 +1,11 @@
-import { memo } from 'react'
+import { memo, useRef, useEffect, useState, useCallback } from 'react'
 import type { RefObject } from 'react'
 import { useResumeStore } from '@/store'
 import { PaginatedPreview } from './PaginatedPreview'
 import { DEFAULT_SETTINGS } from '@/utils/constants'
+
+/** A4 纸宽度像素值 (210mm ≈ 794px) */
+const A4_WIDTH_PX = 794
 
 /**
  * 预览容器组件，独立订阅 store
@@ -10,6 +13,26 @@ import { DEFAULT_SETTINGS } from '@/utils/constants'
  */
 export const PreviewContainer = memo(({ ref }: { ref?: RefObject<HTMLDivElement | null> }) => {
   const currentResume = useResumeStore(state => state.currentResume)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const [scale, setScale] = useState(1)
+
+  const updateScale = useCallback((width: number) => {
+    // contentRect.width 已是 content 区域宽度，无需减去 padding
+    setScale(Math.min(width / A4_WIDTH_PX, 1))
+  }, [])
+
+  useEffect(() => {
+    const container = containerRef.current?.parentElement
+    if (!container) return
+
+    const observer = new ResizeObserver(entries => {
+      const { width } = entries[0].contentRect
+      updateScale(width)
+    })
+
+    observer.observe(container)
+    return () => observer.disconnect()
+  }, [updateScale])
 
   if (!currentResume) {
     return (
@@ -30,22 +53,24 @@ export const PreviewContainer = memo(({ ref }: { ref?: RefObject<HTMLDivElement 
 
   return (
     <div
-      className="resume-preview animate-fade-in mx-auto overflow-hidden rounded-lg shadow-xs"
+      ref={containerRef}
+      className="animate-fade-in mx-auto overflow-hidden rounded-lg"
       style={{
         background: 'var(--card)',
         border: '1px solid var(--border)',
-        // 设置 A4 纸大小
-        maxWidth: '210mm',
-        minHeight: '297mm',
-        transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+        width: 794,
+        minHeight: '100%',
+        zoom: scale,
       }}
     >
-      <PaginatedPreview
-        ref={ref}
-        templateId={currentResume.templateId}
-        content={currentResume.content}
-        settings={currentResume.settings || DEFAULT_SETTINGS}
-      />
+      <div className="resume-preview">
+        <PaginatedPreview
+          ref={ref}
+          templateId={currentResume.templateId}
+          content={currentResume.content}
+          settings={currentResume.settings || DEFAULT_SETTINGS}
+        />
+      </div>
     </div>
   )
 })

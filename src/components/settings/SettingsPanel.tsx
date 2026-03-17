@@ -270,13 +270,10 @@ export function SettingsPanel({ open }: { open: boolean }) {
         background: 'var(--bg-secondary)',
       }}
     >
-      <Tabs
-        defaultValue="settings"
-        className="flex flex-1 flex-col overflow-hidden w-[300px]"
-      >
+      <Tabs defaultValue="settings" className="flex w-[300px] flex-1 flex-col overflow-hidden">
         {/* 标题栏 */}
         <div
-          className="flex h-[44px] shrink-0 items-center border-b"
+          className="flex h-[44px] shrink-0 items-center border-b px-1"
           style={{ borderColor: 'var(--border)' }}
         >
           <TabsList variant="line">
