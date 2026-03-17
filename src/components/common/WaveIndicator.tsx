@@ -4,6 +4,8 @@ import { animate } from 'animejs'
 const CENTER_X = 4
 const MAX_AMPLITUDE = 3
 const PERIOD = 10
+/** 使曲线关于垂直中点（y = 16）上下对称的相位偏移量，即 5π - 16 * (2π / PERIOD) */
+const PHASE_OFFSET = 5 * Math.PI - 16 * ((2 * Math.PI) / PERIOD)
 
 /** strokeLinecap="round" 的帽高 = strokeWidth / 2 */
 const CAP = 1.5
@@ -14,9 +16,9 @@ const END_Y = 32 - CAP
 function generatePath(amplitude: number): string {
   const freq = (Math.PI * 2) / PERIOD
   const step = 0.5
-  let d = `M${(CENTER_X + amplitude * Math.sin(START_Y * freq)).toFixed(2)},${START_Y}`
+  let d = `M${(CENTER_X + amplitude * Math.sin(START_Y * freq + PHASE_OFFSET)).toFixed(2)},${START_Y}`
   for (let y = START_Y + step; y <= END_Y; y += step) {
-    const x = CENTER_X + amplitude * Math.sin(y * freq)
+    const x = CENTER_X + amplitude * Math.sin(y * freq + PHASE_OFFSET)
     d += ` L${x.toFixed(1)},${y.toFixed(1)}`
   }
   return d
