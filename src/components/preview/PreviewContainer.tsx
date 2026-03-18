@@ -56,8 +56,8 @@ export const PreviewContainer = memo(({ ref }: { ref?: RefObject<HTMLDivElement 
       ref={containerRef}
       className="animate-fade-in mx-auto overflow-hidden rounded-lg"
       style={{
-        background: 'var(--card)',
-        border: '1px solid var(--border)',
+        // background: 'var(--card)',
+        // border: '1px solid var(--border)',
         width: 794,
         minHeight: '100%',
         zoom: scale,

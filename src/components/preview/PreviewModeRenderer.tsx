@@ -107,12 +107,39 @@ const PaginatedPreview = ({
 
         // 为每个 resume-section 标记所属页码
         const sections = container.querySelectorAll('.resume-section')
-        sections.forEach((section) => {
+
+        // 第一步：清除所有旧的伪元素属性
+        sections.forEach(section => {
+          const el = section as HTMLElement
+          el.style.removeProperty('--page-break-offset')
+          el.style.removeProperty('--page-break-gap')
+          el.removeAttribute('data-page-break')
+        })
+
+        // 强制 reflow，确保清除后的布局已更新
+        void container.offsetHeight
+
+        // 第二步：重新计算并设置
+        let lastPageNum = 0
+        sections.forEach(section => {
           const el = section as HTMLElement
           // offsetTop 是相对于 offsetParent 的距离，需要减去 padding
           const offsetTop = el.offsetTop - padding
           const pageNum = Math.floor(offsetTop / pageContentHeight) + 1
           el.setAttribute('data-page', String(pageNum))
+
+          // 给每页（除第一页外）的第一个 section 添加分页伪元素
+          if (pageNum > 1 && pageNum !== lastPageNum) {
+            const pageBreakOffset = A4_HEIGHT_PX - offsetTop + padding
+            // 高度减去半个间隙，让伪元素从虚线下方开始
+            const adjustedOffset = pageBreakOffset - PAGE_GAP / 2
+            // el.style.setProperty('--page-break-offset', `${adjustedOffset}px`)
+            // el.style.setProperty('--page-break-gap', `${PAGE_GAP}px`)
+            // el.style.setProperty('--preview-padding', `${padding}px`)
+            el.setAttribute('data-page-break', 'true')
+          }
+
+          lastPageNum = pageNum
         })
       })
     }
@@ -125,31 +152,18 @@ const PaginatedPreview = ({
   }, [content, settings, padding])
 
   return (
-    <div ref={(node: HTMLDivElement | null) => {
-      // 同时设置内部 ref 和外部 ref
-      ;(containerRef as React.RefObject<HTMLDivElement | null>).current = node
-      if (typeof ref === 'function') {
-        ref(node)
-      } else if (ref) {
-        ;(ref as React.RefObject<HTMLDivElement | null>).current = node
-      }
-    }} className="print-preview-container">
-      {/* 分页虚线 */}
-      {pageBreaks.map((top, index) => (
-        <div
-          key={index}
-          className="page-break-line"
-          style={{
-            position: 'absolute',
-            left: 0,
-            right: 0,
-            top: top + PAGE_GAP / 2,
-            borderTop: '2px dashed #94a3b8',
-            pointerEvents: 'none',
-            zIndex: 10,
-          }}
-        />
-      ))}
+    <div
+      ref={(node: HTMLDivElement | null) => {
+        // 同时设置内部 ref 和外部 ref
+        ;(containerRef as React.RefObject<HTMLDivElement | null>).current = node
+        if (typeof ref === 'function') {
+          ref(node)
+        } else if (ref) {
+          ;(ref as React.RefObject<HTMLDivElement | null>).current = node
+        }
+      }}
+      className="print-preview-container"
+    >
       <div
         className="preview-page rounded-lg bg-white"
         style={{
@@ -157,6 +171,22 @@ const PaginatedPreview = ({
           position: 'relative',
         }}
       >
+        {/* 分页虚线 - 放在 preview-page 内部，限制在预览区域 */}
+        {pageBreaks.map((top, index) => (
+          <div
+            key={index}
+            className="page-break-line"
+            style={{
+              position: 'absolute',
+              left: 0,
+              right: 0,
+              top: top + PAGE_GAP / 2,
+              borderTop: '2px dashed #94a3b8',
+              pointerEvents: 'none',
+              zIndex: 10,
+            }}
+          />
+        ))}
         <ResumePreview
           templateId={templateId}
           content={content}

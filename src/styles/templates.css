@@ -40,6 +40,19 @@
   margin-bottom: var(--section-gap, 24px);
 }
 
+/* 跨页 section 的伪元素，实现视觉分页效果 */
+.resume-section[data-page-break="true"]::before {
+  content: '';
+  display: block;
+  /* 高度：从当前位置到虚线的距离 */
+  height: var(--page-break-offset, 0);
+  /* 预览区背景色 */
+  background-color: var(--bg-tertiary);
+  /* 向左右延伸，遮住预览区的 padding */
+  margin-left: calc(-1 * var(--preview-padding, 0));
+  margin-right: calc(-1 * var(--preview-padding, 0));
+}
+
 .resume-template h1,
 .resume-template h2,
 .resume-template h3,
