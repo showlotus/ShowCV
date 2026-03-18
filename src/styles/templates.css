@@ -216,3 +216,17 @@
   border: 2px solid white;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
+
+/* 撑开每页剩余高度 - 视觉预览用 */
+.resume-section[data-page-last="true"]::after {
+  content: '';
+  display: block;
+  height: var(--page-remaining-height, 0);
+}
+
+/* 打印时隐藏撑开效果，避免产生空白 */
+@media print {
+  .resume-section[data-page-last="true"]::after {
+    display: none;
+  }
+}
