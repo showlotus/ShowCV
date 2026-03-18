@@ -1,6 +1,6 @@
 # ShowCV
 
-> 基于 Markdown 的在线简历编辑器，支持实时预览、多种模板、PDF 导出和链接分享。
+> 基于 Markdown 的在线简历编辑器，支持实时预览、多种模板、PDF 导出和链接分享。（简历优化可参考 [job-prep-skills](https://github.com/showlotus/job-prep-skills)，含前端面试模拟等实用技能）
 
 ## ✨ 功能特性
 
@@ -31,17 +31,17 @@ pnpm build
 
 ## 📦 技术栈
 
-| 分类 | 依赖 |
-|------|------|
-| 框架 | React 19 + TypeScript + Vite |
-| 样式 | Tailwind CSS v4 + shadcn/ui |
-| 编辑器 | CodeMirror 6 |
-| Markdown 渲染 | react-markdown + remark-gfm |
-| 状态管理 | Zustand（含 localStorage 持久化） |
-| PDF 导出 | react-to-print |
-| 截图 | modern-screenshot |
-| 分享压缩 | fflate (zlib) |
-| 图标 | lucide-react |
+| 分类          | 依赖                              |
+| ------------- | --------------------------------- |
+| 框架          | React 19 + TypeScript + Vite      |
+| 样式          | Tailwind CSS v4 + shadcn/ui       |
+| 编辑器        | CodeMirror 6                      |
+| Markdown 渲染 | react-markdown + remark-gfm       |
+| 状态管理      | Zustand（含 localStorage 持久化） |
+| PDF 导出      | react-to-print                    |
+| 截图          | modern-screenshot                 |
+| 分享压缩      | fflate (zlib)                     |
+| 图标          | lucide-react                      |
 
 ## 📁 项目结构
 
@@ -65,10 +65,10 @@ src/
 
 ## 🎨 简历模板
 
-| 模板 ID | 名称 | 适合岗位 |
-|---------|------|----------|
-| `simple` | 简约 | 传统行业 |
-| `modern` | 现代 | 互联网 / 科技 |
+| 模板 ID    | 名称 | 适合岗位        |
+| ---------- | ---- | --------------- |
+| `simple`   | 简约 | 传统行业        |
+| `modern`   | 现代 | 互联网 / 科技   |
 | `creative` | 创意 | 设计 / 创意岗位 |
 
 ## ⚙️ 样式配置项
