@@ -4,7 +4,7 @@ export const Background = memo(() => {
   return (
     <>
       {/* 网格背景 */}
-      <div className="bg-grid bg-grid-animated pointer-events-none fixed inset-0" />
+      <div className="bg-grid bg-grid-animated pointer-events-none fixed inset-0 -z-1" />
 
       {/* 发光球体 */}
       <div

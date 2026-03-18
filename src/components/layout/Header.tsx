@@ -3,7 +3,6 @@ import {
   Download,
   Share2,
   Check,
-  FileText,
   Sun,
   Moon,
   Github,
@@ -111,12 +110,7 @@ export function Header({
     >
       {/* Logo */}
       <div className="flex items-center gap-3">
-        <div
-          className="flex h-9 w-9 items-center justify-center rounded-lg"
-          style={{ background: 'var(--accent)' }}
-        >
-          <FileText className="h-5 w-5" style={{ color: 'var(--accent-fg)' }} />
-        </div>
+        <img src="/icon.png" alt="ShowCV" className="h-9 w-9" />
         <div className="hidden sm:block">
           <h1 className="font-display text-lg font-bold" style={{ color: 'var(--fg-primary)' }}>
             ShowCV
