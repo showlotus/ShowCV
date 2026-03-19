@@ -33,41 +33,42 @@ function T1({ content, settings, className }: LayoutProps) {
 // Markdown 渲染组件
 const markdownComponents: Components = {
   h1: ({ children }) => (
-    <h1
-      className="resume-title mb-4 border-b-2 pb-2"
-      style={{ borderColor: 'var(--primary-color)' }}
+    <p
+      className="mb-4 border-b-2 pb-2 font-bold"
+      style={{ borderColor: 'var(--primary-color)', fontSize: 'var(--title-size)' }}
     >
       {children}
-    </h1>
+    </p>
   ),
   h2: ({ children }) => (
-    <section className="resume-section">
-      <h2 className="section-title flex items-center gap-2">
-        <span
-          className="h-5 w-1.5 rounded-sm"
-          style={{ backgroundColor: 'var(--primary-color)' }}
-        ></span>
-        <PipeSplit>{children}</PipeSplit>
-      </h2>
-    </section>
+    <p
+      className="mt-6 mb-3 flex items-center gap-2 font-semibold"
+      style={{ fontSize: 'var(--heading-size)' }}
+    >
+      <span
+        className="h-5 w-1.5 rounded-sm"
+        style={{ backgroundColor: 'var(--primary-color)' }}
+      ></span>
+      <PipeSplit>{children}</PipeSplit>
+    </p>
   ),
   h3: ({ children }) => (
-    <h3 className="subsection-title mb-1.5 font-semibold">
+    <p className="mb-1.5 font-semibold" style={{ fontSize: 'var(--body-size)' }}>
       <PipeSplit>{children}</PipeSplit>
-    </h3>
+    </p>
   ),
-  // 自定义 section 节点渲染，包裹 h3 及其子内容
+  // 自定义 section 节点渲染
   section: ({ children, className }) => (
-    <section className={`resume-section ${className || ''}`}>{children}</section>
+    <section className={`resume-section ${className || ''}`}>
+      {children}
+    </section>
   ),
   p: ({ children }) => (
     <p className="resume-paragraph mb-2">
       <PipeSplit>{children}</PipeSplit>
     </p>
   ),
-  ul: ({ children }) => (
-    <ul className="resume-list ml-2 list-inside list-disc space-y-1">{children}</ul>
-  ),
+  ul: ({ children }) => <ul className="resume-list list-inside list-disc space-y-1">{children}</ul>,
   ol: ({ children }) => (
     <ol className="resume-list ml-2 list-inside list-decimal space-y-1">{children}</ol>
   ),

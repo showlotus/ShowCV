@@ -69,7 +69,11 @@ const markdownComponents = (color: ResumeSettings['color']): Components => ({
       <PipeSplit>{children}</PipeSplit>
     </h3>
   ),
-  section: ({ children }) => <section className="resume-section">{children}</section>,
+  section: ({ children }) => (
+    <section className="resume-section" style={{ marginBottom: 'var(--section-gap)' }}>
+      {children}
+    </section>
+  ),
   p: ({ children }) => (
     <p className="mb-2 text-sm leading-relaxed">
       <PipeSplit>{children}</PipeSplit>
