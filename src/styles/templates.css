@@ -37,7 +37,7 @@
 .resume-template .resume-section {
   break-inside: avoid;
   page-break-inside: avoid;
-  margin-bottom: var(--section-gap, 24px);
+  padding-bottom: var(--section-gap, 10px);
 }
 
 /* 跨页 section 的伪元素，实现视觉分页效果 */

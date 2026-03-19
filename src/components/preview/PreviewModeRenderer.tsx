@@ -1,4 +1,4 @@
-import { useMemo, memo, useRef, useState, useEffect } from 'react'
+import { useMemo, memo, useRef, useState, useEffect, useCallback } from 'react'
 import type { ResumeSettings } from '@/types'
 import { TemplateRenderer } from '@/templates'
 import { useResumeStore } from '@/store'
@@ -92,110 +92,117 @@ const PaginatedPreview = ({
     [settings]
   )
 
+  // 抽取计算逻辑为独立函数
+  const calculatePageLayout = useCallback(
+    (container: HTMLElement) => {
+      const height = container.offsetHeight
+      const breaks = calcPageBreaks(height)
+      setPageBreaks(breaks)
+
+      // 每页可用内容高度 = A4 高度 - 上下 padding
+      const pageContentHeight = A4_HEIGHT_PX - padding * 2
+
+      // 只选择最外层的 resume-section（直接子元素），避免选择嵌套的内层 section
+      const innerContainer = container.querySelector('#resume-preview') || container
+      const sections = innerContainer.querySelectorAll(':scope > .resume-section')
+
+      // 清除旧属性
+      sections.forEach(section => {
+        const el = section as HTMLElement
+        el.removeAttribute('data-page-last')
+      })
+
+      // 标记页码
+      let lastPageNum = 0
+      sections.forEach(section => {
+        const el = section as HTMLElement
+        const offsetTop = el.offsetTop - padding
+        const pageNum = Math.floor(offsetTop / pageContentHeight) + 1
+        el.setAttribute('data-page', String(pageNum))
+
+        if (pageNum > 1 && pageNum !== lastPageNum) {
+          el.setAttribute('data-page-break', 'true')
+        }
+
+        lastPageNum = pageNum
+      })
+
+      // 识别每页最后一个 section
+      const pageLastSections = new Map<number, HTMLElement>()
+      sections.forEach(section => {
+        const el = section as HTMLElement
+        const pageNum = parseInt(el.getAttribute('data-page') || '1', 10)
+        pageLastSections.set(pageNum, el)
+      })
+
+      // 计算并更新剩余高度
+      const updates: { el: HTMLElement; height: number }[] = []
+
+      pageLastSections.forEach(el => {
+        const sectionBottom = el.offsetTop + el.offsetHeight
+        const pageNum = parseInt(el.getAttribute('data-page') || '1', 10)
+        const pageBreakLineTop = pageNum * A4_HEIGHT_PX
+        const remainingHeight = pageBreakLineTop - sectionBottom
+
+        updates.push({ el, height: Math.max(0, Math.ceil(remainingHeight)) })
+      })
+
+      updates.forEach(({ el, height }) => {
+        el.style.setProperty('--page-remaining-height', `${height}px`)
+        el.setAttribute('data-page-last', 'true')
+      })
+    },
+    [padding]
+  )
+
+  // 防止同一帧内重复计算
+  const rafIdRef = useRef<number>(0)
+  const scheduledRef = useRef(false)
+
+  const scheduleUpdate = useCallback(
+    (container: HTMLElement) => {
+      if (scheduledRef.current) return
+      scheduledRef.current = true
+
+      cancelAnimationFrame(rafIdRef.current)
+      rafIdRef.current = requestAnimationFrame(() => {
+        requestAnimationFrame(() => {
+          scheduledRef.current = false
+          calculatePageLayout(container)
+        })
+      })
+    },
+    [calculatePageLayout]
+  )
+
+  // Effect 1: ResizeObserver - 监听容器尺寸变化
   useEffect(() => {
     const container = containerRef.current
     if (!container) return
 
-    let rafId: number
-
-    const update = () => {
-      // 清除之前的待执行任务
-      cancelAnimationFrame(rafId)
-
-      // 使用双重 rAF 确保布局完成后再计算
-      rafId = requestAnimationFrame(() => {
-        requestAnimationFrame(() => {
-          const height = container.offsetHeight
-          const breaks = calcPageBreaks(height)
-          setPageBreaks(breaks)
-
-          // 每页可用内容高度 = A4 高度 - 上下 padding
-          const pageContentHeight = A4_HEIGHT_PX - padding * 2
-
-          // 只选择最外层的 resume-section（直接子元素），避免选择嵌套的内层 section
-          const innerContainer = container.querySelector('#resume-preview') || container
-          const sections = innerContainer.querySelectorAll(':scope > .resume-section')
-
-          // 第一步：先清除 data-page-last，稍后重新设置
-          // 但不清除 --page-remaining-height，避免伪元素高度跳变
-          sections.forEach(section => {
-            const el = section as HTMLElement
-            el.removeAttribute('data-page-last')
-          })
-
-          // 第二步：标记页码（基于 section 顶部位置）
-          let lastPageNum = 0
-          sections.forEach(section => {
-            const el = section as HTMLElement
-            const offsetTop = el.offsetTop - padding
-            const pageNum = Math.floor(offsetTop / pageContentHeight) + 1
-            el.setAttribute('data-page', String(pageNum))
-
-            if (pageNum > 1 && pageNum !== lastPageNum) {
-              el.setAttribute('data-page-break', 'true')
-            }
-
-            lastPageNum = pageNum
-          })
-
-          // 第三步：识别每页最后一个 section
-          // 直接取每个 data-page 的最后一个 section
-          const pageLastSections = new Map<number, HTMLElement>()
-          sections.forEach(section => {
-            const el = section as HTMLElement
-            const pageNum = parseInt(el.getAttribute('data-page') || '1', 10)
-            // 后面的会覆盖，最终保留该页最后一个
-            pageLastSections.set(pageNum, el)
-          })
-
-          // 先计算所有新值，再统一更新，减少重排次数
-          const updates: { el: HTMLElement; height: number }[] = []
-
-          pageLastSections.forEach(el => {
-            // section 的 offsetTop 是相对于 #resume-preview 容器的
-            // 获取 computedStyle 以读取 margin-bottom
-            const computedStyle = window.getComputedStyle(el)
-            const marginBottom = parseFloat(computedStyle.marginBottom) || 0
-
-            // section 底部（不包含 margin）相对于 preview-page 的位置
-            const sectionBottom = el.offsetTop + el.offsetHeight // + padding
-
-            // 计算该 section 所在页的分页线位置
-            // 虚线位置 = pageNum * A4_HEIGHT_PX（相对于 preview-page 顶部）
-            const pageNum = parseInt(el.getAttribute('data-page') || '1', 10)
-            const pageBreakLineTop = pageNum * A4_HEIGHT_PX
-
-            // ::after 需要撑开的高度 = 虚线位置 - section 底部（不包含 margin）
-            // 这样 ::after 会从 section 内容底部开始，覆盖 margin-bottom 区域并延伸到虚线
-            const remainingHeight = pageBreakLineTop - sectionBottom
-
-            // DEBUG
-            console.log(
-              `[Page ${pageNum}] offsetTop: ${el.offsetTop}, height: ${el.offsetHeight}, marginBottom: ${marginBottom}, padding: ${padding}, sectionBottom: ${sectionBottom}, pageBreakLineTop: ${pageBreakLineTop}, remainingHeight: ${remainingHeight}`
-            )
-
-            // 始终设置，负数时设为 0
-            updates.push({ el, height: Math.max(0, Math.ceil(remainingHeight)) })
-          })
-
-          // 统一更新 DOM
-          updates.forEach(({ el, height }) => {
-            el.style.setProperty('--page-remaining-height', `${height}px`)
-            el.setAttribute('data-page-last', 'true')
-          })
-        })
-      })
-    }
-
-    const observer = new ResizeObserver(update)
+    const observer = new ResizeObserver(() => scheduleUpdate(container))
     observer.observe(container)
-    update()
+    scheduleUpdate(container) // 首次渲染
 
     return () => {
       observer.disconnect()
-      cancelAnimationFrame(rafId)
+      cancelAnimationFrame(rafIdRef.current)
     }
-  }, [content, settings, padding])
+  }, [scheduleUpdate])
+
+  // Effect 2: settings 变化时触发
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    scheduleUpdate(container)
+  }, [settings, scheduleUpdate])
+
+  // Effect 3: content 变化时触发
+  useEffect(() => {
+    const container = containerRef.current
+    if (!container) return
+    scheduleUpdate(container)
+  }, [content, scheduleUpdate])
 
   return (
     <div
