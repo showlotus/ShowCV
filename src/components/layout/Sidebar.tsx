@@ -1,9 +1,10 @@
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from 'react'
-import { Plus, X, Copy } from 'lucide-react'
+import { Plus, X, Copy, Pencil } from 'lucide-react'
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
 import { useShallow } from 'zustand/react/shallow'
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
@@ -30,8 +31,15 @@ const ResumeTab = memo(
     const [isEditing, setIsEditing] = useState(false)
     const [editName, setEditName] = useState(resume.name)
     const [isHovered, setIsHovered] = useState(false)
+    const [isTruncated, setIsTruncated] = useState(false)
     const [open, setOpen] = useState(false)
     const inputRef = useRef<HTMLInputElement>(null)
+    const nameRef = useRef<HTMLDivElement>(null)
+
+    const checkTruncated = useCallback(() => {
+      const el = nameRef.current
+      if (el) setIsTruncated(el.scrollWidth > el.clientWidth)
+    }, [])
 
     useEffect(() => {
       if (isEditing) {
@@ -85,7 +93,7 @@ const ResumeTab = memo(
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <WaveIndicator isActive={isActive} isAnimating={isEditing} />
+        <WaveIndicator isActive={isActive} isEditing={isEditing} />
 
         {/* 内容 */}
         <div className="relative min-w-0 flex-1">
@@ -97,12 +105,21 @@ const ResumeTab = memo(
               pointerEvents: isEditing ? 'none' : 'auto',
             }}
           >
-            <div
-              className="resume-name truncate text-sm font-medium"
-              style={{ color: 'var(--fg-primary)' }}
-            >
-              {resume.name}
-            </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <div
+                    ref={nameRef}
+                    className="resume-name truncate text-sm font-medium"
+                    style={{ color: 'var(--fg-primary)' }}
+                    onMouseEnter={checkTruncated}
+                  >
+                    {resume.name}
+                  </div>
+                </TooltipTrigger>
+                {isTruncated && <TooltipContent side="right">{resume.name}</TooltipContent>}
+              </Tooltip>
+            </TooltipProvider>
             <div className="mt-1 flex items-center justify-between gap-1.5">
               <span className="truncate text-xs" style={{ color: 'var(--fg-muted)' }}>
                 {formatDate(resume.updatedAt)}
@@ -143,15 +160,27 @@ const ResumeTab = memo(
           </div>
         </div>
 
-        {/* 复制按钮 + 删除按钮 + Shadcn Popover 气泡确认 */}
+        {/* 重命名按钮 + 复制按钮 + 删除按钮 + Shadcn Popover 气泡确认 */}
         <div
           className="flex shrink-0 items-center gap-1 overflow-hidden transition-all duration-200"
           style={{
             opacity: isEditing ? 0 : 1,
-            maxWidth: isEditing ? 0 : 60,
+            maxWidth: isEditing ? 0 : 84,
             pointerEvents: isEditing ? 'none' : 'auto',
           }}
         >
+          <button
+            className="hover:bg-accent flex h-6 w-6 cursor-pointer items-center justify-center rounded transition-all"
+            style={{ opacity: isHovered ? 1 : 0 }}
+            tabIndex={isHovered ? 0 : -1}
+            aria-label={`重命名简历 ${resume.name}`}
+            onClick={e => {
+              e.stopPropagation()
+              handleDoubleClick()
+            }}
+          >
+            <Pencil className="h-3.5 w-3.5" style={{ color: 'var(--fg-muted)' }} />
+          </button>
           <button
             className="hover:bg-accent flex h-6 w-6 cursor-pointer items-center justify-center rounded transition-all"
             style={{ opacity: isHovered ? 1 : 0 }}

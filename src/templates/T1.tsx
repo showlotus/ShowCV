@@ -6,6 +6,30 @@ import { remarkGroupSection } from './utils/remarkGroupSection'
 import { PipeSplit } from './utils/PipeSplit'
 import { useCssVars } from './utils/useCssVars'
 
+// T1 模板专属默认配置
+export const T1_DEFAULT_SETTINGS: ResumeSettings = {
+  font: {
+    h1TitleSize: 24,
+    h2TitleSize: 16,
+    h3TitleSize: 12,
+    bodySize: 12,
+    smallSize: 12,
+    lineHeight: 12,
+    fontFamily:
+      '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif',
+  },
+  color: {
+    primary: '#d97706',
+  },
+  spacing: {
+    padding: 40,
+    h2TitleTopGap: 10,
+    h2TitleBottomGap: 10,
+    h3TitleTopGap: 4,
+    h3TitleBottomGap: 4,
+  },
+}
+
 export interface LayoutProps {
   content: string
   settings: ResumeSettings

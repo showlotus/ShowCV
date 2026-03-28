@@ -96,7 +96,7 @@ export function AvatarUpload({ avatar, onUpdateAvatar, onRemoveAvatar }: AvatarU
       {/* 头像预览 / 上传区域 */}
       <div
         onClick={() => inputRef.current?.click()}
-        className="hover:border-accent-foreground flex cursor-pointer items-center gap-3 rounded-lg border border-dashed p-3 transition-colors"
+        className="hover:border-accent-foreground hover:text-accent-foreground flex cursor-pointer items-center gap-3 rounded-lg border border-dashed p-3 transition-colors"
         style={{ background: 'var(--bg-secondary)' }}
       >
         {avatar?.src ? (
@@ -110,11 +110,14 @@ export function AvatarUpload({ avatar, onUpdateAvatar, onRemoveAvatar }: AvatarU
           </div>
         )}
         <div className="flex-1">
-          <div className="text-xs font-medium" style={{ color: 'var(--fg-primary)' }}>
+          <div
+            className="text-xs font-medium"
+            // style={{ color: 'var(--fg-primary)' }}
+          >
             {avatar?.src ? '点击更换头像' : '点击上传头像'}
           </div>
           <div className="text-xs" style={{ color: 'var(--fg-muted)' }}>
-            支持 JPG、PNG
+            {/* 支持 JPG、PNG */}
           </div>
         </div>
         {avatar?.src && (

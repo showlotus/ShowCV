@@ -12,9 +12,9 @@ export interface FontSettings {
 // 颜色设置
 export interface ColorSettings {
   primary: string // 主题色
-  text: string // 正文颜色
-  muted: string // 辅助文字
-  background: string // 背景
+  text?: string // 正文颜色
+  muted?: string // 辅助文字
+  background?: string // 背景
 }
 
 // 间距设置

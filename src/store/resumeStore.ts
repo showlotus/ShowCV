@@ -1,8 +1,19 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { ResumeSettings, TemplateId, ResumeData, AppTheme } from '@/types'
-import { DEFAULT_SETTINGS, DEFAULT_CONTENT, normalizeResumeSettings } from '@/utils/constants'
+import { DEFAULT_CONTENT, normalizeResumeSettings } from '@/utils/constants'
 import { generateId } from '@/utils'
+import { T1_DEFAULT_SETTINGS } from '@/templates/T1'
+
+// 获取模板专属默认配置
+function getTemplateDefaults(templateId: TemplateId): ResumeSettings | null {
+  switch (templateId) {
+    case 'T1':
+      return T1_DEFAULT_SETTINGS
+    default:
+      return null
+  }
+}
 
 // 单个简历的数据结构
 export interface ResumeItem {
@@ -63,7 +74,7 @@ const createDefaultResume = (): ResumeItem => ({
   name: '我的简历',
   content: DEFAULT_CONTENT,
   templateId: 'T1',
-  settings: normalizeResumeSettings(DEFAULT_SETTINGS),
+  settings: normalizeResumeSettings(null, getTemplateDefaults('T1')),
   createdAt: Date.now(),
   updatedAt: Date.now(),
 })
@@ -99,7 +110,10 @@ export const useResumeStore = create<ResumeStore>()(
           name: initial?.name || `简历 ${(get().resumes.length || 0) + 1}`,
           content: initial?.content ?? '',
           templateId: initial?.templateId ?? 'T1',
-          settings: normalizeResumeSettings(initial?.settings),
+          settings: normalizeResumeSettings(
+            initial?.settings,
+            getTemplateDefaults(initial?.templateId ?? 'T1')
+          ),
           fromShare: initial?.fromShare,
           createdAt: Date.now(),
           updatedAt: Date.now(),
@@ -290,7 +304,10 @@ export const useResumeStore = create<ResumeStore>()(
           if (!state.currentResumeId) return state
           const updatedResume = {
             ...state.currentResume!,
-            settings: normalizeResumeSettings(DEFAULT_SETTINGS),
+            settings: normalizeResumeSettings(
+              null,
+              getTemplateDefaults(state.currentResume!.templateId)
+            ),
             updatedAt: Date.now(),
           }
           return {
@@ -309,7 +326,7 @@ export const useResumeStore = create<ResumeStore>()(
             id: generateId(),
             title: '未命名简历',
             content: '',
-            settings: normalizeResumeSettings(DEFAULT_SETTINGS),
+            settings: normalizeResumeSettings(null, getTemplateDefaults('T1')),
             templateId: 'T1' as TemplateId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -334,7 +351,7 @@ export const useResumeStore = create<ResumeStore>()(
             name: data.title,
             content: data.content,
             templateId: data.templateId,
-            settings: normalizeResumeSettings(data.settings),
+            settings: normalizeResumeSettings(data.settings, getTemplateDefaults(data.templateId)),
             createdAt: Date.now(),
             updatedAt: Date.now(),
           }
@@ -358,7 +375,7 @@ export const useResumeStore = create<ResumeStore>()(
         if (state) {
           state.resumes = state.resumes.map(resume => ({
             ...resume,
-            settings: normalizeResumeSettings(resume.settings),
+            settings: normalizeResumeSettings(resume.settings, getTemplateDefaults(resume.templateId)),
           }))
           // 恢复主题
           document.documentElement.setAttribute('data-theme', state.theme)

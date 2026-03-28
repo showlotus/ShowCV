@@ -3,7 +3,7 @@ import type { RefObject } from 'react'
 import { useResumeStore } from '@/store'
 import { PreviewModeRenderer } from './PreviewModeRenderer'
 import { A4_WIDTH_PX } from './usePaginatedLayout'
-import { DEFAULT_SETTINGS } from '@/utils/constants'
+import { T1_DEFAULT_SETTINGS } from '@/templates/T1'
 
 /**
  * 预览容器组件，独立订阅 store
@@ -54,7 +54,7 @@ export const PreviewContainer = memo(
     const rendererProps = {
       templateId: currentResume.templateId,
       content: currentResume.content,
-      settings: currentResume.settings || DEFAULT_SETTINGS,
+      settings: currentResume.settings || T1_DEFAULT_SETTINGS,
       zoom: scale,
     }
 

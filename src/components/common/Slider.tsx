@@ -23,7 +23,7 @@ export function Slider({
   className,
 }: SliderProps) {
   return (
-    <div className={cn('space-y-1.5', className)}>
+    <div className={cn('min-w-0 flex-1 space-y-1.5', className)}>
       {(label || unit !== undefined) && (
         <div className="flex items-center justify-between">
           {label && (

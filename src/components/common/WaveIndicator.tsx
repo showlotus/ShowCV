@@ -26,25 +26,25 @@ function generatePath(amplitude: number): string {
 
 /** 波浪指示条：正常态为直线，编辑态平滑过渡为静态正弦曲线 */
 export const WaveIndicator = memo(
-  ({ isActive, isAnimating }: { isActive: boolean; isAnimating: boolean }) => {
+  ({ isActive, isEditing }: { isActive: boolean; isEditing: boolean }) => {
     const pathRef = useRef<SVGPathElement>(null)
     const params = useRef({ amplitude: 0 })
-    /** 记录上一次的 isAnimating 值，用于跳过无变化的重复触发 */
-    const prevIsAnimatingRef = useRef<boolean | null>(null)
+    /** 记录上一次的 isEditing 值，用于跳过无变化的重复触发 */
+    const prevIsEditingRef = useRef<boolean | null>(null)
 
     useEffect(() => {
-      if (prevIsAnimatingRef.current === isAnimating) return
-      prevIsAnimatingRef.current = isAnimating
+      if (prevIsEditingRef.current === isEditing) return
+      prevIsEditingRef.current = isEditing
 
       animate(params.current, {
-        amplitude: isAnimating ? MAX_AMPLITUDE : 0,
+        amplitude: isEditing ? MAX_AMPLITUDE : 0,
         duration: 300,
         ease: 'inOutQuad',
         onUpdate: () => {
           pathRef.current?.setAttribute('d', generatePath(params.current.amplitude))
         },
       })
-    }, [isAnimating])
+    }, [isEditing])
 
     return (
       <div className="relative h-8 w-[3px] shrink-0">
@@ -53,12 +53,11 @@ export const WaveIndicator = memo(
             <path
               ref={pathRef}
               d={generatePath(0)}
-              stroke={isActive ? 'var(--accent)' : 'transparent'}
+              stroke={isActive || isEditing ? 'var(--accent)' : 'transparent'}
               strokeWidth="3"
               strokeLinecap="round"
               strokeLinejoin="round"
               fill="none"
-              style={{ transition: 'stroke 0.5s' }}
             />
           </svg>
         </div>
