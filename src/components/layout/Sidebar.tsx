@@ -153,7 +153,7 @@ const ResumeTab = memo(
           }}
         >
           <button
-            className="hover:bg-accent flex h-6 w-6 items-center justify-center rounded transition-all"
+            className="hover:bg-accent flex h-6 w-6 cursor-pointer items-center justify-center rounded transition-all"
             style={{ opacity: isHovered ? 1 : 0 }}
             tabIndex={isHovered ? 0 : -1}
             aria-label={`复制简历 ${resume.name}`}
@@ -167,7 +167,7 @@ const ResumeTab = memo(
           <Popover open={open} onOpenChange={setOpen}>
             <PopoverTrigger asChild>
               <button
-                className="delete-btn flex h-6 w-6 items-center justify-center rounded transition-all hover:bg-(--danger-soft)"
+                className="delete-btn flex h-6 w-6 cursor-pointer items-center justify-center rounded transition-all hover:bg-(--danger-soft)"
                 style={{ opacity: isHovered || open ? 1 : 0 }}
                 tabIndex={isHovered || open ? 0 : -1}
                 aria-label={`删除简历 ${resume.name}`}

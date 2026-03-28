@@ -216,7 +216,7 @@ export function Header({
           variant="outline"
           size="icon-sm"
           asChild
-          className="hover:bg-accent hover:text-accent-foreground text-(--fg-secondary)"
+          className="hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground text-(--fg-secondary)"
         >
           <a
             href="https://github.com/showlotus/showcv"

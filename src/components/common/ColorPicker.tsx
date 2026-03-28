@@ -279,7 +279,7 @@ export function ColorPicker({
                     setHexInput(color.value)
                     onChange(color.value)
                   }}
-                  className="h-5 w-5 rounded transition-transform hover:scale-110"
+                  className="h-5 w-5 cursor-pointer rounded transition-transform hover:scale-110"
                   style={{
                     backgroundColor: color.value,
                     ...(value === color.value && {

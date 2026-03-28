@@ -43,7 +43,7 @@ function ResizableHandle({
     >
       {withHandle && (
         <div
-          className="z-10 flex h-4 w-3 items-center justify-center rounded-xs border outline-none"
+          className="z-10 flex h-4 w-3 cursor-pointer items-center justify-center rounded-xs border outline-none"
           style={{ background: 'var(--border)', borderColor: 'var(--border)' }}
           tabIndex={-1}
         >
