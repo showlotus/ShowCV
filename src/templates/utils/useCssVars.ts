@@ -6,7 +6,7 @@ import type { ResumeSettings } from '@/types'
  * 供各布局模板通过 style 属性注入，实现主题定制
  */
 export function useCssVars(settings: ResumeSettings): React.CSSProperties {
-  const { font, color, spacing } = settings
+  const { font, color, spacing, avatar } = settings
   return useMemo(
     () =>
       ({
@@ -26,7 +26,11 @@ export function useCssVars(settings: ResumeSettings): React.CSSProperties {
         '--h3-title-bottom-gap': `${spacing.h3TitleBottomGap}px`,
         '--padding': `${spacing.padding}px`,
         '--font-family': font.fontFamily,
+        ...(avatar?.src && {
+          '--avatar-size': `${avatar.size}px`,
+          '--avatar-border-radius': `${avatar.borderRadius}%`,
+        }),
       }) as React.CSSProperties,
-    [font, color, spacing]
+    [font, color, spacing, avatar]
   )
 }

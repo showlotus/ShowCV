@@ -104,8 +104,8 @@ export const remarkGroupSection: Plugin<[], Root> = () => tree => {
     const depth = getDepth(node)
     if (depth === 1) {
       flush3()
-      result.push(node)
-      h1Buf = []
+      // h1 也包进 resume-header section，确保分页测量能覆盖 h1 高度（含头像等）
+      h1Buf = [node]
     } else if (depth === 2 || isSection(node)) {
       flush3()
       result.push(node)

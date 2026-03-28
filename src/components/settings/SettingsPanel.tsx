@@ -6,6 +6,7 @@ import { useShallow } from 'zustand/react/shallow'
 import { PRESET_COLORS, FONT_PRESETS } from '@/utils/constants'
 import { TEMPLATE_IDS } from '@/templates'
 import { Slider, ColorPicker } from '../common'
+import { AvatarUpload } from './AvatarUpload'
 import { ResumePreview } from '../preview'
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs'
 import { Button } from '@/components/ui/button'
@@ -96,11 +97,7 @@ const TemplateCard = memo(
                     userSelect: 'none',
                   }}
                 >
-                  <ResumePreview
-                    templateId={templateId}
-                    content={content}
-                    settings={settings}
-                  />
+                  <ResumePreview templateId={templateId} content={content} settings={settings} />
                 </div>
               )}
             </div>
@@ -149,11 +146,7 @@ const TemplateCard = memo(
                   userSelect: 'none',
                 }}
               >
-                <ResumePreview
-                  templateId={templateId}
-                  content={content}
-                  settings={settings}
-                />
+                <ResumePreview templateId={templateId} content={content} settings={settings} />
               </div>
             </div>
           )}
@@ -242,6 +235,8 @@ export function SettingsPanel({ open }: { open: boolean }) {
     updateFontSettings,
     updateColorSettings,
     updateSpacingSettings,
+    updateAvatarSettings,
+    removeAvatar,
     resetSettings,
     setTemplate,
   } = useResumeStore(
@@ -252,6 +247,8 @@ export function SettingsPanel({ open }: { open: boolean }) {
       updateFontSettings: state.updateFontSettings,
       updateColorSettings: state.updateColorSettings,
       updateSpacingSettings: state.updateSpacingSettings,
+      updateAvatarSettings: state.updateAvatarSettings,
+      removeAvatar: state.removeAvatar,
       resetSettings: state.resetSettings,
       setTemplate: state.setTemplate,
     }))
@@ -309,6 +306,16 @@ export function SettingsPanel({ open }: { open: boolean }) {
         {/* 配置 Tab */}
         <TabsContent value="settings" className="mt-0 flex flex-1 flex-col overflow-hidden">
           <div className="flex-1 space-y-2 overflow-y-auto p-3">
+            {/* 头像设置 */}
+            <SectionCard>
+              <SectionTitle>头像</SectionTitle>
+              <AvatarUpload
+                avatar={settings.avatar}
+                onUpdateAvatar={updateAvatarSettings}
+                onRemoveAvatar={removeAvatar}
+              />
+            </SectionCard>
+
             {/* 颜色设置 */}
             <SectionCard>
               <SectionTitle>主题色</SectionTitle>
@@ -347,6 +354,8 @@ export function SettingsPanel({ open }: { open: boolean }) {
                     ))}
                   </SelectContent>
                 </Select>
+
+                <hr style={{ borderColor: 'var(--border)' }} />
 
                 <div className="space-y-3 pt-1">
                   <SliderRow
@@ -443,7 +452,7 @@ export function SettingsPanel({ open }: { open: boolean }) {
           <div className="shrink-0 border-t p-3" style={{ borderColor: 'var(--border)' }}>
             <Button
               variant="outline"
-              className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground w-full gap-2 border-dashed text-(--fg-secondary)"
+              className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground w-full gap-2 text-(--fg-secondary)"
               onClick={handleReset}
             >
               <RotateCcw className="h-4 w-4" />

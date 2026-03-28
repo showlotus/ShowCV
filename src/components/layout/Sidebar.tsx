@@ -351,7 +351,7 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
           <div className="shrink-0 border-t p-3" style={{ borderColor: 'var(--border)' }}>
             <Button
               variant="outline"
-              className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground w-full gap-2 border-dashed text-(--fg-secondary)"
+              className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground w-full gap-2 text-(--fg-secondary)"
               onClick={handleCreateResume}
             >
               <Plus className="h-4 w-4" />

@@ -62,6 +62,16 @@ export const DEFAULT_SPACING_SETTINGS = {
   h3TitleBottomGap: 6,
 }
 
+// 默认头像设置
+export const DEFAULT_AVATAR_SETTINGS = {
+  src: '',
+  visible: true,
+  size: 80,
+  naturalWidth: 0,
+  naturalHeight: 0,
+  borderRadius: 10,
+}
+
 // 默认完整设置
 export const DEFAULT_SETTINGS: ResumeSettings = {
   font: DEFAULT_FONT_SETTINGS,
@@ -73,13 +83,16 @@ type PartialResumeSettings = {
   font?: Partial<ResumeSettings['font']>
   color?: Partial<ResumeSettings['color']>
   spacing?: Partial<ResumeSettings['spacing']>
+  avatar?: Partial<ResumeSettings['avatar']> | null
 }
 
 /**
  * 归一化字体设置
  * @param font 原始字体设置
  */
-export function normalizeFontSettings(font?: Partial<ResumeSettings['font']> | null): ResumeSettings['font'] {
+export function normalizeFontSettings(
+  font?: Partial<ResumeSettings['font']> | null
+): ResumeSettings['font'] {
   return {
     h1TitleSize: font?.h1TitleSize ?? DEFAULT_FONT_SETTINGS.h1TitleSize,
     h2TitleSize: font?.h2TitleSize ?? DEFAULT_FONT_SETTINGS.h2TitleSize,
@@ -112,7 +125,7 @@ export function normalizeSpacingSettings(
  * @param settings 原始简历设置
  */
 export function normalizeResumeSettings(settings?: PartialResumeSettings | null): ResumeSettings {
-  return {
+  const base: ResumeSettings = {
     font: normalizeFontSettings(settings?.font),
     color: {
       ...DEFAULT_COLOR_SETTINGS,
@@ -120,6 +133,21 @@ export function normalizeResumeSettings(settings?: PartialResumeSettings | null)
     },
     spacing: normalizeSpacingSettings(settings?.spacing),
   }
+
+  if (settings?.avatar?.src) {
+    return {
+      ...base,
+      avatar: {
+        src: settings.avatar.src,
+        visible: settings.avatar.visible ?? DEFAULT_AVATAR_SETTINGS.visible,
+        size: settings.avatar.size ?? DEFAULT_AVATAR_SETTINGS.size,
+        naturalWidth: settings.avatar.naturalWidth ?? DEFAULT_AVATAR_SETTINGS.naturalWidth,
+        naturalHeight: settings.avatar.naturalHeight ?? DEFAULT_AVATAR_SETTINGS.naturalHeight,
+        borderRadius: settings.avatar.borderRadius ?? DEFAULT_AVATAR_SETTINGS.borderRadius,
+      },
+    }
+  }
+  return base
 }
 
 // 预设主题色

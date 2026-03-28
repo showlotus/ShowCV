@@ -48,6 +48,8 @@ interface ResumeStore {
   updateFontSettings: (font: Partial<ResumeSettings['font']>) => void
   updateColorSettings: (color: Partial<ResumeSettings['color']>) => void
   updateSpacingSettings: (spacing: Partial<ResumeSettings['spacing']>) => void
+  updateAvatarSettings: (avatar: Partial<ResumeSettings['avatar']>) => void
+  removeAvatar: () => void
   resetSettings: () => void
 
   // Export/Import
@@ -226,6 +228,53 @@ export const useResumeStore = create<ResumeStore>()(
               ...state.currentResume!.settings,
               spacing: { ...state.currentResume!.settings.spacing, ...spacing },
             },
+            updatedAt: Date.now(),
+          }
+          return {
+            currentResume: updatedResume,
+            resumes: state.resumes.map(r => (r.id === state.currentResumeId ? updatedResume : r)),
+          }
+        })
+      },
+
+      // 更新头像设置
+      updateAvatarSettings: avatar => {
+        set(state => {
+          if (!state.currentResumeId) return state
+          const current = state.currentResume!
+          const updatedResume = {
+            ...current,
+            settings: {
+              ...current.settings,
+              avatar: {
+                ...current.settings.avatar,
+                src: current.settings.avatar?.src ?? '',
+                visible: current.settings.avatar?.visible ?? true,
+                size: current.settings.avatar?.size ?? 72,
+                naturalWidth: current.settings.avatar?.naturalWidth ?? 0,
+                naturalHeight: current.settings.avatar?.naturalHeight ?? 0,
+                borderRadius: current.settings.avatar?.borderRadius ?? 50,
+                ...avatar,
+              },
+            },
+            updatedAt: Date.now(),
+          }
+          return {
+            currentResume: updatedResume,
+            resumes: state.resumes.map(r => (r.id === state.currentResumeId ? updatedResume : r)),
+          }
+        })
+      },
+
+      // 移除头像
+      removeAvatar: () => {
+        set(state => {
+          if (!state.currentResumeId) return state
+          const current = state.currentResume!
+          const { avatar: _, ...restSettings } = current.settings
+          const updatedResume = {
+            ...current,
+            settings: restSettings as ResumeSettings,
             updatedAt: Date.now(),
           }
           return {

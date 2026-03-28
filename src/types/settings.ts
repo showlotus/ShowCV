@@ -26,11 +26,22 @@ export interface SpacingSettings {
   h3TitleBottomGap: number // 三级标题下间距 px
 }
 
+// 头像设置
+export interface AvatarSettings {
+  src: string // base64 data URL
+  visible: boolean // 是否展示头像
+  size: number // 头像显示尺寸 px（高度）
+  naturalWidth: number // 图片原始宽度 px
+  naturalHeight: number // 图片原始高度 px
+  borderRadius: number // 圆角百分比 0-50
+}
+
 // 完整简历设置
 export interface ResumeSettings {
   font: FontSettings
   color: ColorSettings
   spacing: SpacingSettings
+  avatar?: AvatarSettings
 }
 
 // 模板 ID - 从 templates 模块导出

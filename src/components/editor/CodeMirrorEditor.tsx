@@ -105,6 +105,19 @@ export function CodeMirrorEditor() {
     setContentRef.current = setContent
   }, [setContent])
 
+  // 阻止 Cmd/Ctrl+F 冒泡到宿主（如 VSCode），让浏览器原生搜索正常触发
+  useEffect(() => {
+    const el = editorRef.current
+    if (!el) return
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'f') {
+        e.stopPropagation()
+      }
+    }
+    el.addEventListener('keydown', handler, true)
+    return () => el.removeEventListener('keydown', handler, true)
+  }, [])
+
   useEffect(() => {
     if (!editorRef.current) return
 
