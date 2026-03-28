@@ -37,20 +37,10 @@
 .resume-template .resume-section {
   break-inside: avoid;
   page-break-inside: avoid;
+  display: flow-root;
 }
 
-/* 跨页 section 的伪元素，实现视觉分页效果 */
-.resume-section[data-page-break="true"]::before {
-  content: '';
-  display: block;
-  /* 高度：从当前位置到虚线的距离 */
-  height: var(--page-break-offset, 0);
-  /* 预览区背景色 */
-  background-color: var(--bg-tertiary);
-  /* 向左右延伸，遮住预览区的 padding */
-  margin-left: calc(-1 * var(--preview-padding, 0));
-  margin-right: calc(-1 * var(--preview-padding, 0));
-}
+/* 跨页 section 的伪元素 — 已移除，分页预览改用独立页面容器 */
 
 .resume-template h1,
 .resume-template h2,
@@ -216,16 +206,4 @@
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
 }
 
-/* 撑开每页剩余高度 - 视觉预览用 */
-.resume-section[data-page-last="true"]::after {
-  content: '';
-  display: block;
-  height: var(--page-remaining-height, 0);
-}
-
-/* 打印时隐藏撑开效果，避免产生空白 */
-@media print {
-  .resume-section[data-page-last="true"]::after {
-    display: none;
-  }
-}
+/* 页底撑开伪元素 — 已移除，分页预览改用独立页面容器 */

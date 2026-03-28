@@ -11,7 +11,8 @@
       "Bash(echo \"Exit code: $?\")",
       "Bash(pnpm build:*)",
       "Bash(git commit:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(pnpm lint:*)"
     ]
   }
 }

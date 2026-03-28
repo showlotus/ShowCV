@@ -22,8 +22,6 @@ import './index.css'
 // const A4_WIDTH_PX = 794
 
 function App() {
-  // 只订阅 padding，避免其他 settings 变化触发 App 重渲染
-  const padding = useResumeStore(state => state.currentResume?.settings.spacing.padding ?? 0)
   const hasResume = useResumeStore(state => !!state.currentResume)
   // const exportData = useResumeStore(state => state.exportData)
   const createResume = useResumeStore(state => state.createResume)
@@ -40,7 +38,7 @@ function App() {
 
   const printRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
-  const { handlePrint } = useReactToPrintExport(printRef, padding)
+  const { handlePrint } = useReactToPrintExport(printRef)
   const { handleCopyImage } = useCopyImageExport(copyRef)
 
   /** 根据预览面板像素宽度实时计算缩放比例，上限为 1 */

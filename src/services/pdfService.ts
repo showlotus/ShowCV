@@ -5,11 +5,11 @@ import { useReactToPrint } from 'react-to-print'
  * 生成打印样式字符串
  * @param padding 每页四周的边距（像素），与预览的 spacing.padding 保持一致
  */
-function buildPrintStyles(padding: number) {
+function buildPrintStyles() {
   return `
     @page {
       size: A4;
-      margin: ${padding}px;
+      margin: 0;
     }
     @media print {
       html, body {
@@ -31,12 +31,17 @@ function buildPrintStyles(padding: number) {
         border-radius: 0 !important;
         background: transparent !important;
       }
-      /* 去掉 .preview-page 的装饰样式和最小高度，由 @page margin 控制边距 */
+      /* 每个页面容器打印为独立一页，保留 padding 作为页边距 */
       .preview-page {
-        padding: 0 !important;
         min-height: 0 !important;
         box-shadow: none !important;
         border-radius: 0 !important;
+        break-after: page;
+        page-break-after: always;
+      }
+      .preview-page:last-child {
+        break-after: auto;
+        page-break-after: auto;
       }
     }
   `
@@ -45,16 +50,15 @@ function buildPrintStyles(padding: number) {
 /**
  * 使用 react-to-print 的打印方案
  * @param ref 外部传入的 ref，指向预览 DOM 节点，不传则内部创建
- * @param padding 打印边距（像素），与预览 spacing.padding 保持一致
  */
-export function useReactToPrintExport(ref?: RefObject<HTMLDivElement | null>, padding = 0) {
+export function useReactToPrintExport(ref?: RefObject<HTMLDivElement | null>) {
   const internalRef = useRef<HTMLDivElement>(null)
   const contentRef = ref ?? internalRef
 
   const handlePrint = useReactToPrint({
     contentRef,
     documentTitle: '简历',
-    pageStyle: buildPrintStyles(padding),
+    pageStyle: buildPrintStyles(),
   })
 
   return { handlePrint }
@@ -63,9 +67,8 @@ export function useReactToPrintExport(ref?: RefObject<HTMLDivElement | null>, pa
 /**
  * 基于 iframe 的 PDF 导出方案
  * @param ref 外部传入的 ref，指向预览 DOM 节点，不传则内部创建
- * @param padding 打印边距（像素），与预览 spacing.padding 保持一致
  */
-export function usePDFExport(ref?: RefObject<HTMLDivElement | null>, padding = 0) {
+export function usePDFExport(ref?: RefObject<HTMLDivElement | null>) {
   const internalRef = useRef<HTMLDivElement>(null)
   const contentRef = ref ?? internalRef
 
@@ -123,7 +126,7 @@ export function usePDFExport(ref?: RefObject<HTMLDivElement | null>, padding = 0
           <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+SC:wght@400;500;600;700&display=swap" rel="stylesheet">
           <style>
             ${styles}
-            ${buildPrintStyles(padding)}
+            ${buildPrintStyles()}
           </style>
         </head>
         <body>
@@ -138,7 +141,7 @@ export function usePDFExport(ref?: RefObject<HTMLDivElement | null>, padding = 0
       printIframe.contentWindow?.focus()
       printIframe.contentWindow?.print()
     }, 800)
-  }, [padding])
+  }, [])
 
   return {
     handlePrint,

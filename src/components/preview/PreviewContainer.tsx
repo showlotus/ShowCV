@@ -2,10 +2,8 @@ import { memo, useRef, useEffect, useState, useCallback } from 'react'
 import type { RefObject } from 'react'
 import { useResumeStore } from '@/store'
 import { PreviewModeRenderer } from './PreviewModeRenderer'
+import { A4_WIDTH_PX } from './usePaginatedLayout'
 import { DEFAULT_SETTINGS } from '@/utils/constants'
-
-/** A4 纸宽度像素值 (210mm ≈ 794px) */
-const A4_WIDTH_PX = 794
 
 /**
  * 预览容器组件，独立订阅 store
@@ -16,10 +14,10 @@ export const PreviewContainer = memo(
   ({ ref, printRef }: { ref?: RefObject<HTMLDivElement | null>; printRef?: RefObject<HTMLDivElement | null> }) => {
     const currentResume = useResumeStore(state => state.currentResume)
     const containerRef = useRef<HTMLDivElement>(null)
+    const hiddenRef = useRef<HTMLDivElement>(null)
     const [scale, setScale] = useState(1)
 
     const updateScale = useCallback((width: number) => {
-      // contentRect.width 已是 content 区域宽度，无需减去 padding
       setScale(Math.min(width / A4_WIDTH_PX, 1))
     }, [])
 
@@ -57,6 +55,7 @@ export const PreviewContainer = memo(
       templateId: currentResume.templateId,
       content: currentResume.content,
       settings: currentResume.settings || DEFAULT_SETTINGS,
+      zoom: scale,
     }
 
     return (
@@ -66,7 +65,7 @@ export const PreviewContainer = memo(
           ref={containerRef}
           className="animate-fade-in mx-auto overflow-hidden rounded-lg"
           style={{
-            width: 794,
+            width: A4_WIDTH_PX,
             minHeight: '100%',
             zoom: scale,
           }}
@@ -76,18 +75,19 @@ export const PreviewContainer = memo(
           </div>
         </div>
 
-        {/* 隐藏的无缩放副本 DOM（供 modern-screenshot 截图使用，不受 CSS zoom 影响） */}
+        {/* 隐藏的无缩放副本 DOM（供 modern-screenshot 截图使用） */}
         <div
+          ref={hiddenRef}
           aria-hidden="true"
           style={{
             position: 'fixed',
             left: '-9999px',
             top: 0,
-            width: 794,
+            width: A4_WIDTH_PX,
             pointerEvents: 'none',
           }}
         >
-          <PreviewModeRenderer {...rendererProps} ref={ref} />
+          <PreviewModeRenderer {...rendererProps} ref={ref} forceFlat />
         </div>
       </>
     )

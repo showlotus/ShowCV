@@ -45,16 +45,18 @@ const markdownComponents: Components = {
     </p>
   ),
   h2: ({ children }) => (
-    <p
-      className="mt-6 mb-3 flex items-center gap-2 font-semibold"
-      style={{ fontSize: 'var(--heading-size)' }}
-    >
-      <span
-        className="h-5 w-1.5 rounded-sm"
-        style={{ backgroundColor: 'var(--primary-color)' }}
-      ></span>
-      <PipeSplit>{children}</PipeSplit>
-    </p>
+    <section className="resume-section">
+      <p
+        className="mt-6 mb-3 flex items-center gap-2 font-semibold"
+        style={{ fontSize: 'var(--heading-size)' }}
+      >
+        <span
+          className="h-5 w-1.5 rounded-sm"
+          style={{ backgroundColor: 'var(--primary-color)' }}
+        ></span>
+        <PipeSplit>{children}</PipeSplit>
+      </p>
+    </section>
   ),
   h3: ({ children }) => (
     <p className="mb-1.5 font-semibold" style={{ fontSize: 'var(--body-size)' }}>
