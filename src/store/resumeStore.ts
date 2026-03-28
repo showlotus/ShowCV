@@ -1,7 +1,7 @@
 import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { ResumeSettings, TemplateId, ResumeData, AppTheme } from '@/types'
-import { DEFAULT_SETTINGS, DEFAULT_CONTENT } from '@/utils/constants'
+import { DEFAULT_SETTINGS, DEFAULT_CONTENT, normalizeResumeSettings } from '@/utils/constants'
 import { generateId } from '@/utils'
 
 // 单个简历的数据结构
@@ -61,7 +61,7 @@ const createDefaultResume = (): ResumeItem => ({
   name: '我的简历',
   content: DEFAULT_CONTENT,
   templateId: 'T1',
-  settings: DEFAULT_SETTINGS,
+  settings: normalizeResumeSettings(DEFAULT_SETTINGS),
   createdAt: Date.now(),
   updatedAt: Date.now(),
 })
@@ -97,7 +97,7 @@ export const useResumeStore = create<ResumeStore>()(
           name: initial?.name || `简历 ${(get().resumes.length || 0) + 1}`,
           content: initial?.content ?? '',
           templateId: initial?.templateId ?? 'T1',
-          settings: initial?.settings ?? { ...DEFAULT_SETTINGS },
+          settings: normalizeResumeSettings(initial?.settings),
           fromShare: initial?.fromShare,
           createdAt: Date.now(),
           updatedAt: Date.now(),
@@ -241,7 +241,7 @@ export const useResumeStore = create<ResumeStore>()(
           if (!state.currentResumeId) return state
           const updatedResume = {
             ...state.currentResume!,
-            settings: { ...DEFAULT_SETTINGS },
+            settings: normalizeResumeSettings(DEFAULT_SETTINGS),
             updatedAt: Date.now(),
           }
           return {
@@ -260,7 +260,7 @@ export const useResumeStore = create<ResumeStore>()(
             id: generateId(),
             title: '未命名简历',
             content: '',
-            settings: DEFAULT_SETTINGS,
+            settings: normalizeResumeSettings(DEFAULT_SETTINGS),
             templateId: 'T1' as TemplateId,
             createdAt: new Date().toISOString(),
             updatedAt: new Date().toISOString(),
@@ -285,7 +285,7 @@ export const useResumeStore = create<ResumeStore>()(
             name: data.title,
             content: data.content,
             templateId: data.templateId,
-            settings: data.settings,
+            settings: normalizeResumeSettings(data.settings),
             createdAt: Date.now(),
             updatedAt: Date.now(),
           }
@@ -307,6 +307,10 @@ export const useResumeStore = create<ResumeStore>()(
       }),
       onRehydrateStorage: () => state => {
         if (state) {
+          state.resumes = state.resumes.map(resume => ({
+            ...resume,
+            settings: normalizeResumeSettings(resume.settings),
+          }))
           // 恢复主题
           document.documentElement.setAttribute('data-theme', state.theme)
           // 恢复当前简历

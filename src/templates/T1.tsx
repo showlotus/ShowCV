@@ -37,29 +37,27 @@ const markdownComponents: Components = {
       className="mb-4 border-b-2 pb-2 font-bold"
       style={{
         borderColor: 'var(--primary-color)',
-        fontSize: 'var(--title-size)',
-        lineHeight: 'var(--title-size)',
+        fontSize: 'var(--h1-title-size)',
+        lineHeight: 'var(--h1-title-size)',
       }}
     >
       {children}
     </p>
   ),
   h2: ({ children }) => (
-    <section className="resume-section">
-      <p
-        className="mt-6 mb-3 flex items-center gap-2 font-semibold"
-        style={{ fontSize: 'var(--heading-size)' }}
-      >
-        <span
-          className="h-5 w-1.5 rounded-sm"
-          style={{ backgroundColor: 'var(--primary-color)' }}
-        ></span>
-        <PipeSplit>{children}</PipeSplit>
-      </p>
-    </section>
+    <p
+      className="resume-title-h2 flex items-center gap-2 font-semibold"
+      style={{ fontSize: 'var(--h2-title-size)' }}
+    >
+      <span
+        className="h-5 w-1.5 rounded-sm"
+        style={{ backgroundColor: 'var(--primary-color)' }}
+      ></span>
+      <PipeSplit>{children}</PipeSplit>
+    </p>
   ),
   h3: ({ children }) => (
-    <p className="mb-1.5 font-semibold" style={{ fontSize: 'var(--body-size)' }}>
+    <p className="resume-title-h3 font-semibold" style={{ fontSize: 'var(--h3-title-size)' }}>
       <PipeSplit>{children}</PipeSplit>
     </p>
   ),
@@ -68,7 +66,7 @@ const markdownComponents: Components = {
     <section className={`resume-section ${className || ''}`}>{children}</section>
   ),
   p: ({ children }) => (
-    <p className="resume-paragraph mb-2">
+    <p className="resume-paragraph">
       <PipeSplit>{children}</PipeSplit>
     </p>
   ),
@@ -86,7 +84,11 @@ const markdownComponents: Components = {
   hr: () => (
     <hr
       className="border-t"
-      style={{ borderColor: 'var(--primary-color)', opacity: 0.3, margin: `var(--section-gap) 0` }}
+      style={{
+        borderColor: 'var(--primary-color)',
+        opacity: 0.3,
+        margin: `var(--h2-title-top-gap) 0`,
+      }}
     />
   ),
   a: ({ href, children }) => (

@@ -36,8 +36,9 @@ export const FONT_PRESETS = [
 
 // 默认字体设置
 export const DEFAULT_FONT_SETTINGS = {
-  titleSize: 24,
-  headingSize: 16,
+  h1TitleSize: 24,
+  h2TitleSize: 16,
+  h3TitleSize: 12,
   bodySize: 12,
   smallSize: 12,
   lineHeight: 14,
@@ -55,7 +56,10 @@ export const DEFAULT_COLOR_SETTINGS = {
 // 默认间距设置
 export const DEFAULT_SPACING_SETTINGS = {
   padding: 30,
-  sectionGap: 10,
+  h2TitleTopGap: 24,
+  h2TitleBottomGap: 12,
+  h3TitleTopGap: 12,
+  h3TitleBottomGap: 6,
 }
 
 // 默认完整设置
@@ -63,6 +67,59 @@ export const DEFAULT_SETTINGS: ResumeSettings = {
   font: DEFAULT_FONT_SETTINGS,
   color: DEFAULT_COLOR_SETTINGS,
   spacing: DEFAULT_SPACING_SETTINGS,
+}
+
+type PartialResumeSettings = {
+  font?: Partial<ResumeSettings['font']>
+  color?: Partial<ResumeSettings['color']>
+  spacing?: Partial<ResumeSettings['spacing']>
+}
+
+/**
+ * 归一化字体设置
+ * @param font 原始字体设置
+ */
+export function normalizeFontSettings(font?: Partial<ResumeSettings['font']> | null): ResumeSettings['font'] {
+  return {
+    h1TitleSize: font?.h1TitleSize ?? DEFAULT_FONT_SETTINGS.h1TitleSize,
+    h2TitleSize: font?.h2TitleSize ?? DEFAULT_FONT_SETTINGS.h2TitleSize,
+    h3TitleSize: font?.h3TitleSize ?? DEFAULT_FONT_SETTINGS.h3TitleSize,
+    bodySize: font?.bodySize ?? DEFAULT_FONT_SETTINGS.bodySize,
+    smallSize: font?.smallSize ?? DEFAULT_FONT_SETTINGS.smallSize,
+    lineHeight: font?.lineHeight ?? DEFAULT_FONT_SETTINGS.lineHeight,
+    fontFamily: font?.fontFamily ?? DEFAULT_FONT_SETTINGS.fontFamily,
+  }
+}
+
+/**
+ * 归一化间距设置
+ * @param spacing 原始间距设置
+ */
+export function normalizeSpacingSettings(
+  spacing?: Partial<ResumeSettings['spacing']> | null
+): ResumeSettings['spacing'] {
+  return {
+    padding: spacing?.padding ?? DEFAULT_SPACING_SETTINGS.padding,
+    h2TitleTopGap: spacing?.h2TitleTopGap ?? DEFAULT_SPACING_SETTINGS.h2TitleTopGap,
+    h2TitleBottomGap: spacing?.h2TitleBottomGap ?? DEFAULT_SPACING_SETTINGS.h2TitleBottomGap,
+    h3TitleTopGap: spacing?.h3TitleTopGap ?? DEFAULT_SPACING_SETTINGS.h3TitleTopGap,
+    h3TitleBottomGap: spacing?.h3TitleBottomGap ?? DEFAULT_SPACING_SETTINGS.h3TitleBottomGap,
+  }
+}
+
+/**
+ * 归一化完整简历设置
+ * @param settings 原始简历设置
+ */
+export function normalizeResumeSettings(settings?: PartialResumeSettings | null): ResumeSettings {
+  return {
+    font: normalizeFontSettings(settings?.font),
+    color: {
+      ...DEFAULT_COLOR_SETTINGS,
+      ...(settings?.color ?? {}),
+    },
+    spacing: normalizeSpacingSettings(settings?.spacing),
+  }
 }
 
 // 预设主题色

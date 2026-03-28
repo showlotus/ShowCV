@@ -1,7 +1,8 @@
 // 字体设置
 export interface FontSettings {
-  titleSize: number // 标题字号 px
-  headingSize: number // 二级标题字号 px
+  h1TitleSize: number // 一级标题字号 px
+  h2TitleSize: number // 二级标题字号 px
+  h3TitleSize: number // 三级标题字号 px
   bodySize: number // 正文字号 px
   smallSize: number // 小字字号 px
   lineHeight: number // 行高 px
@@ -18,8 +19,11 @@ export interface ColorSettings {
 
 // 间距设置
 export interface SpacingSettings {
-  sectionGap: number // 区块间距 px
   padding: number // 内边距 px
+  h2TitleTopGap: number // 二级标题上间距 px
+  h2TitleBottomGap: number // 二级标题下间距 px
+  h3TitleTopGap: number // 三级标题上间距 px
+  h3TitleBottomGap: number // 三级标题下间距 px
 }
 
 // 完整简历设置

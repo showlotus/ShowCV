@@ -109,8 +109,8 @@ export function Header({
       style={{ borderColor: 'var(--border)', background: 'var(--bg-secondary)' }}
     >
       {/* Logo */}
-      <div className="flex items-center gap-3">
-        <img src="/icon.png" alt="ShowCV" className="h-9 w-9" />
+      <div className="z-1 flex items-center gap-3">
+        <img src="/icon.svg" alt="ShowCV" className="h-9 w-9" />
         <div className="hidden sm:block">
           <h1 className="font-display text-lg font-bold" style={{ color: 'var(--fg-primary)' }}>
             ShowCV

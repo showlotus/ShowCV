@@ -3,7 +3,7 @@ import { RotateCcw } from 'lucide-react'
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
 import { useShallow } from 'zustand/react/shallow'
-import { PRESET_COLORS, FONT_PRESETS, DEFAULT_SETTINGS } from '@/utils/constants'
+import { PRESET_COLORS, FONT_PRESETS } from '@/utils/constants'
 import { TEMPLATE_IDS } from '@/templates'
 import { Slider, ColorPicker } from '../common'
 import { ResumePreview } from '../preview'
@@ -18,7 +18,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
-import type { TemplateId } from '@/types'
+import type { TemplateId, ResumeSettings } from '@/types'
 
 /** 面板展开宽度 */
 export const SETTINGS_PANEL_WIDTH = 300
@@ -35,12 +35,14 @@ const TemplateCard = memo(
     templateId,
     name,
     content,
+    settings,
     isActive,
     onSelect,
   }: {
     templateId: TemplateId
     name: string
     content: string
+    settings: ResumeSettings
     isActive: boolean
     onSelect: () => void
   }) => {
@@ -97,7 +99,7 @@ const TemplateCard = memo(
                   <ResumePreview
                     templateId={templateId}
                     content={content}
-                    settings={DEFAULT_SETTINGS}
+                    settings={settings}
                   />
                 </div>
               )}
@@ -150,7 +152,7 @@ const TemplateCard = memo(
                 <ResumePreview
                   templateId={templateId}
                   content={content}
-                  settings={DEFAULT_SETTINGS}
+                  settings={settings}
                 />
               </div>
             </div>
@@ -296,6 +298,7 @@ export function SettingsPanel({ open }: { open: boolean }) {
                 templateId={id}
                 name={id}
                 content={previewContent}
+                settings={settings}
                 isActive={templateId === id}
                 onSelect={() => setTemplate(id)}
               />
@@ -348,18 +351,26 @@ export function SettingsPanel({ open }: { open: boolean }) {
                 <div className="space-y-3 pt-1">
                   <SliderRow
                     label="一级标题字号"
-                    value={settings.font.titleSize}
+                    value={settings.font.h1TitleSize}
                     min={20}
                     max={36}
-                    onChange={v => updateFontSettings({ titleSize: v })}
+                    onChange={v => updateFontSettings({ h1TitleSize: v })}
                   />
                   <hr style={{ borderColor: 'var(--border)' }} />
                   <SliderRow
                     label="二级标题字号"
-                    value={settings.font.headingSize}
+                    value={settings.font.h2TitleSize}
                     min={14}
                     max={24}
-                    onChange={v => updateFontSettings({ headingSize: v })}
+                    onChange={v => updateFontSettings({ h2TitleSize: v })}
+                  />
+                  <hr style={{ borderColor: 'var(--border)' }} />
+                  <SliderRow
+                    label="三级标题字号"
+                    value={settings.font.h3TitleSize}
+                    min={10}
+                    max={20}
+                    onChange={v => updateFontSettings({ h3TitleSize: v })}
                   />
                   <hr style={{ borderColor: 'var(--border)' }} />
                   <SliderRow
@@ -381,9 +392,9 @@ export function SettingsPanel({ open }: { open: boolean }) {
               </div>
             </SectionCard>
 
-            {/* 间距设置 */}
+            {/* 边距设置 */}
             <SectionCard>
-              <SectionTitle>间距</SectionTitle>
+              <SectionTitle>边距</SectionTitle>
               <div className="space-y-3">
                 <SliderRow
                   label="页边距"
@@ -394,11 +405,35 @@ export function SettingsPanel({ open }: { open: boolean }) {
                 />
                 <hr style={{ borderColor: 'var(--border)' }} />
                 <SliderRow
-                  label="章节间距"
-                  value={settings.spacing.sectionGap}
-                  min={8}
+                  label="二级标题上边距"
+                  value={settings.spacing.h2TitleTopGap}
+                  min={0}
                   max={40}
-                  onChange={v => updateSpacingSettings({ sectionGap: v })}
+                  onChange={v => updateSpacingSettings({ h2TitleTopGap: v })}
+                />
+                <hr style={{ borderColor: 'var(--border)' }} />
+                <SliderRow
+                  label="二级标题下边距"
+                  value={settings.spacing.h2TitleBottomGap}
+                  min={0}
+                  max={40}
+                  onChange={v => updateSpacingSettings({ h2TitleBottomGap: v })}
+                />
+                <hr style={{ borderColor: 'var(--border)' }} />
+                <SliderRow
+                  label="三级标题上边距"
+                  value={settings.spacing.h3TitleTopGap}
+                  min={0}
+                  max={24}
+                  onChange={v => updateSpacingSettings({ h3TitleTopGap: v })}
+                />
+                <hr style={{ borderColor: 'var(--border)' }} />
+                <SliderRow
+                  label="三级标题下边距"
+                  value={settings.spacing.h3TitleBottomGap}
+                  min={0}
+                  max={24}
+                  onChange={v => updateSpacingSettings({ h3TitleBottomGap: v })}
                 />
               </div>
             </SectionCard>

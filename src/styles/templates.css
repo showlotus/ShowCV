@@ -40,6 +40,16 @@
   display: flow-root;
 }
 
+.resume-template .resume-title-h2 {
+  padding-top: var(--h2-title-top-gap, 0);
+  padding-bottom: var(--h2-title-bottom-gap, 0);
+}
+
+.resume-template .resume-title-h3 {
+  padding-top: var(--h3-title-top-gap, 0);
+  padding-bottom: var(--h3-title-bottom-gap, 0);
+}
+
 /* 跨页 section 的伪元素 — 已移除，分页预览改用独立页面容器 */
 
 .resume-template h1,
@@ -50,10 +60,6 @@
 .resume-template h6 {
   break-inside: avoid;
   page-break-inside: avoid;
-}
-
-.resume-template h1 {
-  /* line-height: normal; */
 }
 
 .resume-template p,
@@ -125,24 +131,20 @@
 }
 
 .resume-template .resume-title {
-  font-size: var(--title-size, 28px);
+  font-size: var(--h1-title-size, 28px);
   font-weight: 700;
   color: var(--text-color, #1f2937);
 }
 
 .resume-template .section-title {
-  font-size: var(--heading-size, 18px);
+  font-size: var(--h2-title-size, 18px);
   font-weight: 600;
   color: var(--text-color, #1f2937);
 }
 
 .resume-template .subsection-title {
-  font-size: var(--body-size, 14px);
+  font-size: var(--h3-title-size, 14px);
   font-weight: 600;
-}
-
-.resume-template .resume-paragraph {
-  margin-bottom: 5px;
 }
 
 .resume-template .resume-list {

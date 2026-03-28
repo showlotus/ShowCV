@@ -1,13 +1,17 @@
 import { strFromU8, strToU8, unzlibSync, zlibSync } from 'fflate'
 import type { ResumeSettings, TemplateId } from '@/types'
+import { normalizeResumeSettings } from '@/utils/constants'
+
+type ShareFontData = [number, number, number, number, number, number, string]
+type ShareSpacingData = [number, number, number, number, number]
 
 // 分享数据结构（使用最短键名）
 interface ShareData {
   c: string // content - Markdown 内容
   t: TemplateId // templateId - 模板 ID
-  ft: [number, number, number, number, number, string] // font: titleSize, headingSize, bodySize, smallSize, lineHeight, fontFamily
+  ft: ShareFontData // font: h1TitleSize, h2TitleSize, h3TitleSize, bodySize, smallSize, lineHeight, fontFamily
   cl: [string, string, string, string] // color: primary, text, muted, background
-  sp: [number, number] // spacing: sectionGap, padding
+  sp: ShareSpacingData // spacing: padding, h2TitleTopGap, h2TitleBottomGap, h3TitleTopGap, h3TitleBottomGap
   n: string // name - 简历名称
 }
 
@@ -20,8 +24,9 @@ function compressSettings(settings: ResumeSettings): ShareData {
     t: '' as TemplateId, // 由调用者填充
     n: '', // 由调用者填充
     ft: [
-      settings.font.titleSize,
-      settings.font.headingSize,
+      settings.font.h1TitleSize,
+      settings.font.h2TitleSize,
+      settings.font.h3TitleSize,
       settings.font.bodySize,
       settings.font.smallSize,
       Math.round(settings.font.lineHeight), // lineHeight px 整数存储
@@ -33,8 +38,49 @@ function compressSettings(settings: ResumeSettings): ShareData {
       settings.color.muted,
       settings.color.background,
     ],
-    sp: [settings.spacing.sectionGap, settings.spacing.padding],
+    sp: [
+      settings.spacing.padding,
+      settings.spacing.h2TitleTopGap,
+      settings.spacing.h2TitleBottomGap,
+      settings.spacing.h3TitleTopGap,
+      settings.spacing.h3TitleBottomGap,
+    ],
   }
+}
+
+/**
+ * 还原分享数据中的字体设置
+ * @param font 分享数据中的字体数组
+ */
+function decompressFontSettings(font: ShareFontData): ResumeSettings['font'] {
+  return normalizeResumeSettings({
+    font: {
+      h1TitleSize: font[0],
+      h2TitleSize: font[1],
+      h3TitleSize: font[2],
+      bodySize: font[3],
+      smallSize: font[4],
+      lineHeight: font[5],
+      fontFamily: font[6],
+    },
+  }).font
+}
+
+/**
+ * 还原分享数据中的间距设置
+ * @param spacing 分享数据中的间距数组
+ */
+function decompressSpacingSettings(spacing: ShareSpacingData): ResumeSettings['spacing'] {
+  const [padding, h2TitleTopGap, h2TitleBottomGap] = spacing
+  return normalizeResumeSettings({
+    spacing: {
+      padding,
+      h2TitleTopGap,
+      h2TitleBottomGap,
+      h3TitleTopGap: spacing[3],
+      h3TitleBottomGap: spacing[4],
+    },
+  }).spacing
 }
 
 /**
@@ -50,26 +96,16 @@ function decompressSettings(data: ShareData): {
     content: data.c,
     templateId: data.t,
     name: data.n,
-    settings: {
-      font: {
-        titleSize: data.ft[0],
-        headingSize: data.ft[1],
-        bodySize: data.ft[2],
-        smallSize: data.ft[3],
-        lineHeight: data.ft[4],
-        fontFamily: data.ft[5],
-      },
+    settings: normalizeResumeSettings({
+      font: decompressFontSettings(data.ft),
       color: {
         primary: data.cl[0],
         text: data.cl[1],
         muted: data.cl[2],
         background: data.cl[3],
       },
-      spacing: {
-        sectionGap: data.sp[0],
-        padding: data.sp[1],
-      },
-    },
+      spacing: decompressSpacingSettings(data.sp),
+    }),
   }
 }
 
