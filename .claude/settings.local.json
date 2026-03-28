@@ -8,7 +8,10 @@
       "Bash(pnpm tsc:*)",
       "Bash(ls -la /Users/q123/Desktop/Code/showcv/src/layouts/index.*)",
       "Bash(pnpm exec:*)",
-      "Bash(echo \"Exit code: $?\")"
+      "Bash(echo \"Exit code: $?\")",
+      "Bash(pnpm build:*)",
+      "Bash(git commit:*)",
+      "Bash(npx tsc:*)"
     ]
   }
 }

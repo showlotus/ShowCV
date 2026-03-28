@@ -38,9 +38,10 @@ function App() {
     }))
   )
 
-  const previewRef = useRef<HTMLDivElement>(null)
-  const { handlePrint } = useReactToPrintExport(previewRef, padding)
-  const { handleCopyImage } = useCopyImageExport(previewRef)
+  const printRef = useRef<HTMLDivElement>(null)
+  const copyRef = useRef<HTMLDivElement>(null)
+  const { handlePrint } = useReactToPrintExport(printRef, padding)
+  const { handleCopyImage } = useCopyImageExport(copyRef)
 
   /** 根据预览面板像素宽度实时计算缩放比例，上限为 1 */
   // const [scale, setScale] = useState(1)
@@ -159,7 +160,7 @@ function App() {
               className="flex-1 overflow-x-hidden overflow-y-auto rounded-lg p-4"
               style={{ background: 'var(--bg-tertiary)' }}
             >
-              <PreviewContainer ref={previewRef} />
+              <PreviewContainer ref={copyRef} printRef={printRef} />
             </div>
           </ResizablePanel>
         </ResizablePanelGroup>

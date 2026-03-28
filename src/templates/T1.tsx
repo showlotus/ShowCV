@@ -35,7 +35,11 @@ const markdownComponents: Components = {
   h1: ({ children }) => (
     <p
       className="mb-4 border-b-2 pb-2 font-bold"
-      style={{ borderColor: 'var(--primary-color)', fontSize: 'var(--title-size)' }}
+      style={{
+        borderColor: 'var(--primary-color)',
+        fontSize: 'var(--title-size)',
+        lineHeight: 'var(--title-size)',
+      }}
     >
       {children}
     </p>
@@ -59,9 +63,7 @@ const markdownComponents: Components = {
   ),
   // 自定义 section 节点渲染
   section: ({ children, className }) => (
-    <section className={`resume-section ${className || ''}`}>
-      {children}
-    </section>
+    <section className={`resume-section ${className || ''}`}>{children}</section>
   ),
   p: ({ children }) => (
     <p className="resume-paragraph mb-2">
