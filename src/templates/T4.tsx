@@ -81,7 +81,7 @@ function buildMarkdownComponents(settings: ResumeSettings): Components {
                     height: 'var(--avatar-size)',
                     width: `calc(var(--avatar-size) * ${avatarRatio})`,
                     borderRadius: 'var(--avatar-border-radius)',
-                    objectFit: 'cover',
+                    objectFit: 'contain',
                     flexShrink: 0,
                   }}
                 />
@@ -130,7 +130,7 @@ function buildMarkdownComponents(settings: ResumeSettings): Components {
                   height: 'var(--avatar-size)',
                   width: `calc(var(--avatar-size) * ${avatarRatio})`,
                   borderRadius: 'var(--avatar-border-radius)',
-                  objectFit: 'cover',
+                  objectFit: 'contain',
                   flexShrink: 0,
                 }}
               />

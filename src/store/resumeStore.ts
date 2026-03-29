@@ -2,6 +2,7 @@ import { create } from 'zustand'
 import { persist } from 'zustand/middleware'
 import type { ResumeSettings, TemplateId, ResumeData, AppTheme } from '@/types'
 import { DEFAULT_CONTENT, normalizeResumeSettings } from '@/utils/constants'
+import defaultAvatarSrc from '@/assets/avatar.png?url'
 import { generateId } from '@/utils'
 import { T1_DEFAULT_SETTINGS } from '@/templates/T1'
 import { T2_DEFAULT_SETTINGS } from '@/templates/T2'
@@ -79,15 +80,28 @@ interface ResumeStore {
 }
 
 // 创建默认简历
-const createDefaultResume = (): ResumeItem => ({
-  id: generateId(),
-  name: '我的简历',
-  content: DEFAULT_CONTENT,
-  templateId: 'T1',
-  settings: normalizeResumeSettings(null, getTemplateDefaults('T1')),
-  createdAt: Date.now(),
-  updatedAt: Date.now(),
-})
+const createDefaultResume = (): ResumeItem => {
+  const settings = normalizeResumeSettings(null, getTemplateDefaults('T1'))
+  return {
+    id: generateId(),
+    name: '我的简历',
+    content: DEFAULT_CONTENT,
+    templateId: 'T1',
+    settings: {
+      ...settings,
+      avatar: {
+        src: defaultAvatarSrc,
+        visible: true,
+        size: 80,
+        naturalWidth: 200,
+        naturalHeight: 200,
+        borderRadius: 10,
+      },
+    },
+    createdAt: Date.now(),
+    updatedAt: Date.now(),
+  }
+}
 
 export const useResumeStore = create<ResumeStore>()(
   persist(
