@@ -27,7 +27,7 @@ jobs:
         with:
           # 根据需要设置 Node.js 版本
           # node-version: lts/*
-          node-version: '20.9.x'
+          node-version: '20.19.x'
           cache: pnpm
           registry-url: 'https://registry.npmjs.org'
 
