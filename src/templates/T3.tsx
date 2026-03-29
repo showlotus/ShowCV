@@ -5,16 +5,17 @@ import type { ResumeSettings } from '@/types'
 import { remarkGroupSection } from './utils/remarkGroupSection'
 import { PipeSplit } from './utils/PipeSplit'
 import { useCssVars } from './utils/useCssVars'
+import { hexToRgba } from './utils/colorUtils'
 import { FONT_PRESETS } from '@/utils/constants'
 
-export const T1_DEFAULT_SETTINGS: ResumeSettings = {
+export const T3_DEFAULT_SETTINGS: ResumeSettings = {
   font: {
     h1TitleSize: 24,
     h2TitleSize: 16,
     h3TitleSize: 12,
     bodySize: 12,
     smallSize: 12,
-    lineHeight: 12,
+    lineHeight: 15,
     fontFamily: FONT_PRESETS.find(p => p.id === 'default')!.value,
   },
   color: {
@@ -22,10 +23,10 @@ export const T1_DEFAULT_SETTINGS: ResumeSettings = {
   },
   spacing: {
     padding: 40,
-    h2TitleTopGap: 10,
-    h2TitleBottomGap: 10,
-    h3TitleTopGap: 4,
-    h3TitleBottomGap: 4,
+    h2TitleTopGap: 12,
+    h2TitleBottomGap: 12,
+    h3TitleTopGap: 2,
+    h3TitleBottomGap: 2,
   },
   layout: {
     headerAlign: 'left',
@@ -38,7 +39,7 @@ export interface LayoutProps {
   className?: string
 }
 
-function T1({ content, settings, className }: LayoutProps) {
+function T3({ content, settings, className }: LayoutProps) {
   const style = useCssVars(settings)
   const components = useMemo(() => buildMarkdownComponents(settings), [settings])
 
@@ -85,9 +86,9 @@ function buildMarkdownComponents(settings: ResumeSettings): Components {
               </div>
               <div style={{ lineHeight: '1.75em' }}>{children}</div>
             </div>
-            {(align === 'left' || avatarSrc) && (
+            {avatarSrc && (
               <img
-                src={avatarSrc || ''}
+                src={avatarSrc}
                 alt="Avatar"
                 style={{
                   height: 'var(--avatar-size)',
@@ -95,7 +96,6 @@ function buildMarkdownComponents(settings: ResumeSettings): Components {
                   borderRadius: 'var(--avatar-border-radius)',
                   objectFit: 'cover',
                   flexShrink: 0,
-                  opacity: avatarSrc ? 1 : 0,
                 }}
               />
             )}
@@ -106,14 +106,26 @@ function buildMarkdownComponents(settings: ResumeSettings): Components {
     h1: () => null,
     h2: ({ children }) => (
       <p
-        className="resume-title-h2 flex flex-col items-start gap-2 font-semibold"
-        style={{ fontSize: 'var(--h2-title-size)', color: settings.color.primary }}
+        className="resume-title-h2 flex items-center gap-2 font-semibold whitespace-nowrap"
+        style={{
+          fontSize: 'var(--h2-title-size)',
+          lineHeight: 'var(--h2-title-size)',
+          color: settings.color.primary,
+        }}
       >
-        <PipeSplit>{children}</PipeSplit>
-        <span
-          className="h-0.5 w-full rounded-sm"
-          style={{ backgroundColor: 'var(--primary-color)' }}
-        ></span>
+        <div className="relative flex-1 pl-4">
+          <span
+            className="absolute top-1/2 right-0 left-0 -translate-y-1/2"
+            style={{
+              backgroundColor: hexToRgba(settings.color.primary, 0.15),
+              height: '1.75em',
+              borderLeft: `4px solid ${settings.color.primary}`,
+            }}
+          ></span>
+          <div className="z-1">
+            <PipeSplit>{children}</PipeSplit>
+          </div>
+        </div>
       </p>
     ),
     h3: ({ children }) => (
@@ -161,4 +173,4 @@ function buildMarkdownComponents(settings: ResumeSettings): Components {
   }
 }
 
-export default T1
+export default T3

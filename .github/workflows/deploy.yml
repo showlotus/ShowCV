@@ -1,0 +1,47 @@
+name: Build and Push
+
+on:
+  push:
+    branches:
+      - master # 你想触发这个工作流的分支，可以根据需要修改
+
+  workflow_dispatch:
+
+jobs:
+  build:
+    concurrency: ci-${{ github.ref }}
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+
+      - name: Install pnpm
+        uses: pnpm/action-setup@v2
+
+      - name: Set node
+        uses: actions/setup-node@v3
+        with:
+          # 根据需要设置 Node.js 版本
+          # node-version: lts/*
+          node-version: '20.9.x'
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm i
+
+      - name: Run build script
+        run: pnpm run build
+
+      - name: Create .nojekyll file
+        run: touch ./out/.nojekyll
+
+      - name: Deploy 🚀
+        uses: JamesIves/github-pages-deploy-action@v4
+        with:
+          clean: true
+          folder: dist

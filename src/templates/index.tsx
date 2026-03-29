@@ -3,6 +3,9 @@ import type { ResumeSettings } from '@/types'
 
 // 同步导入所有模板
 import T1 from './T1'
+import T2 from './T2'
+import T3 from './T3'
+import T4 from './T4'
 // 新增模板时在这里添加 import
 
 export interface LayoutProps {
@@ -14,7 +17,9 @@ export interface LayoutProps {
 // 模板映射表
 export const TEMPLATE_MAP = {
   T1,
-
+  T2,
+  T3,
+  T4,
   // 新增模板时在这里添加
 } as const
 

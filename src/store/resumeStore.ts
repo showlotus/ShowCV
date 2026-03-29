@@ -4,12 +4,21 @@ import type { ResumeSettings, TemplateId, ResumeData, AppTheme } from '@/types'
 import { DEFAULT_CONTENT, normalizeResumeSettings } from '@/utils/constants'
 import { generateId } from '@/utils'
 import { T1_DEFAULT_SETTINGS } from '@/templates/T1'
+import { T2_DEFAULT_SETTINGS } from '@/templates/T2'
+import { T3_DEFAULT_SETTINGS } from '@/templates/T3'
+import { T4_DEFAULT_SETTINGS } from '@/templates/T4'
 
 // 获取模板专属默认配置
 function getTemplateDefaults(templateId: TemplateId): ResumeSettings | null {
   switch (templateId) {
     case 'T1':
       return T1_DEFAULT_SETTINGS
+    case 'T2':
+      return T2_DEFAULT_SETTINGS
+    case 'T3':
+      return T3_DEFAULT_SETTINGS
+    case 'T4':
+      return T4_DEFAULT_SETTINGS
     default:
       return null
   }
@@ -59,6 +68,7 @@ interface ResumeStore {
   updateFontSettings: (font: Partial<ResumeSettings['font']>) => void
   updateColorSettings: (color: Partial<ResumeSettings['color']>) => void
   updateSpacingSettings: (spacing: Partial<ResumeSettings['spacing']>) => void
+  updateLayoutSettings: (layout: Partial<ResumeSettings['layout']>) => void
   updateAvatarSettings: (avatar: Partial<ResumeSettings['avatar']>) => void
   removeAvatar: () => void
   resetSettings: () => void
@@ -182,9 +192,18 @@ export const useResumeStore = create<ResumeStore>()(
       setTemplate: templateId => {
         set(state => {
           if (!state.currentResumeId) return state
+          const current = state.currentResume!.settings
+          const newSettings = normalizeResumeSettings(
+            { font: {}, color: {}, spacing: {}, avatar: current.avatar, layout: current.layout },
+            getTemplateDefaults(templateId)
+          )
+          // 切换模板时只保留用户主题色、字体、头像和布局
+          newSettings.color.primary = current.color.primary
+          newSettings.font.fontFamily = current.font.fontFamily
           const updatedResume = {
             ...state.currentResume!,
             templateId,
+            settings: newSettings,
             updatedAt: Date.now(),
           }
           return {
@@ -241,6 +260,25 @@ export const useResumeStore = create<ResumeStore>()(
             settings: {
               ...state.currentResume!.settings,
               spacing: { ...state.currentResume!.settings.spacing, ...spacing },
+            },
+            updatedAt: Date.now(),
+          }
+          return {
+            currentResume: updatedResume,
+            resumes: state.resumes.map(r => (r.id === state.currentResumeId ? updatedResume : r)),
+          }
+        })
+      },
+
+      // 更新布局设置
+      updateLayoutSettings: layout => {
+        set(state => {
+          if (!state.currentResumeId) return state
+          const updatedResume = {
+            ...state.currentResume!,
+            settings: {
+              ...state.currentResume!.settings,
+              layout: { ...state.currentResume!.settings.layout, ...layout },
             },
             updatedAt: Date.now(),
           }

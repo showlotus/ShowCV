@@ -96,11 +96,15 @@ export function AvatarUpload({ avatar, onUpdateAvatar, onRemoveAvatar }: AvatarU
       {/* 头像预览 / 上传区域 */}
       <div
         onClick={() => inputRef.current?.click()}
-        className="hover:border-accent-foreground hover:text-accent-foreground flex cursor-pointer items-center gap-3 rounded-lg border border-dashed p-3 transition-colors"
+        className="group hover:border-accent-foreground flex cursor-pointer items-center gap-3 rounded-lg border border-dashed p-3 transition-colors"
         style={{ background: 'var(--bg-secondary)' }}
       >
         {avatar?.src ? (
-          <img src={avatar.src} alt="Avatar" className="h-14 w-14 shrink-0 rounded object-cover" />
+          <img
+            src={avatar.src}
+            alt="Avatar"
+            className="h-14 w-14 shrink-0 rounded object-contain"
+          />
         ) : (
           <div
             className="flex h-14 w-14 shrink-0 items-center justify-center rounded"
@@ -110,10 +114,7 @@ export function AvatarUpload({ avatar, onUpdateAvatar, onRemoveAvatar }: AvatarU
           </div>
         )}
         <div className="flex-1">
-          <div
-            className="text-xs font-medium"
-            // style={{ color: 'var(--fg-primary)' }}
-          >
+          <div className="group-hover:text-accent-foreground text-xs font-medium text-(--fg-secondary) transition-colors">
             {avatar?.src ? '点击更换头像' : '点击上传头像'}
           </div>
           <div className="text-xs" style={{ color: 'var(--fg-muted)' }}>
@@ -128,7 +129,7 @@ export function AvatarUpload({ avatar, onUpdateAvatar, onRemoveAvatar }: AvatarU
               e.stopPropagation()
               onRemoveAvatar()
             }}
-            className="h-8 w-8 p-0"
+            className="h-8 w-8 p-0 text-(--fg-secondary)"
           >
             <X className="h-4 w-4" />
           </Button>

@@ -1,5 +1,5 @@
 import { useRef, useEffect, useState, memo } from 'react'
-import { RotateCcw } from 'lucide-react'
+import { RotateCcw, AlignLeft, AlignCenter, AlignRight } from 'lucide-react'
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
 import { useShallow } from 'zustand/react/shallow'
@@ -19,6 +19,7 @@ import {
   SelectValue,
 } from '@/components/ui/select'
 import { cn } from '@/lib/utils'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import type { TemplateId, ResumeSettings } from '@/types'
 
 /** 面板展开宽度 */
@@ -76,7 +77,7 @@ const TemplateCard = memo(
           onMouseLeave={() => setIsHovered(false)}
           className="relative w-full cursor-pointer overflow-hidden rounded-lg text-left transition-all"
           style={{
-            border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
+            border: `1px solid ${isActive || isHovered ? 'var(--accent)' : 'var(--border)'}`,
             background: 'var(--bg-tertiary)',
           }}
         >
@@ -262,6 +263,7 @@ export function SettingsPanel({ open }: { open: boolean }) {
     updateFontSettings,
     updateColorSettings,
     updateSpacingSettings,
+    updateLayoutSettings,
     updateAvatarSettings,
     removeAvatar,
     resetSettings,
@@ -274,6 +276,7 @@ export function SettingsPanel({ open }: { open: boolean }) {
       updateFontSettings: state.updateFontSettings,
       updateColorSettings: state.updateColorSettings,
       updateSpacingSettings: state.updateSpacingSettings,
+      updateLayoutSettings: state.updateLayoutSettings,
       updateAvatarSettings: state.updateAvatarSettings,
       removeAvatar: state.removeAvatar,
       resetSettings: state.resetSettings,
@@ -341,6 +344,31 @@ export function SettingsPanel({ open }: { open: boolean }) {
                 onUpdateAvatar={updateAvatarSettings}
                 onRemoveAvatar={removeAvatar}
               />
+            </SectionCard>
+
+            {/* 头部布局 */}
+            <SectionCard>
+              <SectionTitle>头部布局</SectionTitle>
+              <ToggleGroup
+                type="single"
+                value={settings.layout.headerAlign}
+                onValueChange={v => {
+                  if (v) updateLayoutSettings({ headerAlign: v as 'left' | 'center' | 'right' })
+                }}
+                variant="outline"
+                size="sm"
+                className="w-full"
+              >
+                <ToggleGroupItem value="left" className="flex-1">
+                  <AlignLeft className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="center" className="flex-1">
+                  <AlignCenter className="h-4 w-4" />
+                </ToggleGroupItem>
+                <ToggleGroupItem value="right" className="flex-1">
+                  <AlignRight className="h-4 w-4" />
+                </ToggleGroupItem>
+              </ToggleGroup>
             </SectionCard>
 
             {/* 颜色设置 */}

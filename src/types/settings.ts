@@ -36,12 +36,21 @@ export interface AvatarSettings {
   borderRadius: number // 圆角百分比 0-50
 }
 
+// 头部对齐方式
+export type HeaderAlign = 'left' | 'center' | 'right'
+
+// 布局设置
+export interface LayoutSettings {
+  headerAlign: HeaderAlign // 头部对齐方式
+}
+
 // 完整简历设置
 export interface ResumeSettings {
   font: FontSettings
   color: ColorSettings
   spacing: SpacingSettings
   avatar?: AvatarSettings
+  layout: LayoutSettings
 }
 
 // 模板 ID - 从 templates 模块导出

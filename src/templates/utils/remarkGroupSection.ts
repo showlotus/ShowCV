@@ -1,6 +1,15 @@
 import type { Root, RootContent } from 'mdast'
 import type { Plugin } from 'unified'
 
+/** 从 mdast 节点递归提取纯文本 */
+function extractText(node: RootContent): string {
+  if (node.type === 'text') return node.value
+  if ('children' in node && Array.isArray(node.children)) {
+    return (node.children as RootContent[]).map(extractText).join('')
+  }
+  return ''
+}
+
 /**
  * remark 插件：三阶段分组
  *
@@ -13,16 +22,22 @@ import type { Plugin } from 'unified'
  *   - 否则整体包成一个 section
  *
  * 第三阶段：h1 分组
- *   h1 之后、下一个 h1 或文档末尾之前的所有节点包成一个 section
+ *   h1 之后、下一个 h1 或文档末尾之前的所有节点包成一个 header
+ *   同时将 h1 文本注入 data-name 属性
  */
 export const remarkGroupSection: Plugin<[], Root> = () => tree => {
-  const makeSection = (nodes: RootContent[], className?: string): RootContent =>
+  const makeElement = (
+    nodes: RootContent[],
+    tagName: string,
+    className?: string,
+    extraProps?: Record<string, string>
+  ): RootContent =>
     ({
       type: 'blockquote',
       children: nodes,
       data: {
-        hName: 'section',
-        hProperties: className ? { className } : undefined,
+        hName: tagName,
+        hProperties: { ...(className ? { className } : {}), ...extraProps },
       },
     }) as unknown as RootContent
 
@@ -38,7 +53,7 @@ export const remarkGroupSection: Plugin<[], Root> = () => tree => {
 
   const flush1 = () => {
     if (buf) {
-      pass1.push(makeSection(buf))
+      pass1.push(makeElement(buf, 'section'))
       buf = null
     }
   }
@@ -69,7 +84,7 @@ export const remarkGroupSection: Plugin<[], Root> = () => tree => {
     if (h2Buf.some(isSection)) {
       pass2.push(...h2Buf)
     } else {
-      pass2.push(makeSection(h2Buf))
+      pass2.push(makeElement(h2Buf, 'section'))
     }
     h2Buf = null
   }
@@ -90,13 +105,15 @@ export const remarkGroupSection: Plugin<[], Root> = () => tree => {
   }
   flush2()
 
-  // 第三阶段：h1 与 h2 之间的内容包成 section
+  // 第三阶段：h1 与 h2 之间的内容包成 header，注入 data-name
   const result: RootContent[] = []
   let h1Buf: RootContent[] | null = null
 
   const flush3 = () => {
     if (!h1Buf) return
-    result.push(makeSection(h1Buf, 'resume-header'))
+    const h1Node = h1Buf.find(n => getDepth(n) === 1)
+    const name = h1Node ? extractText(h1Node) : ''
+    result.push(makeElement(h1Buf, 'header', 'resume-header', { 'data-name': name }))
     h1Buf = null
   }
 
