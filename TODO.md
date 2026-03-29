@@ -26,9 +26,8 @@
   [x] 支持右对齐语法
 
 - 预览区
-  [ ] P0: 当 Markdown 内容过多时，预览组件支持自动分页展示
-  [ ] P0: 打印样式要与预览样式一致
-  [ ] 使用 style 标签实现每页首个元素的 paddingTop
+  [x] P0: 当 Markdown 内容过多时，预览组件支持自动分页展示
+  [x] P0: 打印样式要与预览样式一致
 
 - 细节部分，体验优化
   [x] P2: 按钮悬浮时没有高亮
@@ -41,9 +40,10 @@
   [x] 在主题颜色选择器上添加提示：如果需要实体纸张打印，请尽量选择颜色较深的主题色，效果更佳～
   [x] zoom 缩放会导致复制的图片缺失部分内容
   [ ] 性能优化
-  [ ] 替换网站 logo
-  [ ] 更新 README.md 文档
-  [ ] 添加引导指南
-  [ ] 添加 Github Actions 自动发布 Github Pages
+  [x] 替换网站 logo
+  [x] 补充模版
+  [x] 更新 README.md 文档
+  <!-- [ ] 添加引导指南 -->
+  [x] 添加 Github Actions 自动发布 Github Pages
   [ ] 清理项目中无用文件
-  [ ] 发布 Github Pages
+  [x] 发布 Github Pages

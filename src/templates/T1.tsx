@@ -66,12 +66,47 @@ function buildMarkdownComponents(settings: ResumeSettings): Components {
     header: ({ children, node }) => {
       const name = node?.properties?.['data-name'] as string | undefined
       const align = settings.layout.headerAlign
-      const justifyClass =
-        align === 'center' ? 'justify-center' : align === 'right' ? 'justify-end' : 'justify-between'
-      const textAlign = align === 'center' ? 'center' : align === 'right' ? 'right' : 'left'
+
+      if (align === 'center') {
+        return (
+          <header className="resume-section resume-header">
+            <div className="mb-4 flex flex-col items-center gap-4">
+              {avatarSrc && (
+                <img
+                  src={avatarSrc}
+                  alt="Avatar"
+                  style={{
+                    height: 'var(--avatar-size)',
+                    width: `calc(var(--avatar-size) * ${avatarRatio})`,
+                    borderRadius: 'var(--avatar-border-radius)',
+                    objectFit: 'cover',
+                    flexShrink: 0,
+                  }}
+                />
+              )}
+              <div className="flex flex-col items-center gap-4" style={{ textAlign: 'center' }}>
+                <div
+                  className="font-bold"
+                  style={{
+                    fontSize: 'var(--h1-title-size)',
+                    lineHeight: 'var(--h1-title-size)',
+                    margin: 0,
+                  }}
+                >
+                  {name}
+                </div>
+                <div style={{ lineHeight: '1.75em' }}>{children}</div>
+              </div>
+            </div>
+          </header>
+        )
+      }
+
+      const isReversed = align === 'right'
+      const textAlign = align === 'right' ? 'right' : 'left'
       return (
         <header className="resume-section resume-header">
-          <div className={`mb-4 flex ${justifyClass}`}>
+          <div className={`mb-4 flex justify-between ${isReversed ? 'flex-row-reverse' : ''}`}>
             <div className="flex flex-col gap-4" style={{ textAlign }}>
               <div
                 className="font-bold"

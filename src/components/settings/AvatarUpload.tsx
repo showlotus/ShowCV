@@ -163,54 +163,55 @@ export function AvatarUpload({ avatar, onUpdateAvatar, onRemoveAvatar }: AvatarU
             />
           </div>
 
-          {avatar.visible && (
-            <div className="space-y-3">
-              <hr style={{ borderColor: 'var(--border)' }} />
-              {/* 尺寸滑块 */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium" style={{ color: 'var(--fg-secondary)' }}>
-                    头像大小
-                  </span>
-                  <span
-                    className="text-xs font-medium tabular-nums"
-                    style={{ color: 'var(--fg-primary)' }}
-                  >
-                    {avatar.size}px
-                  </span>
-                </div>
-                <Slider
-                  label=""
-                  value={avatar.size}
-                  min={40}
-                  max={120}
-                  onChange={v => onUpdateAvatar({ size: v })}
-                />
+          <div
+            className="space-y-3 transition-opacity"
+            style={{ opacity: avatar.visible ? 1 : 0.4 }}
+          >
+            <hr style={{ borderColor: 'var(--border)' }} />
+            {/* 尺寸滑块 */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium" style={{ color: 'var(--fg-secondary)' }}>
+                  头像大小
+                </span>
+                <span
+                  className="text-xs font-medium tabular-nums"
+                  style={{ color: 'var(--fg-primary)' }}
+                >
+                  {avatar.size}px
+                </span>
               </div>
-              <hr style={{ borderColor: 'var(--border)' }} />
-              {/* 圆角滑块 */}
-              <div className="space-y-2.5">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs font-medium" style={{ color: 'var(--fg-secondary)' }}>
-                    圆角
-                  </span>
-                  <span
-                    className="text-xs font-medium tabular-nums"
-                    style={{ color: 'var(--fg-primary)' }}
-                  >
-                    {avatar.borderRadius}%
-                  </span>
-                </div>
-                <Slider
-                  label=""
-                  value={avatar.borderRadius}
-                  min={0}
-                  max={50}
-                  onChange={v => onUpdateAvatar({ borderRadius: v })}
-                />
-              </div>
+              <Slider
+                label=""
+                value={avatar.size}
+                min={40}
+                max={120}
+                onChange={v => onUpdateAvatar({ size: v })}
+              />
             </div>
-          )}
+            <hr style={{ borderColor: 'var(--border)' }} />
+            {/* 圆角滑块 */}
+            <div className="space-y-2.5">
+              <div className="flex items-center justify-between">
+                <span className="text-xs font-medium" style={{ color: 'var(--fg-secondary)' }}>
+                  圆角
+                </span>
+                <span
+                  className="text-xs font-medium tabular-nums"
+                  style={{ color: 'var(--fg-primary)' }}
+                >
+                  {avatar.borderRadius}%
+                </span>
+              </div>
+              <Slider
+                label=""
+                value={avatar.borderRadius}
+                min={0}
+                max={50}
+                onChange={v => onUpdateAvatar({ borderRadius: v })}
+              />
+            </div>
+          </div>
         </>
       )}
     </div>
