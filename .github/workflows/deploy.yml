@@ -38,7 +38,7 @@ jobs:
         run: pnpm run build
 
       - name: Create .nojekyll file
-        run: touch ./out/.nojekyll
+        run: touch ./dist/.nojekyll
 
       - name: Deploy 🚀
         uses: JamesIves/github-pages-deploy-action@v4
