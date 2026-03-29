@@ -34,9 +34,9 @@ function compressSettings(settings: ResumeSettings): ShareData {
     ],
     cl: [
       settings.color.primary,
-      settings.color.text,
-      settings.color.muted,
-      settings.color.background,
+      settings.color.text ?? '',
+      settings.color.muted ?? '',
+      settings.color.background ?? '',
     ],
     sp: [
       settings.spacing.padding,
