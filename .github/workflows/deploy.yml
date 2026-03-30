@@ -1,9 +1,9 @@
 name: Build and Push
 
 on:
-  # push:
-    # branches:
-    #   - master # 你想触发这个工作流的分支，可以根据需要修改
+  push:
+    branches:
+      - master # 你想触发这个工作流的分支，可以根据需要修改
 
   workflow_dispatch:
 
