@@ -12,6 +12,7 @@ interface ShareData {
   ft: ShareFontData // font: h1TitleSize, h2TitleSize, h3TitleSize, bodySize, smallSize, lineHeight, fontFamily
   cl: [string, string, string, string] // color: primary, text, muted, background
   sp: ShareSpacingData // spacing: padding, h2TitleTopGap, h2TitleBottomGap, h3TitleTopGap, h3TitleBottomGap
+  la: 'left' | 'center' | 'right' // layout: headerAlign
   n: string // name - 简历名称
 }
 
@@ -45,6 +46,7 @@ function compressSettings(settings: ResumeSettings): ShareData {
       settings.spacing.h3TitleTopGap,
       settings.spacing.h3TitleBottomGap,
     ],
+    la: settings.layout.headerAlign,
   }
 }
 
@@ -105,6 +107,9 @@ function decompressSettings(data: ShareData): {
         background: data.cl[3],
       },
       spacing: decompressSpacingSettings(data.sp),
+      layout: {
+        headerAlign: data.la ?? 'left',
+      },
     }),
   }
 }
