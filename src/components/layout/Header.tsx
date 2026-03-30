@@ -6,6 +6,7 @@ import {
   Sun,
   Moon,
   Github,
+  Star,
   Image,
   PanelLeft,
   PanelRight,
@@ -16,6 +17,7 @@ import { useResumeStore } from '@/store'
 import { useShallow } from 'zustand/react/shallow'
 import { generateShareUrl } from '@/services'
 import { cn } from '@/utils'
+import { useGitHubStars } from '@/hooks/useGitHubStars'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 
@@ -68,6 +70,7 @@ export function Header({
   const [copySuccess, setCopySuccess] = useState(false)
   const [copyImageSuccess, setCopyImageSuccess] = useState(false)
   const [copyImageLoading, setCopyImageLoading] = useState(false)
+  const starCount = useGitHubStars('showlotus/showcv')
 
   /** 截图预览区并复制为 PNG 到剪贴板 */
   const handleCopyImage = useCallback(async () => {
@@ -225,7 +228,7 @@ export function Header({
         {/* GitHub 仓库链接 */}
         <Button
           variant="outline"
-          size="icon-sm"
+          size={starCount != null ? 'sm' : 'icon-sm'}
           asChild
           className="hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground text-(--fg-secondary)"
         >
@@ -236,6 +239,16 @@ export function Header({
             title="GitHub 仓库"
           >
             <Github className="h-4 w-4" />
+            {starCount != null && (
+              <>
+                <Star className="h-3 w-3" />
+                <span className="hidden md:inline text-xs">
+                  {starCount >= 1000
+                    ? `${(starCount / 1000).toFixed(1)}k`
+                    : starCount}
+                </span>
+              </>
+            )}
           </a>
         </Button>
       </div>

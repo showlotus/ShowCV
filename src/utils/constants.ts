@@ -176,4 +176,5 @@ export const STORAGE_KEYS = {
   CURRENT_RESUME: 'showcv:current',
   RESUME_LIST: 'showcv:resumes',
   APP_SETTINGS: 'showcv:settings',
+  GITHUB_STARS: 'showcv:github-stars',
 } as const
