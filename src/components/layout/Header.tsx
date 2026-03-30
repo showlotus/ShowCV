@@ -9,6 +9,7 @@ import {
   Image,
   PanelLeft,
   PanelRight,
+  Loader2,
 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
@@ -66,9 +67,11 @@ export function Header({
 }: HeaderProps) {
   const [copySuccess, setCopySuccess] = useState(false)
   const [copyImageSuccess, setCopyImageSuccess] = useState(false)
+  const [copyImageLoading, setCopyImageLoading] = useState(false)
 
   /** 截图预览区并复制为 PNG 到剪贴板 */
   const handleCopyImage = useCallback(async () => {
+    setCopyImageLoading(true)
     try {
       await onCopyImage()
       setCopyImageSuccess(true)
@@ -77,6 +80,8 @@ export function Header({
     } catch (e) {
       console.error('[CopyImage Error]', e)
       toast.error('复制失败')
+    } finally {
+      setCopyImageLoading(false)
     }
   }, [onCopyImage])
 
@@ -167,13 +172,19 @@ export function Header({
           variant="outline"
           size="sm"
           onClick={handleCopyImage}
+          disabled={copyImageLoading}
           className={cn(
             'border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground text-(--fg-secondary)',
             copyImageSuccess &&
               'border-(--success) bg-(--success-soft)! text-(--success)! hover:border-(--success)! hover:bg-(--success-soft)! hover:text-(--success)!'
           )}
         >
-          {copyImageSuccess ? (
+          {copyImageLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="hidden md:inline">生成中…</span>
+            </>
+          ) : copyImageSuccess ? (
             <>
               <Check className="h-4 w-4" />
               <span className="hidden md:inline">已复制</span>
