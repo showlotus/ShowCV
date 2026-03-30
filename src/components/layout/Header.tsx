@@ -152,7 +152,6 @@ export function Header({
           size="sm"
           onClick={handleShare}
           className={cn(
-            'border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground text-(--fg-secondary)',
             copySuccess &&
               'border-(--success) bg-(--success-soft)! text-(--success)! hover:border-(--success)! hover:bg-(--success-soft)! hover:text-(--success)!'
           )}
@@ -177,7 +176,6 @@ export function Header({
           onClick={handleCopyImage}
           disabled={copyImageLoading}
           className={cn(
-            'border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground text-(--fg-secondary)',
             copyImageSuccess &&
               'border-(--success) bg-(--success-soft)! text-(--success)! hover:border-(--success)! hover:bg-(--success-soft)! hover:text-(--success)!'
           )}
@@ -205,7 +203,7 @@ export function Header({
           variant="outline"
           size="sm"
           onClick={onExportJSON}
-          className="hidden border-border text-(--fg-secondary) hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground md:flex"
+          className="hidden md:flex"
         >
           <Download className="h-4 w-4" />
           JSON
@@ -216,7 +214,7 @@ export function Header({
           variant="outline"
           size="sm"
           onClick={onExportPDF}
-          className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground text-(--fg-secondary)"
+          className=""
         >
           {/* <FileDown className="h-4 w-4" /> */}
           <Download className="h-4 w-4" />
@@ -230,7 +228,7 @@ export function Header({
           variant="outline"
           size={starCount != null ? 'sm' : 'icon-sm'}
           asChild
-          className="hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground text-(--fg-secondary)"
+          className=""
         >
           <a
             href="https://github.com/showlotus/showcv"

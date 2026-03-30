@@ -440,7 +440,7 @@ export function SettingsPanel({ open }: { open: boolean }) {
           <div className="shrink-0 border-t p-3" style={{ borderColor: 'var(--border)' }}>
             <Button
               variant="outline"
-              className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground w-full gap-2 text-(--fg-secondary)"
+              className="w-full gap-2"
               onClick={handleReset}
             >
               <RotateCcw className="h-4 w-4" />
