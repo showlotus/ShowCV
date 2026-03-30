@@ -2,9 +2,9 @@
 
 > 基于 Markdown 的在线简历编辑器，支持实时预览、多种模板、PDF 导出和链接分享。（简历优化可参考 [job-prep-skills](https://github.com/showlotus/job-prep-skills)，含前端面试模拟等实用技能）
 
-![light](./res/light.png)
+![light](./res/light-v2.png)
 
-![dark](./res/dark.png)
+![dark](./res/dark-v2.png)
 
 ## 功能特性
 
