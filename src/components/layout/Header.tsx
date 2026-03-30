@@ -231,7 +231,7 @@ export function Header({
           className=""
         >
           <a
-            href="https://github.com/showlotus/showcv"
+            href="https://github.com/showlotus/ShowCV"
             target="_blank"
             rel="noopener noreferrer"
             title="GitHub 仓库"
