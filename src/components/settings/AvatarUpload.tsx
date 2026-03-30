@@ -3,7 +3,7 @@ import { Upload, X, User } from 'lucide-react'
 import { toast } from 'sonner'
 import { Button } from '@/components/ui/button'
 import { Switch } from '@/components/ui/switch'
-import { Slider } from '../common'
+import { SliderRow } from './SliderRow'
 import type { AvatarSettings } from '@/types'
 
 const MAX_AVATAR_SIZE = 200 * 1024
@@ -169,48 +169,23 @@ export function AvatarUpload({ avatar, onUpdateAvatar, onRemoveAvatar }: AvatarU
           >
             <hr style={{ borderColor: 'var(--border)' }} />
             {/* 尺寸滑块 */}
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium" style={{ color: 'var(--fg-secondary)' }}>
-                  头像大小
-                </span>
-                <span
-                  className="text-xs font-medium tabular-nums"
-                  style={{ color: 'var(--fg-primary)' }}
-                >
-                  {avatar.size}px
-                </span>
-              </div>
-              <Slider
-                label=""
-                value={avatar.size}
-                min={40}
-                max={120}
-                onChange={v => onUpdateAvatar({ size: v })}
-              />
-            </div>
+            <SliderRow
+              label="头像大小"
+              value={avatar.size}
+              min={40}
+              max={120}
+              onChange={v => onUpdateAvatar({ size: v })}
+            />
             <hr style={{ borderColor: 'var(--border)' }} />
             {/* 圆角滑块 */}
-            <div className="space-y-2.5">
-              <div className="flex items-center justify-between">
-                <span className="text-xs font-medium" style={{ color: 'var(--fg-secondary)' }}>
-                  圆角
-                </span>
-                <span
-                  className="text-xs font-medium tabular-nums"
-                  style={{ color: 'var(--fg-primary)' }}
-                >
-                  {avatar.borderRadius}%
-                </span>
-              </div>
-              <Slider
-                label=""
-                value={avatar.borderRadius}
-                min={0}
-                max={50}
-                onChange={v => onUpdateAvatar({ borderRadius: v })}
-              />
-            </div>
+            <SliderRow
+              label="圆角"
+              value={avatar.borderRadius}
+              min={0}
+              max={50}
+              unit="%"
+              onChange={v => onUpdateAvatar({ borderRadius: v })}
+            />
           </div>
         </>
       )}
