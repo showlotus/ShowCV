@@ -52,10 +52,8 @@ function isValidHex(hex: string): boolean {
   return /^#[0-9a-fA-F]{6}$/.test(hex)
 }
 
-/** 使用鼠标/触摸拖拽交互，返回相对于元素的归一化坐标 [0,1] */
-function useDrag(onDrag: (x: number, y: number) => void) {
-  const ref = useRef<HTMLDivElement>(null)
-
+/** 使用鼠标/触摸拖拽交互，返回 onMouseDown 处理函数 */
+function useDrag(ref: React.RefObject<HTMLDivElement | null>, onDrag: (x: number, y: number) => void) {
   const getPos = useCallback(
     (clientX: number, clientY: number) => {
       const el = ref.current
@@ -65,25 +63,30 @@ function useDrag(onDrag: (x: number, y: number) => void) {
       const y = Math.max(0, Math.min(1, (clientY - rect.top) / rect.height))
       onDrag(x, y)
     },
-    [onDrag]
+    [ref, onDrag]
   )
 
-  const onMouseMove = useCallback((e: MouseEvent) => getPos(e.clientX, e.clientY), [getPos])
-  const onMouseUp = useCallback(() => {
+  const onMouseMove = useCallback(
+    (e: MouseEvent) => getPos(e.clientX, e.clientY),
+    [getPos]
+  )
+
+  const handleUp = useCallback(() => {
     window.removeEventListener('mousemove', onMouseMove)
-    window.removeEventListener('mouseup', onMouseUp)
-  }, [onMouseMove])
+    window.removeEventListener('mouseup', handleUp)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const onMouseDown = useCallback(
     (e: React.MouseEvent) => {
       getPos(e.clientX, e.clientY)
       window.addEventListener('mousemove', onMouseMove)
-      window.addEventListener('mouseup', onMouseUp)
+      window.addEventListener('mouseup', handleUp)
     },
-    [getPos, onMouseMove, onMouseUp]
+    [getPos, onMouseMove, handleUp]
   )
 
-  return { ref, onMouseDown }
+  return onMouseDown
 }
 
 interface ColorPickerProps {
@@ -116,6 +119,7 @@ export function ColorPicker({
   // 外部 value 变化时同步（如切换简历）
   useEffect(() => {
     if (isValidHex(value)) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect -- 同步外部 prop 到本地状态
       setHsv(hexToHsv(value))
       setHexInput(value)
     }
@@ -133,12 +137,18 @@ export function ColorPicker({
   )
 
   // 色域面板拖拽（改变 S 和 V）
-  const satDrag = useDrag(
-    useCallback((x, y) => updateHsv({ ...hsv, s: x, v: 1 - y }), [hsv, updateHsv])
+  const satRef = useRef<HTMLDivElement>(null)
+  const onSatDrag = useDrag(
+    satRef,
+    useCallback((x: number, y: number) => updateHsv({ ...hsv, s: x, v: 1 - y }), [hsv, updateHsv])
   )
 
   // 色相滑条拖拽（改变 H）
-  const hueDrag = useDrag(useCallback(x => updateHsv({ ...hsv, h: x * 360 }), [hsv, updateHsv]))
+  const hueRef = useRef<HTMLDivElement>(null)
+  const onHueDrag = useDrag(
+    hueRef,
+    useCallback((x: number) => updateHsv({ ...hsv, h: x * 360 }), [hsv, updateHsv])
+  )
 
   /** 处理十六进制输入框变化 */
   const handleHexChange = (input: string) => {
@@ -205,8 +215,8 @@ export function ColorPicker({
         >
           {/* 色域面板：X 轴为饱和度，Y 轴为明度 */}
           <div
-            {...satDrag}
-            ref={satDrag.ref}
+            ref={satRef}
+            onMouseDown={onSatDrag}
             className="relative mb-3 h-36 w-full cursor-crosshair rounded-sm"
             style={{
               background: `linear-gradient(to bottom, transparent, #000),
@@ -228,8 +238,8 @@ export function ColorPicker({
 
           {/* 色相滑条 */}
           <div
-            {...hueDrag}
-            ref={hueDrag.ref}
+            ref={hueRef}
+            onMouseDown={onHueDrag}
             className="relative mb-3 h-3 w-full cursor-pointer rounded-full"
             style={{
               background: 'linear-gradient(to right, #f00, #ff0, #0f0, #0ff, #00f, #f0f, #f00)',

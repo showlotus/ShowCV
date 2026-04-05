@@ -5,9 +5,7 @@ import type { ResumeSettings } from '@/types'
 import { remarkGroupSection } from './utils/remarkGroupSection'
 import { PipeSplit } from './utils/PipeSplit'
 import { useCssVars } from './utils/useCssVars'
-import { hexToRgba } from './utils/colorUtils'
 import { FONT_PRESETS } from '@/utils/constants'
-import { Leaf } from 'lucide-react'
 
 export const T4_DEFAULT_SETTINGS: ResumeSettings = {
   font: {

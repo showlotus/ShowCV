@@ -80,8 +80,7 @@ const lightTheme: ThemeInfo = {
 }
 
 /** 海洋主题 */
-// @ts-ignore
-const oceanTheme: ThemeInfo = {
+const _oceanTheme: ThemeInfo = {
   id: 'ocean',
   name: '海洋',
   gradient: 'linear-gradient(135deg, #0c1222 50%, #06b6d4 50%)',
@@ -106,8 +105,7 @@ const oceanTheme: ThemeInfo = {
 }
 
 /** 森林主题 */
-// @ts-ignore
-const forestTheme: ThemeInfo = {
+const _forestTheme: ThemeInfo = {
   id: 'forest',
   name: '森林',
   gradient: 'linear-gradient(135deg, #0f1410 50%, #10b981 50%)',

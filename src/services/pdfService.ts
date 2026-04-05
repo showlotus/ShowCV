@@ -141,7 +141,7 @@ export function usePDFExport(ref?: RefObject<HTMLDivElement | null>) {
       printIframe.contentWindow?.focus()
       printIframe.contentWindow?.print()
     }, 800)
-  }, [])
+  }, [contentRef])
 
   return {
     handlePrint,

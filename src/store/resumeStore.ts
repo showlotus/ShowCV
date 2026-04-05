@@ -337,7 +337,7 @@ export const useResumeStore = create<ResumeStore>()(
         set(state => {
           if (!state.currentResumeId) return state
           const current = state.currentResume!
-          const { avatar: _, ...restSettings } = current.settings
+          const restSettings = { ...current.settings, avatar: undefined }
           const updatedResume = {
             ...current,
             settings: restSettings as ResumeSettings,
