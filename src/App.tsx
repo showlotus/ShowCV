@@ -7,6 +7,12 @@ import { Background } from './components/common'
 import { Toaster } from './components/ui/sonner'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './components/ui/resizable'
 import { Switch } from './components/ui/switch'
+import {
+  TooltipProvider,
+  Tooltip,
+  TooltipTrigger,
+  TooltipContent,
+} from './components/ui/tooltip'
 import { useResumeStore } from './store'
 import { useShallow } from 'zustand/react/shallow'
 import {
@@ -129,30 +135,42 @@ function App() {
               <span className="text-sm font-medium" style={{ color: 'var(--fg-primary)' }}>
                 实时预览
               </span>
-              <span className="inline-flex items-center gap-2">
-                <span
-                  className="cursor-pointer text-xs transition-colors"
-                  style={{
-                    color: previewMode === 'flat' ? 'var(--accent)' : 'var(--fg-muted)',
-                  }}
-                  onClick={() => setPreviewMode('flat')}
-                >
-                  平铺
+              <TooltipProvider>
+                <span className="inline-flex items-center gap-2">
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span
+                        className="cursor-pointer text-xs transition-colors"
+                        style={{
+                          color: previewMode === 'flat' ? 'var(--accent)' : 'var(--fg-muted)',
+                        }}
+                        onClick={() => setPreviewMode('flat')}
+                      >
+                        平铺
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="left" sideOffset={8}>连贯展示（复制为图片时的效果）</TooltipContent>
+                  </Tooltip>
+                  <Switch
+                    checked={previewMode === 'paginated'}
+                    onCheckedChange={checked => setPreviewMode(checked ? 'paginated' : 'flat')}
+                  />
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span
+                        className="cursor-pointer text-xs transition-colors"
+                        style={{
+                          color: previewMode === 'paginated' ? 'var(--accent)' : 'var(--fg-muted)',
+                        }}
+                        onClick={() => setPreviewMode('paginated')}
+                      >
+                        分页
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="right" sideOffset={8}>按 A4 纸自动分页（导出为 PDF 时的效果）</TooltipContent>
+                  </Tooltip>
                 </span>
-                <Switch
-                  checked={previewMode === 'paginated'}
-                  onCheckedChange={checked => setPreviewMode(checked ? 'paginated' : 'flat')}
-                />
-                <span
-                  className="cursor-pointer text-xs transition-colors"
-                  style={{
-                    color: previewMode === 'paginated' ? 'var(--accent)' : 'var(--fg-muted)',
-                  }}
-                  onClick={() => setPreviewMode('paginated')}
-                >
-                  分页
-                </span>
-              </span>
+              </TooltipProvider>
             </div>
             <div
               className="flex-1 overflow-x-hidden overflow-y-auto rounded-lg p-4"
