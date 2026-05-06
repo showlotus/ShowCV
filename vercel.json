@@ -1,0 +1,11 @@
+{
+  "git": {
+    "deploymentEnabled": {
+      "v2": true,
+      "master": false
+    }
+  },
+  "buildCommand": "pnpm run build",
+  "outputDirectory": "dist",
+  "framework": "vite"
+}
