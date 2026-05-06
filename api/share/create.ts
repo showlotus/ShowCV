@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { redis } from '../_lib/redis'
-import { encrypt } from '../_lib/crypto'
+import { redis } from '../_lib/redis.js'
+import { encrypt } from '../_lib/crypto.js'
 import { nanoid } from 'nanoid'
 
 const SHARE_TTL_SECONDS = 24 * 60 * 60 // 1 天

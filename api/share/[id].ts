@@ -1,6 +1,6 @@
 import type { VercelRequest, VercelResponse } from '@vercel/node'
-import { redis } from '../_lib/redis'
-import { decrypt } from '../_lib/crypto'
+import { redis } from '../_lib/redis.js'
+import { decrypt } from '../_lib/crypto.js'
 
 /** Lua 脚本：原子性 GET + DEL，保证阅后即焚的并发安全 */
 const GET_AND_DELETE_SCRIPT = `
