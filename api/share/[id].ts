@@ -24,9 +24,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   }
 
   try {
-    const result = (await redis.eval(GET_AND_DELETE_SCRIPT, { keys: [`share:${shareId}`] })) as
-      | string
-      | null
+    const result = (await redis.eval(
+      GET_AND_DELETE_SCRIPT,
+      [`share:${shareId}`],
+      []
+    )) as string | null
 
     if (!result) {
       return res.status(410).json({ error: 'Share link has expired or already viewed' })

@@ -7,6 +7,11 @@ import path from 'path'
 // https://vite.dev/config/
 export default defineConfig({
   base: './',
+  server: {
+    proxy: {
+      '/api': 'http://localhost:3001',
+    },
+  },
   plugins: [
     tailwindcss(),
     codeInspectorPlugin({
