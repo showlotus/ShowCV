@@ -1,6 +1,12 @@
 {
   "version": 1,
   "skills": {
+    "code-review-expert": {
+      "source": "sanyuan0704/sanyuan-skills",
+      "sourceType": "github",
+      "skillPath": "skills/code-review-expert/SKILL.md",
+      "computedHash": "6c2fe31851a34e63e033257527eab04eea835ca1cf4c4276d1392a323e36e377"
+    },
     "git-commit": {
       "source": "github/awesome-copilot",
       "sourceType": "github",

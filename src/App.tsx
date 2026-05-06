@@ -5,7 +5,6 @@ import { MarkdownEditor } from './components/editor'
 import { PreviewContainer } from './components/preview'
 import { SettingsPanel } from './components/settings'
 import { Background } from './components/common'
-import { Toaster } from './components/ui/sonner'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './components/ui/resizable'
 import { Switch } from './components/ui/switch'
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from './components/ui/tooltip'
@@ -103,7 +102,6 @@ function App() {
             {shareLoading ? '正在加载分享简历...' : '加载中...'}
           </p>
         </div>
-        <Toaster position="top-center" duration={2000} />
       </>
     )
   }
@@ -207,8 +205,6 @@ function App() {
         {/* 配置面板：固定宽度 */}
         <SettingsPanel open={settingsPanelOpen} />
       </div>
-
-      <Toaster position="top-center" duration={2000} />
     </div>
   )
 }
