@@ -7,7 +7,8 @@ export {
 export {
   encodeShareData,
   decodeShareData,
-  generateShareUrl,
-  getShareDataFromUrl,
-  clearShareHash,
+  createServerShare,
+  fetchShareData,
+  getShareIdFromUrl,
+  clearSharePath,
 } from './shareService'

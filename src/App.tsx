@@ -15,12 +15,8 @@ import {
 } from './components/ui/tooltip'
 import { useResumeStore } from './store'
 import { useShallow } from 'zustand/react/shallow'
-import {
-  useReactToPrintExport,
-  useCopyImageExport,
-  getShareDataFromUrl,
-  clearShareHash,
-} from './services'
+import { useReactToPrintExport, useCopyImageExport, fetchShareData, getShareIdFromUrl, clearSharePath } from './services'
+import { toast } from 'sonner'
 // import { downloadFile } from './utils'
 import './index.css'
 
@@ -55,19 +51,32 @@ function App() {
   //   setScale(Math.min(inPixels / A4_WIDTH_PX, 1))
   // }, [])
 
-  // 页面加载时检查 URL Hash 中的分享数据
+  // 页面加载时检查服务端分享链接 /s/{shareId}
   useEffect(() => {
-    const shareData = getShareDataFromUrl()
-    if (shareData) {
-      createResume({
-        name: shareData.name,
-        content: shareData.content,
-        templateId: shareData.templateId,
-        settings: shareData.settings,
-        fromShare: true,
+    const shareId = getShareIdFromUrl()
+    if (!shareId) return
+
+    fetchShareData(shareId)
+      .then(shareData => {
+        if (shareData) {
+          createResume({
+            name: shareData.name,
+            content: shareData.content,
+            templateId: shareData.templateId,
+            settings: shareData.settings,
+            fromShare: true,
+          })
+        } else {
+          toast.error('该分享链接已过期或已被查看')
+        }
       })
-      clearShareHash()
-    }
+      .catch(error => {
+        console.error('[Fetch Share Error]', error)
+        toast.error('无法加载分享内容')
+      })
+      .finally(() => {
+        clearSharePath()
+      })
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleExportPDF = useCallback(() => handlePrint(), [handlePrint])

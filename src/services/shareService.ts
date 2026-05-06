@@ -115,8 +115,8 @@ function decompressSettings(data: ShareData): {
 }
 
 /**
- * 压缩并编码数据为 URL Hash 字符串
- * 使用 fflate zlib 压缩 + Base64 编码（参考 Vue SFC Playground）
+ * 压缩并编码数据为 Base64 字符串
+ * 使用 fflate zlib 压缩 + Base64 编码
  */
 export function encodeShareData({
   content,
@@ -142,16 +142,16 @@ export function encodeShareData({
 }
 
 /**
- * 解码并解压 URL Hash 数据
+ * 解码并解压 Base64 数据为简历数据
  */
-export function decodeShareData(hash: string): {
+export function decodeShareData(encoded: string): {
   content: string
   templateId: TemplateId
   settings: ResumeSettings
   name: string
 } | null {
   try {
-    const binary = atob(hash)
+    const binary = atob(encoded)
     const buffer = strToU8(binary, true)
     const unzipped = unzlibSync(buffer)
     const json = strFromU8(unzipped)
@@ -164,37 +164,63 @@ export function decodeShareData(hash: string): {
 }
 
 /**
- * 生成分享链接
+ * 通过服务端 API 创建加密分享链接
+ * 流程：压缩数据 → POST 到服务端 → 服务端加密存储 → 返回 shareId
  */
-export function generateShareUrl(params: {
+export async function createServerShare(params: {
   content: string
   templateId: TemplateId
   settings: ResumeSettings
   name: string
-}): string {
-  const hash = encodeShareData(params)
-  return `${window.location.origin}${window.location.pathname}#${hash}`
+}): Promise<string> {
+  const encoded = encodeShareData(params)
+  const response = await fetch('/api/share/create', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ data: encoded }),
+  })
+
+  if (!response.ok) {
+    const body = await response.json().catch(() => ({}))
+    throw new Error(body.error || `分享创建失败: ${response.status}`)
+  }
+
+  const { shareId } = (await response.json()) as { shareId: string }
+  return `${window.location.origin}/s/${shareId}`
 }
 
 /**
- * 获取当前 URL 的分享数据
+ * 通过服务端 API 读取分享数据（阅后即焚）
+ * @param shareId 分享 ID
+ * @returns 解码后的简历数据，或 null（链接已失效）
  */
-export function getShareDataFromUrl(): {
+export async function fetchShareData(shareId: string): Promise<{
   content: string
   templateId: TemplateId
   settings: ResumeSettings
   name: string
-} | null {
-  const hash = window.location.hash.slice(1) // 移除 # 前缀
-  if (!hash) return null
-  return decodeShareData(hash)
+} | null> {
+  const response = await fetch(`/api/share/${shareId}`)
+
+  if (response.status === 410) {
+    return null
+  }
+
+  if (!response.ok) {
+    throw new Error(`获取分享数据失败: ${response.status}`)
+  }
+
+  const { data } = (await response.json()) as { data: string }
+  return decodeShareData(data)
 }
 
-/**
- * 清除 URL 中的分享数据
- */
-export function clearShareHash(): void {
-  const url = new URL(window.location.href)
-  url.hash = ''
-  window.history.replaceState({}, '', url.toString())
+/** 检测 URL 是否包含服务端分享 ID */
+export function getShareIdFromUrl(): string | null {
+  const match = window.location.pathname.match(/^\/s\/([A-Za-z0-9_-]{12})$/)
+  return match ? match[1] : null
+}
+
+/** 清除 URL 中的分享路径 */
+export function clearSharePath(): void {
+  window.history.replaceState({}, '', window.location.origin + window.location.pathname.replace(/\/s\/[A-Za-z0-9_-]{12}$/, ''))
 }

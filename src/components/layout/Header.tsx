@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
 import { useShallow } from 'zustand/react/shallow'
-import { generateShareUrl } from '@/services'
+import { createServerShare } from '@/services'
 import { cn } from '@/utils'
 import { useGitHubStars } from '@/hooks/useGitHubStars'
 import { Button } from '@/components/ui/button'
@@ -68,6 +68,7 @@ export function Header({
   onToggleSettingsPanel,
 }: HeaderProps) {
   const [copySuccess, setCopySuccess] = useState(false)
+  const [shareLoading, setShareLoading] = useState(false)
   const [copyImageSuccess, setCopyImageSuccess] = useState(false)
   const [copyImageLoading, setCopyImageLoading] = useState(false)
   const starCount = useGitHubStars('showlotus/showcv')
@@ -88,26 +89,31 @@ export function Header({
     }
   }, [onCopyImage])
 
-  /** 点击时直接读取最新 store 数据，无需订阅 currentResume */
+  /** 通过服务端 API 创建加密分享链接 */
   const handleShare = useCallback(async () => {
     const resume = useResumeStore.getState().currentResume
     if (!resume?.settings) {
       toast.error('请先创建简历')
       return
     }
-    const shareUrl = generateShareUrl({
-      content: resume.content,
-      templateId: resume.templateId,
-      settings: resume.settings,
-      name: resume.name,
-    })
+
+    setShareLoading(true)
     try {
+      const shareUrl = await createServerShare({
+        content: resume.content,
+        templateId: resume.templateId,
+        settings: resume.settings,
+        name: resume.name,
+      })
       await navigator.clipboard.writeText(shareUrl)
       setCopySuccess(true)
-      toast.success('链接已复制')
+      toast.success('链接已复制（1天有效，阅后即焚）')
       setTimeout(() => setCopySuccess(false), 2000)
-    } catch {
-      toast.error('复制失败')
+    } catch (error) {
+      console.error('[Share Error]', error)
+      toast.error(error instanceof Error ? error.message : '分享失败')
+    } finally {
+      setShareLoading(false)
     }
   }, [])
 
@@ -151,12 +157,18 @@ export function Header({
           variant="outline"
           size="sm"
           onClick={handleShare}
+          disabled={shareLoading}
           className={cn(
             copySuccess &&
               'border-(--success) bg-(--success-soft)! text-(--success)! hover:border-(--success)! hover:bg-(--success-soft)! hover:text-(--success)!'
           )}
         >
-          {copySuccess ? (
+          {shareLoading ? (
+            <>
+              <Loader2 className="h-4 w-4 animate-spin" />
+              <span className="hidden md:inline">生成中…</span>
+            </>
+          ) : copySuccess ? (
             <>
               <Check className="h-4 w-4" />
               <span className="hidden md:inline">已复制</span>

@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { encodeShareData, decodeShareData, generateShareUrl, getShareDataFromUrl, clearShareHash } from '@/services/shareService'
+import { encodeShareData, decodeShareData, getShareIdFromUrl, clearSharePath } from '@/services/shareService'
 import { normalizeResumeSettings } from '@/utils/constants'
 import type { ResumeSettings, TemplateId } from '@/types'
 
@@ -96,73 +96,39 @@ describe('encodeShareData / decodeShareData roundtrip', () => {
   })
 })
 
-describe('generateShareUrl', () => {
+describe('getShareIdFromUrl', () => {
   beforeEach(() => {
     vi.stubGlobal('location', {
       origin: 'https://example.com',
-      pathname: '/app',
+      pathname: '/s/abc123DEF456',
       hash: '',
-      href: 'https://example.com/app',
     })
   })
 
-  it('generates URL with origin, pathname, and hash', () => {
-    const url = generateShareUrl({
-      content: '# Test',
-      templateId: 'T1',
-      settings: makeSettings(),
-      name: 'Test',
-    })
-    expect(url).toMatch(/^https:\/\/example\.com\/app#[A-Za-z0-9+/=]+$/)
+  it('extracts shareId from /s/{id} path', () => {
+    expect(getShareIdFromUrl()).toBe('abc123DEF456')
+  })
+
+  it('returns null when path does not match', () => {
+    window.location.pathname = '/app'
+    expect(getShareIdFromUrl()).toBeNull()
+  })
+
+  it('returns null for shareId with wrong length', () => {
+    window.location.pathname = '/s/tooshort'
+    expect(getShareIdFromUrl()).toBeNull()
   })
 })
 
-describe('getShareDataFromUrl', () => {
-  beforeEach(() => {
+describe('clearSharePath', () => {
+  it('removes /s/{id} from URL via replaceState', () => {
     vi.stubGlobal('location', {
       origin: 'https://example.com',
-      pathname: '/app',
-      hash: '',
-      href: 'https://example.com/app',
-    })
-  })
-
-  it('decodes data from URL hash', () => {
-    const params = {
-      content: '# Test',
-      templateId: 'T1' as TemplateId,
-      settings: makeSettings(),
-      name: 'My CV',
-    }
-    const hash = encodeShareData(params)
-    window.location.hash = `#${hash}`
-    const result = getShareDataFromUrl()
-    expect(result).not.toBeNull()
-    expect(result!.content).toBe('# Test')
-    expect(result!.name).toBe('My CV')
-  })
-
-  it('returns null when hash is empty', () => {
-    expect(getShareDataFromUrl()).toBeNull()
-  })
-
-  it('returns null for invalid hash', () => {
-    window.location.hash = '#invalid'
-    expect(getShareDataFromUrl()).toBeNull()
-  })
-})
-
-describe('clearShareHash', () => {
-  it('calls history.replaceState to clear hash', () => {
-    vi.stubGlobal('location', {
-      origin: 'https://example.com',
-      pathname: '/app',
-      hash: '#somedata',
-      href: 'https://example.com/app#somedata',
+      pathname: '/s/abc123DEF456',
     })
     const replaceStateSpy = vi.spyOn(history, 'replaceState').mockImplementation(() => {})
-    clearShareHash()
-    expect(replaceStateSpy).toHaveBeenCalledWith({}, '', 'https://example.com/app')
+    clearSharePath()
+    expect(replaceStateSpy).toHaveBeenCalledWith({}, '', 'https://example.com')
     replaceStateSpy.mockRestore()
   })
 })
