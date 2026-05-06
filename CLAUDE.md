@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-ShowCV 是一个基于 Markdown 的简历编辑器，使用 React 19 + Vite + TypeScript 构建。支持实时预览、多种简历模板、PDF 导出和分享功能。纯客户端应用，无后端、无环境变量。
+ShowCV 是一个基于 Markdown 的简历编辑器，使用 React 19 + Vite + TypeScript 构建。支持实时预览、多种简历模板、PDF 导出和分享功能。前端纯客户端运行，分享功能依赖 Vercel Serverless Functions + Upstash Redis。
 
 ## 包管理器
 
@@ -13,18 +13,21 @@ ShowCV 是一个基于 Markdown 的简历编辑器，使用 React 19 + Vite + Ty
 ## 常用命令
 
 ```bash
-pnpm dev          # 启动开发服务器
-pnpm build        # 生产构建（先 tsc -b 再 vite build）
-pnpm lint         # ESLint 检查
-pnpm format       # Prettier 格式化
-pnpm format:check # 检查代码格式
-pnpm preview      # 预览生产构建
-pnpm test         # 运行所有测试（vitest run）
-pnpm test:watch   # 监听模式运行测试
-pnpm test:coverage # 运行测试并生成覆盖率报告
+pnpm dev            # 启动前端开发服务器（Vite，端口 5173）
+pnpm vercel         # 启动 Vercel API 服务（端口 3001，需先 vercel link & env pull）
+pnpm build          # 生产构建（先 tsc -b 再 vite build）
+pnpm lint           # TypeScript + ESLint 检查
+pnpm lint:fix       # 自动修复 lint 问题
+pnpm format         # Prettier 格式化
+pnpm format:check   # 检查代码格式
+pnpm test           # 运行所有测试（vitest run）
+pnpm test:watch     # 监听模式运行测试
+pnpm test:coverage  # 运行测试并生成覆盖率报告
 ```
 
 测试使用 Vitest，配置文件为 `vitest.config.ts`，测试文件位于 `tests/` 目录。
+
+本地开发分享功能时需同时启动两个服务：`pnpm vercel`（API）+ `pnpm dev`（前端）。Vite 已配置 `/api` 代理到 `localhost:3001`。
 
 ## 代码风格
 
@@ -100,7 +103,23 @@ pnpm test:coverage # 运行测试并生成覆盖率报告
 
 ### 分享机制
 
-`src/services/shareService.ts`：简历数据 → 压缩为紧凑格式（单字母键 + 元组数组）→ fflate zlib level 9 → Base64 → URL hash。打开时解码创建简历（`fromShare: true`），随后清除 hash。
+项目实现了**服务端分享**（主方案）和**客户端 hash 分享**（旧方案）两套机制，共用 `src/services/shareService.ts` 中的 `encodeShareData` / `decodeShareData` 编解码逻辑。
+
+**服务端分享**（`createServerShare` / `fetchShareData`）：
+- 客户端编码压缩 → POST `/api/share/create` → 服务端 AES-256-GCM 加密 → 存入 Upstash Redis（24h TTL）
+- 返回 12 位 nanoid 分享 ID，分享 URL 格式：`${origin}/s/${shareId}`
+- 读取时 Lua 脚本原子 GET+DEL（阅后即焚），解密后返回数据
+- API 实现位于 `api/share/`（Vercel Serverless Functions），工具位于 `api/_lib/`
+
+**客户端 hash 分享**（旧方案）：
+- 简历数据 → 紧凑编码 + fflate zlib 压缩 + Base64 → 写入 URL hash
+- 打开时解码创建简历（`fromShare: true`），随后清除 hash
+
+**API 注意事项：**
+- `api/` 中的 TypeScript 文件不在项目 tsconfig 范围内，IDE 可能报类型错误，不影响 Vercel 运行
+- 相对导入必须带 `.js` 扩展名（ESM 规范），如 `from '../_lib/redis.js'`
+- Redis 客户端使用 `KV_REST_API_URL` / `KV_REST_API_TOKEN`（Vercel KV 环境变量），非 `UPSTASH_*`
+- 加密密钥通过 `ENCRYPTION_KEY` 环境变量配置（32 字节 hex）
 
 ### 预览系统
 
@@ -109,6 +128,11 @@ pnpm test:coverage # 运行测试并生成覆盖率报告
 **双 DOM 渲染**：预览区渲染两份模板——一份可见（zoom 缩放后），一份隐藏在 `-9999px`（原始尺寸）。截图功能使用隐藏副本，因为 CSS `zoom` 会扭曲截图。修改预览功能时需同时考虑两份副本。
 
 **分页算法**（`usePaginatedLayout.ts`）：测量 `.resume-section` 元素高度，贪心分配到 A4 页面。每页渲染完整内容 + `transform: translateY(-startY)` + `overflow: hidden`，因此分页模式下 Markdown 会被渲染 N 次。
+
+### 全局 UI 组件
+
+- `<Toaster>` 挂载在 `src/main.tsx` 的顶层，始终存在，不受组件状态切换影响
+- `<TooltipProvider>` 同样在顶层，包裹整个 `<App />`
 
 ### 路径别名
 

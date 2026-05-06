@@ -1,6 +1,6 @@
 # ShowCV
 
-基于 Markdown 的在线简历编辑器，专注于高效编辑、实时预览与高质量导出。纯客户端运行，无后端、无环境变量。
+基于 Markdown 的在线简历编辑器，专注于高效编辑、实时预览与高质量导出。客户端运行，分享功能依赖 Vercel Serverless API。
 
 ![ShowCV 预览](./res/combine.png)
 
@@ -30,8 +30,9 @@
 - 支持头像上传、尺寸与圆角调节
 
 ### 分享协作
-- 生成分享链接，对方打开后可自动导入简历内容
-- 分享来源会标记为 `fromShare: true`
+- 通过服务端 API 生成加密分享链接（AES-256-GCM），1 天有效，阅后即焚
+- 对方打开链接后自动加载并导入简历内容，来源标记为 `fromShare: true`
+- 分享数据经紧凑编码 + zlib 压缩后存入 Upstash Redis（Vercel KV）
 
 ## 架构亮点
 
@@ -39,7 +40,7 @@
 - **双层主题系统**：编辑器 UI 主题与简历样式主题解耦，便于统一 UI 风格与模板个性化定制
 - **双 DOM 预览策略**：可见预览用于交互，隐藏原尺寸副本用于截图，避免 `zoom` 带来的截图失真
 - **分页布局算法**：按 section 高度进行分页分配，保持分页预览稳定性
-- **分享压缩链路**：简历数据经紧凑编码 + zlib 压缩 + Base64 写入 URL hash，实现免后端分享
+- **服务端分享链路**：简历数据经紧凑编码 + zlib 压缩 + AES-256-GCM 加密后存入 Upstash Redis，阅后即焚（Lua 原子 GET+DEL），分享链接 1 天有效
 
 ## 快速开始
 
@@ -55,7 +56,8 @@ pnpm dev
 ## 开发与测试命令
 
 ```bash
-pnpm dev            # 启动开发服务器
+pnpm dev            # 启动开发服务器（仅前端）
+pnpm vercel         # 启动 Vercel API 服务（需 vercel link & env pull，配合 pnpm dev 使用）
 pnpm build          # 生产构建（tsc -b + vite build）
 pnpm preview        # 预览生产构建
 pnpm lint           # TypeScript + ESLint 检查
@@ -77,7 +79,7 @@ pnpm test:coverage  # 生成测试覆盖率报告
 | Markdown 渲染 | react-markdown + remark-gfm |
 | 状态管理 | Zustand（含 localStorage 持久化） |
 | 导出能力 | react-to-print、modern-screenshot |
-| 分享压缩 | fflate（zlib） |
+| 分享与存储 | fflate（zlib）、Upstash Redis（Vercel KV）、AES-256-GCM 加密 |
 | 测试 | Vitest + Testing Library |
 
 ## 项目结构
@@ -91,6 +93,9 @@ src/
 ├── themes/          # 主题配置与 CSS 变量
 ├── types/           # 类型定义
 └── utils/           # 常量与通用工具
+api/
+├── _lib/            # Redis 客户端、AES-256-GCM 加解密工具
+└── share/           # 分享 API（创建 / 获取，Vercel Serverless Functions）
 ```
 
 ## 模板与定制说明
@@ -124,7 +129,7 @@ pnpm build
 简历数据保存在浏览器 `localStorage`。清理浏览器站点数据后，本地简历会被清空。
 
 ### 分享链接是否依赖服务端？
-不依赖。分享数据编码在 URL hash 中，对方打开后在本地解码导入。
+依赖。分享功能使用 Vercel Serverless Functions + Upstash Redis。简历数据经 AES-256-GCM 加密后存储，链接 1 天有效且阅后即焚。如需本地开发分享功能，请分别运行 `pnpm vercel`（API 服务）和 `pnpm dev`（前端），并先执行 `vercel link` + `vercel env pull`。
 
 ### 为什么大头像可能影响体验？
 头像以 base64 data URL 存储在本地，过大图片会增加 `localStorage` 占用与读写开销。

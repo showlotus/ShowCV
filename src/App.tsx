@@ -16,6 +16,9 @@ import {
   fetchShareData,
   getShareIdFromUrl,
   clearSharePath,
+  getShareHashFromUrl,
+  clearShareHash,
+  decodeShareData,
 } from './services'
 import { toast } from 'sonner'
 // import { downloadFile } from './utils'
@@ -78,6 +81,26 @@ function App() {
         setShareLoading(false)
         clearSharePath()
       })
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // 页面加载时检查旧版 hash 分享链接
+  useEffect(() => {
+    const hashData = getShareHashFromUrl()
+    if (!hashData) return
+
+    const decoded = decodeShareData(hashData)
+    if (decoded) {
+      createResume({
+        name: decoded.name,
+        content: decoded.content,
+        templateId: decoded.templateId,
+        settings: decoded.settings,
+        fromShare: true,
+      })
+    } else {
+      toast.error('无法解析分享链接')
+    }
+    clearShareHash()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleExportPDF = useCallback(() => handlePrint(), [handlePrint])

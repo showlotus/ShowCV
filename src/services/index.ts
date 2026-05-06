@@ -11,4 +11,6 @@ export {
   fetchShareData,
   getShareIdFromUrl,
   clearSharePath,
+  getShareHashFromUrl,
+  clearShareHash,
 } from './shareService'

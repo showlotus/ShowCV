@@ -221,3 +221,14 @@ export function getShareIdFromUrl(): string | null {
 export function clearSharePath(): void {
   window.history.replaceState({}, '', window.location.origin + window.location.pathname.replace(/\/s\/[A-Za-z0-9_-]{12}$/, ''))
 }
+
+/** 从 URL hash 中提取旧版分享数据（去掉 # 前缀） */
+export function getShareHashFromUrl(): string | null {
+  const hash = window.location.hash.slice(1)
+  return hash.length > 0 ? hash : null
+}
+
+/** 清除 URL 中的 hash */
+export function clearShareHash(): void {
+  window.history.replaceState({}, '', window.location.pathname + window.location.search)
+}
