@@ -31,7 +31,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     )) as string | null
 
     if (!result) {
-      return res.status(410).json({ error: 'Share link has expired or already viewed' })
+      return res.status(410).json({ error: '该分享链接已过期或已被查看' })
     }
 
     const decrypted = decrypt(result)

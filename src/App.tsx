@@ -63,21 +63,17 @@ function App() {
     setShareLoading(true)
     fetchShareData(shareId)
       .then(shareData => {
-        if (shareData) {
-          createResume({
-            name: shareData.name,
-            content: shareData.content,
-            templateId: shareData.templateId,
-            settings: shareData.settings,
-            fromShare: true,
-          })
-        } else {
-          toast.error('该分享链接已过期或已被查看')
-        }
+        createResume({
+          name: shareData.name,
+          content: shareData.content,
+          templateId: shareData.templateId,
+          settings: shareData.settings,
+          fromShare: true,
+        })
       })
       .catch(error => {
         console.error('[Fetch Share Error]', error)
-        toast.error('无法加载分享内容')
+        toast.error(error instanceof Error ? error.message : '无法加载分享内容')
       })
       .finally(() => {
         setShareLoading(false)

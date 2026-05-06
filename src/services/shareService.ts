@@ -192,26 +192,23 @@ export async function createServerShare(params: {
 /**
  * 通过服务端 API 读取分享数据（阅后即焚）
  * @param shareId 分享 ID
- * @returns 解码后的简历数据，或 null（链接已失效）
+ * @returns 解码后的简历数据，失败时抛出 Error（含服务端错误消息）
  */
 export async function fetchShareData(shareId: string): Promise<{
   content: string
   templateId: TemplateId
   settings: ResumeSettings
   name: string
-} | null> {
+}> {
   const response = await fetch(`/api/share/${shareId}`)
 
-  if (response.status === 410) {
-    return null
-  }
-
   if (!response.ok) {
-    throw new Error(`获取分享数据失败: ${response.status}`)
+    const body = await response.json().catch(() => ({}))
+    throw new Error(body.error || '获取分享数据失败')
   }
 
   const { data } = (await response.json()) as { data: string }
-  return decodeShareData(data)
+  return decodeShareData(data)!
 }
 
 /** 检测 URL 是否包含服务端分享 ID */
