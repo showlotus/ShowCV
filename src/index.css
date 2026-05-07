@@ -250,6 +250,17 @@ input:focus-visible {
   transform: translateY(0);
 }
 
+/* AI 蚂蚁线边框动画 */
+@keyframes march-ants {
+  to {
+    stroke-dashoffset: -24;
+  }
+}
+
+.animate-march-ants {
+  animation: march-ants 0.8s linear infinite;
+}
+
 /* 减少动画 */
 @media (prefers-reduced-motion: reduce) {
   *,

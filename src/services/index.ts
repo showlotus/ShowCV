@@ -14,4 +14,5 @@ export {
   getShareHashFromUrl,
   clearShareHash,
 } from './shareService'
-export { optimizeText } from './aiService'
+export { optimizeText, streamOptimizeText } from './aiService'
+export type { StreamCallbacks } from './aiService'

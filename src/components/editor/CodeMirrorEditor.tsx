@@ -16,12 +16,24 @@ import { DEFAULT_CONTENT } from '@/utils/constants'
 
 import '@/styles/codemirror.css'
 
+/** 行信息 */
+export interface LineInfo {
+  text: string
+  lineNumber: number
+  from: number
+  to: number
+}
+
 /** 编辑器实例对外暴露的操作接口 */
 export interface EditorHandle {
   /** 获取当前选中文本及其位置 */
   getSelection: () => { text: string; from: number; to: number } | null
   /** 在指定位置替换文本 */
   replaceAt: (from: number, to: number, text: string) => void
+  /** 获取光标所在行的完整信息 */
+  getCurrentLine: () => LineInfo | null
+  /** 移动光标到上/下一行并返回行信息 */
+  moveToLine: (direction: 'up' | 'down') => LineInfo | null
 }
 
 // 防抖延迟时间（毫秒）
@@ -113,6 +125,29 @@ export function CodeMirrorEditor({ ref }: { ref?: Ref<EditorHandle> }) {
       const view = viewRef.current
       if (!view) return
       view.dispatch({ changes: { from, to, insert: text } })
+    },
+    getCurrentLine: () => {
+      const view = viewRef.current
+      if (!view) return null
+      const pos = view.state.selection.main.head
+      const line = view.state.doc.lineAt(pos)
+      return { text: line.text, lineNumber: line.number, from: line.from, to: line.to }
+    },
+    moveToLine: (direction: 'up' | 'down') => {
+      const view = viewRef.current
+      if (!view) return null
+      const currentLine = view.state.doc.lineAt(view.state.selection.main.head)
+      const targetNumber =
+        direction === 'up' ? currentLine.number - 1 : currentLine.number + 1
+      if (targetNumber < 1 || targetNumber > view.state.doc.lines) return null
+      const targetLine = view.state.doc.line(targetNumber)
+      view.dispatch({ selection: { anchor: targetLine.from }, scrollIntoView: true })
+      return {
+        text: targetLine.text,
+        lineNumber: targetLine.number,
+        from: targetLine.from,
+        to: targetLine.to,
+      }
     },
   }))
 

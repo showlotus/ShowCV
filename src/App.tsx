@@ -52,28 +52,39 @@ function App() {
   const { handleCopyImage } = useCopyImageExport(copyRef)
 
   const [aiDialogOpen, setAiDialogOpen] = useState(false)
-  const [aiSelection, setAiSelection] = useState<{ text: string; from: number; to: number } | null>(
-    null
-  )
+  const [aiLineInfo, setAiLineInfo] = useState<{
+    text: string
+    lineNumber: number
+    from: number
+    to: number
+  } | null>(null)
 
-  /** 点击 AI 优化按钮 */
+  /** 点击 AI 优化按钮：获取光标所在行 */
   const handleAIOptimize = useCallback(() => {
-    const selection = editorRef.current?.getSelection()
-    if (!selection) {
-      toast.error('请先选中需要优化的文本')
+    const line = editorRef.current?.getCurrentLine()
+    if (!line || !line.text.trim()) {
+      toast.warning('请将光标放在需要优化的行')
       return
     }
-    setAiSelection(selection)
+    setAiLineInfo(line)
     setAiDialogOpen(true)
   }, [])
 
-  /** 应用 AI 优化结果到编辑器 */
+  /** 行导航回调 */
+  const handleNavigateLine = useCallback((direction: 'up' | 'down') => {
+    const line = editorRef.current?.moveToLine(direction)
+    if (line) setAiLineInfo(line)
+  }, [])
+
+  /** 应用 AI 优化结果到编辑器，替换后刷新行信息 */
   const handleAIApply = useCallback(
     (text: string) => {
-      if (!aiSelection) return
-      editorRef.current?.replaceAt(aiSelection.from, aiSelection.to, text)
+      if (!aiLineInfo) return
+      editorRef.current?.replaceAt(aiLineInfo.from, aiLineInfo.to, text)
+      const updated = editorRef.current?.getCurrentLine()
+      if (updated) setAiLineInfo(updated)
     },
-    [aiSelection]
+    [aiLineInfo]
   )
 
   /** 根据预览面板像素宽度实时计算缩放比例，上限为 1 */
@@ -196,13 +207,15 @@ function App() {
                 <TooltipTrigger asChild>
                   <button
                     onClick={handleAIOptimize}
-                    className="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors hover:opacity-80"
+                    className="inline-flex cursor-pointer items-center gap-1 rounded-md py-1 text-xs transition-colors hover:opacity-80"
                     style={{ color: 'var(--accent)' }}
                   >
-                    <Sparkles className="h-4 w-4" />
+                    <Sparkles className="h-4 w-4" /> AI 优化
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="left">AI 优化选中文本</TooltipContent>
+                <TooltipContent side="left" sideOffset={8}>
+                  优化当前行文本，↑↓ 可切换目标行
+                </TooltipContent>
               </Tooltip>
             </div>
             <div
@@ -279,8 +292,10 @@ function App() {
       <AIOptimizeDialog
         open={aiDialogOpen}
         onOpenChange={setAiDialogOpen}
-        selectedText={aiSelection?.text ?? ''}
+        selectedText={aiLineInfo?.text ?? ''}
+        lineNumber={aiLineInfo?.lineNumber}
         onApply={handleAIApply}
+        onNavigateLine={handleNavigateLine}
       />
     </div>
   )

@@ -325,7 +325,7 @@ export function SettingsPanel({ open }: { open: boolean }) {
                   onValueChange={v => updateFontSettings({ fontFamily: v })}
                 >
                   <SelectTrigger
-                    className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground focus-visible:border-border h-8 w-full text-sm transition-[color,background-color,border-color,box-shadow] focus-visible:ring-0 focus-visible:outline-none"
+                    className="border-border hover:bg-accent hover:border-accent-foreground focus-visible:border-border h-8 w-full text-sm transition-[color,background-color,border-color,box-shadow] focus-visible:ring-0 focus-visible:outline-none"
                     style={{ background: 'var(--bg-secondary)' }}
                   >
                     <SelectValue />
@@ -438,11 +438,7 @@ export function SettingsPanel({ open }: { open: boolean }) {
 
           {/* 底部重置按钮 */}
           <div className="shrink-0 border-t p-3" style={{ borderColor: 'var(--border)' }}>
-            <Button
-              variant="outline"
-              className="w-full gap-2"
-              onClick={handleReset}
-            >
+            <Button variant="outline" className="w-full gap-2" onClick={handleReset}>
               <RotateCcw className="h-4 w-4" />
               重置配置
             </Button>
