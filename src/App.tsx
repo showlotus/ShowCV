@@ -61,6 +61,7 @@ function App() {
 
   /** 点击 AI 优化按钮：获取光标所在行 */
   const handleAIOptimize = useCallback(() => {
+    if (aiDialogOpen) return
     const line = editorRef.current?.getCurrentLine()
     if (!line || !line.text.trim()) {
       toast.warning('请将光标放在需要优化的行')
@@ -68,7 +69,19 @@ function App() {
     }
     setAiLineInfo(line)
     setAiDialogOpen(true)
-  }, [])
+  }, [aiDialogOpen])
+
+  /** 全局快捷键 Cmd/Ctrl + J 触发 AI 优化 */
+  useEffect(() => {
+    const handler = (e: KeyboardEvent) => {
+      if ((e.metaKey || e.ctrlKey) && e.key === 'j') {
+        e.preventDefault()
+        handleAIOptimize()
+      }
+    }
+    document.addEventListener('keydown', handler)
+    return () => document.removeEventListener('keydown', handler)
+  }, [handleAIOptimize])
 
   /** 行导航回调 */
   const handleNavigateLine = useCallback((direction: 'up' | 'down') => {
@@ -214,7 +227,8 @@ function App() {
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="left" sideOffset={8}>
-                  优化当前行文本，↑↓ 可切换目标行
+                  优化当前行文本，↑↓ 可切换目标行。快捷键：
+                  <kbd className="ml-1 rounded border px-1 py-0.5">Ctrl/Command + J</kbd>
                 </TooltipContent>
               </Tooltip>
             </div>

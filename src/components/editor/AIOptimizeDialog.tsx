@@ -249,15 +249,20 @@ export function AIOptimizeDialog({
         abortRef.current?.abort()
         abortRef.current = null
         setStreaming(false)
-        setStreamingText('')
         setPrompt('')
         setAppliedIndex(null)
+        setEditedVersions({})
         cacheRef.current.clear()
       }
       onOpenChange(isOpen)
     },
     [onOpenChange]
   )
+
+  /** 每次打开弹窗时清空上次残留的流式文本，避免关闭时的布局突变 */
+  useEffect(() => {
+    if (open) setStreamingText('')
+  }, [open])
 
   /** 是否有可显示的版本 */
   const hasVersions = versions.some(v => v.length > 0)
