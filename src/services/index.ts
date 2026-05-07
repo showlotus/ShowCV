@@ -14,3 +14,4 @@ export {
   getShareHashFromUrl,
   clearShareHash,
 } from './shareService'
+export { optimizeText } from './aiService'

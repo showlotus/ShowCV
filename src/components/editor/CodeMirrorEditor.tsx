@@ -1,4 +1,5 @@
-import { useEffect, useRef } from 'react'
+import { useEffect, useRef, useImperativeHandle } from 'react'
+import type { Ref } from 'react'
 import { EditorView, keymap, highlightActiveLine, ViewPlugin, Decoration } from '@codemirror/view'
 import { EditorState, Compartment } from '@codemirror/state'
 import type { DecorationSet, ViewUpdate } from '@codemirror/view'
@@ -14,6 +15,14 @@ import { useResumeStore } from '@/store'
 import { DEFAULT_CONTENT } from '@/utils/constants'
 
 import '@/styles/codemirror.css'
+
+/** 编辑器实例对外暴露的操作接口 */
+export interface EditorHandle {
+  /** 获取当前选中文本及其位置 */
+  getSelection: () => { text: string; from: number; to: number } | null
+  /** 在指定位置替换文本 */
+  replaceAt: (from: number, to: number, text: string) => void
+}
 
 // 防抖延迟时间（毫秒）
 const DEBOUNCE_DELAY = 0
@@ -86,10 +95,26 @@ const customHighlightStyle = HighlightStyle.define([
   { tag: tags.contentSeparator, color: 'var(--accent)', fontWeight: '600' },
 ])
 
-export function CodeMirrorEditor() {
+export function CodeMirrorEditor({ ref }: { ref?: Ref<EditorHandle> }) {
   const editorRef = useRef<HTMLDivElement>(null)
   const viewRef = useRef<EditorView | null>(null)
   const debounceTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  /** 暴露选区操作方法给父组件 */
+  useImperativeHandle(ref, () => ({
+    getSelection: () => {
+      const view = viewRef.current
+      if (!view) return null
+      const { from, to } = view.state.selection.main
+      if (from === to) return null
+      return { text: view.state.doc.sliceString(from, to), from, to }
+    },
+    replaceAt: (from: number, to: number, text: string) => {
+      const view = viewRef.current
+      if (!view) return
+      view.dispatch({ changes: { from, to, insert: text } })
+    },
+  }))
 
   // 从当前简历获取内容
   const currentResume = useResumeStore(state => state.currentResume)

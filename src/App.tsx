@@ -1,13 +1,16 @@
 import { useCallback, useRef, useEffect, useState } from 'react'
-import { Loader2 } from 'lucide-react'
+import { Loader2, Sparkles } from 'lucide-react'
 import { Header, Sidebar } from './components/layout'
 import { MarkdownEditor } from './components/editor'
+import type { EditorHandle } from './components/editor'
+import { AIOptimizeDialog } from './components/editor/AIOptimizeDialog'
 import { PreviewContainer } from './components/preview'
 import { SettingsPanel } from './components/settings'
 import { Background } from './components/common'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './components/ui/resizable'
 import { Switch } from './components/ui/switch'
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from './components/ui/tooltip'
+import { Button } from './components/ui/button'
 import { useResumeStore } from './store'
 import { useShallow } from 'zustand/react/shallow'
 import {
@@ -44,8 +47,34 @@ function App() {
 
   const printRef = useRef<HTMLDivElement>(null)
   const copyRef = useRef<HTMLDivElement>(null)
+  const editorRef = useRef<EditorHandle>(null)
   const { handlePrint } = useReactToPrintExport(printRef)
   const { handleCopyImage } = useCopyImageExport(copyRef)
+
+  const [aiDialogOpen, setAiDialogOpen] = useState(false)
+  const [aiSelection, setAiSelection] = useState<{ text: string; from: number; to: number } | null>(
+    null
+  )
+
+  /** 点击 AI 优化按钮 */
+  const handleAIOptimize = useCallback(() => {
+    const selection = editorRef.current?.getSelection()
+    if (!selection) {
+      toast.error('请先选中需要优化的文本')
+      return
+    }
+    setAiSelection(selection)
+    setAiDialogOpen(true)
+  }, [])
+
+  /** 应用 AI 优化结果到编辑器 */
+  const handleAIApply = useCallback(
+    (text: string) => {
+      if (!aiSelection) return
+      editorRef.current?.replaceAt(aiSelection.from, aiSelection.to, text)
+    },
+    [aiSelection]
+  )
 
   /** 根据预览面板像素宽度实时计算缩放比例，上限为 1 */
   // const [scale, setScale] = useState(1)
@@ -62,9 +91,11 @@ function App() {
     const shareId = getShareIdFromUrl()
     if (!shareId) return
 
-    setShareLoading(true)
+    const controller = new AbortController()
+    setShareLoading(true) // eslint-disable-line react-hooks/set-state-in-effect
     fetchShareData(shareId)
       .then(shareData => {
+        if (controller.signal.aborted) return
         createResume({
           name: shareData.name,
           content: shareData.content,
@@ -74,13 +105,16 @@ function App() {
         })
       })
       .catch(error => {
+        if (controller.signal.aborted) return
         console.error('[Fetch Share Error]', error)
         toast.error(error instanceof Error ? error.message : '无法加载分享内容')
       })
       .finally(() => {
+        if (controller.signal.aborted) return
         setShareLoading(false)
         clearSharePath()
       })
+    return () => controller.abort()
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // 页面加载时检查旧版 hash 分享链接
@@ -158,12 +192,24 @@ function App() {
               <span className="text-sm font-medium" style={{ color: 'var(--fg-primary)' }}>
                 Markdown 编辑器
               </span>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    onClick={handleAIOptimize}
+                    className="inline-flex cursor-pointer items-center gap-1 rounded-md px-2 py-1 text-xs transition-colors hover:opacity-80"
+                    style={{ color: 'var(--accent)' }}
+                  >
+                    <Sparkles className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left">AI 优化选中文本</TooltipContent>
+              </Tooltip>
             </div>
             <div
               className="editor-wrapper flex-1 overflow-hidden rounded-lg"
               style={{ background: 'var(--bg-secondary)' }}
             >
-              <MarkdownEditor />
+              <MarkdownEditor ref={editorRef} />
             </div>
           </ResizablePanel>
 
@@ -228,6 +274,14 @@ function App() {
         {/* 配置面板：固定宽度 */}
         <SettingsPanel open={settingsPanelOpen} />
       </div>
+
+      {/* AI 优化对话框 */}
+      <AIOptimizeDialog
+        open={aiDialogOpen}
+        onOpenChange={setAiDialogOpen}
+        selectedText={aiSelection?.text ?? ''}
+        onApply={handleAIApply}
+      />
     </div>
   )
 }
