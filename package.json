@@ -2,7 +2,7 @@
   "name": "showcv",
   "private": true,
   "version": "0.1.0",
-  "description": "基于 Markdown 的简历编辑器，支持实时预览、多种模板、PDF 导出和分享功能",
+  "description": "基于 Markdown 的简历编辑器，支持实时预览、AI 优化、多种模板、PDF 导出和分享功能",
   "author": "showlotus",
   "license": "MIT",
   "homepage": "https://github.com/showlotus/showcv#readme",

@@ -228,7 +228,7 @@ function App() {
                 </TooltipTrigger>
                 <TooltipContent side="left" sideOffset={8}>
                   优化当前行文本，↑↓ 可切换目标行。快捷键：
-                  <kbd className="ml-1 rounded border px-1 py-0.5">Ctrl/Command + J</kbd>
+                  <kbd className="ml-1 rounded border px-1 py-0.5">Cmd/Ctrl + J</kbd>
                 </TooltipContent>
               </Tooltip>
             </div>

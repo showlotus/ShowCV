@@ -1,5 +1,5 @@
 import { useState, useCallback, useRef, useMemo, useEffect } from 'react'
-import { Sparkles, Check, StopCircle } from 'lucide-react'
+import { Sparkles, Check, StopCircle, Info } from 'lucide-react'
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import {
   Select,
@@ -11,6 +11,7 @@ import {
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Textarea } from '@/components/ui/textarea'
+import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { streamOptimizeText } from '@/services'
 import { toast } from 'sonner'
 
@@ -359,16 +360,26 @@ export function AIOptimizeDialog({
 
           {/* 自定义指令输入 */}
           <div>
-            <label
-              className="mb-1.5 block text-sm font-semibold"
-              style={{ color: 'var(--fg-primary)' }}
-            >
-              提示词（可选）
-            </label>
+            <div className="mb-1.5 flex items-center gap-1.5">
+              <label className="text-sm font-semibold" style={{ color: 'var(--fg-primary)' }}>
+                提示词（可选）
+              </label>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Info
+                    className="h-3.5 w-3.5 cursor-help"
+                    style={{ color: 'var(--fg-secondary)' }}
+                  />
+                </TooltipTrigger>
+                <TooltipContent side="right" sideOffset={8} className="max-w-[300px] text-xs">
+                  系统已有内置优化指令，此处可补充个性化要求
+                </TooltipContent>
+              </Tooltip>
+            </div>
             <Textarea
               value={prompt}
               onChange={e => setPrompt(e.target.value)}
-              placeholder="描述你想如何优化这段文本..."
+              placeholder='如 "更正式一点"、"突出项目经验"...'
               rows={2}
               className="border-[var(--border)]"
               style={{
@@ -387,7 +398,7 @@ export function AIOptimizeDialog({
                   className="mb-1.5 block text-sm font-semibold"
                   style={{ color: 'var(--fg-primary)' }}
                 >
-                  生成结果
+                  优化结果{' '}
                 </label>
                 <div className="space-y-3">
                   {VERSION_LABELS.map((label, index) => {
@@ -404,7 +415,7 @@ export function AIOptimizeDialog({
                           borderLeftColor: VERSION_COLORS[index],
                         }}
                       >
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center justify-between gap-2">
                           <span
                             className="inline-flex items-center rounded-full px-2 py-0.5 text-xs font-medium"
                             style={{

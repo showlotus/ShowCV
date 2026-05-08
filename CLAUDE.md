@@ -121,6 +121,15 @@ pnpm test:coverage  # 运行测试并生成覆盖率报告
 - Redis 客户端使用 `KV_REST_API_URL` / `KV_REST_API_TOKEN`（Vercel KV 环境变量），非 `UPSTASH_*`
 - 加密密钥通过 `ENCRYPTION_KEY` 环境变量配置（32 字节 hex）
 
+### Vercel 部署
+
+`vercel.json` 配置要点：
+- 仅 `v2` 分支触发自动部署，`master` 不部署
+- `/s/*`（分享链接）和前端路由重写到 `index.html`，`/api/*` 由 Serverless Functions 处理
+- 构建命令 `pnpm run build`，输出目录 `dist`，框架识别为 `vite`
+
+环境变量：分享功能需要 `KV_REST_API_URL` / `KV_REST_API_TOKEN` / `ENCRYPTION_KEY`；AI 功能需要 `AI_API_KEY` / `AI_BASE_URL` / `AI_MODEL`（均为可选）。
+
 ### 预览系统
 
 `src/components/preview/PreviewContainer.tsx` 使用 CSS `zoom` 缩放 A4 预览至面板宽度（`ResizeObserver` 监听容器变化）。
@@ -141,6 +150,19 @@ pnpm test:coverage  # 运行测试并生成覆盖率报告
 ### 类型定义
 
 关键类型在 `src/types/settings.ts` 和 `src/types/resume.ts`。注意跨模块依赖：`settings.ts` 从 `@/templates` 导出 `TemplateId`，从 `@/themes` 导出 `AppTheme`。
+
+### AI 文本优化
+
+`src/components/editor/AIOptimizeDialog.tsx` 提供 AI 驱动的简历文本优化，支持社招/校招两种模式，通过 Cmd/Ctrl+J 快捷键触发。
+
+**工作流程**：选中文本 → SSE 流式请求 `/api/ai/optimize` → 返回 3 个版本（标准/数据驱动/专家级，以 `---` 分隔）→ 用户选择或手动编辑后应用。
+
+**关键实现**：
+- 行级缓存：上下箭头切换行时保留已生成结果
+- 格式保留：自动保护 `**bold**`、`||` 双栏、行内代码、链接等 Markdown 语法
+- API 实现位于 `api/ai/optimize.ts`，系统 prompt 在 `api/ai/prompts.ts`
+
+**环境变量**：`AI_API_KEY`、`AI_BASE_URL`、`AI_MODEL`
 
 ### Avatar 存储
 

@@ -1,6 +1,6 @@
 # ShowCV
 
-基于 Markdown 的在线简历编辑器，专注于高效编辑、实时预览与高质量导出。客户端运行，分享功能依赖 Vercel Serverless API。
+基于 Markdown 的在线简历编辑器，专注于高效编辑、实时预览、AI 优化与高质量导出。核心功能客户端运行，分享与 AI 优化依赖 Vercel Serverless API。
 
 ![ShowCV 预览](./res/combine.png)
 
@@ -29,6 +29,11 @@
 - 可视化调整主题色、字体、字号、行高、段间距、页边距
 - 支持头像上传、尺寸与圆角调节
 
+### AI 文本优化
+- 支持社招/校招模式，通过 Cmd/Ctrl+J 快捷键触发
+- SSE 流式生成 3 个优化版本（标准/数据驱动/专家级），可手动编辑后应用
+- 自动保留 Markdown 格式（加粗、双栏 `||`、行内代码、链接等）
+
 ### 分享协作
 - 通过服务端 API 生成加密分享链接（AES-256-GCM），1 天有效，阅后即焚
 - 对方打开链接后自动加载并导入简历内容，来源标记为 `fromShare: true`
@@ -52,6 +57,35 @@ pnpm dev
 ```
 
 默认开发地址：`http://localhost:5173`
+
+## Vercel 部署
+
+项目部署在 Vercel 上，前端为静态站点，`api/` 目录自动识别为 Serverless Functions。
+
+### 环境变量
+
+| 变量名 | 必需 | 说明 |
+| --- | --- | --- |
+| `KV_REST_API_URL` | 是 | Upstash Redis REST URL（Vercel KV） |
+| `KV_REST_API_TOKEN` | 是 | Upstash Redis REST Token（Vercel KV） |
+| `ENCRYPTION_KEY` | 是 | AES-256-GCM 加密密钥（32 字节 hex 字符串） |
+| `AI_API_KEY` | 否 | AI 服务 API 密钥（不配置则 AI 优化功能不可用） |
+| `AI_BASE_URL` | 否 | AI 服务 API 地址 |
+| `AI_MODEL` | 否 | AI 模型标识 |
+
+### 部署配置
+
+`vercel.json` 关键配置：
+
+- **分支部署**：仅 `v2` 分支触发自动部署，`master` 不部署
+- **Rewrites**：`/s/*`（分享链接）和前端路由均重写到 `index.html`，`/api/*` 由 Serverless Functions 处理
+
+### Fork 部署步骤
+
+1. Fork 本仓库
+2. 在 Vercel 导入项目，框架自动识别为 Vite
+3. 配置环境变量（至少需要 Redis 和加密密钥）
+4. 部署完成后在 Vercel 项目设置中将生产分支设为 `v2`
 
 ## 开发与测试命令
 
@@ -79,6 +113,7 @@ pnpm test:coverage  # 生成测试覆盖率报告
 | Markdown 渲染 | react-markdown + remark-gfm |
 | 状态管理 | Zustand（含 localStorage 持久化） |
 | 导出能力 | react-to-print、modern-screenshot |
+| AI 优化 | OpenAI 兼容 API（SSE 流式生成） |
 | 分享与存储 | fflate（zlib）、Upstash Redis（Vercel KV）、AES-256-GCM 加密 |
 | 测试 | Vitest + Testing Library |
 
@@ -95,6 +130,7 @@ src/
 └── utils/           # 常量与通用工具
 api/
 ├── _lib/            # Redis 客户端、AES-256-GCM 加解密工具
+├── ai/              # AI 文本优化 API（SSE 流式响应）
 └── share/           # 分享 API（创建 / 获取，Vercel Serverless Functions）
 ```
 
