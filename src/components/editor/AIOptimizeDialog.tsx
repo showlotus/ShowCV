@@ -37,6 +37,62 @@ const VERSION_LABELS = ['A', 'B', 'C'] as const
 /** 提取行首 Markdown 前缀（列表、标题、引用、表格等） */
 const MARKDOWN_PREFIX = /^(\s*(?:[-*+]|\d+\.|#{1,6}|>|\|)\s*)/
 
+/** 中英文标点映射 */
+const PUNCT_PAIRS: Record<string, string> = {
+  ',': '，',
+  ':': '：',
+  ';': '；',
+  '!': '！',
+  '?': '？',
+  '(': '（',
+  ')': '）',
+}
+const CN_PUNCTS = new Set(Object.values(PUNCT_PAIRS))
+const EN_PUNCTS = new Set(Object.keys(PUNCT_PAIRS))
+const TRAILING_PUNCTS = new Set(['.', '。', ',', '，', ';', '；', ':', '：', '!', '！', '?', '？'])
+
+/** 根据输入文本的标点体系，统一输出文本的标点符号，并保持末尾标点一致 */
+function normalizePunctuation(output: string, input: string): string {
+  const inputTrimmed = input.trim()
+  const outputTrimmed = output.trimEnd()
+  if (!inputTrimmed || !outputTrimmed) return output
+
+  // 判断输入的标点体系：统计中英文标点出现次数
+  let cnCount = 0
+  let enCount = 0
+  for (const ch of inputTrimmed) {
+    if (CN_PUNCTS.has(ch)) cnCount++
+    if (EN_PUNCTS.has(ch)) enCount++
+  }
+
+  let result = outputTrimmed
+
+  // 统一标点体系
+  if (cnCount > enCount) {
+    for (const [en, cn] of Object.entries(PUNCT_PAIRS)) {
+      result = result.replaceAll(en, cn)
+    }
+  } else if (enCount > cnCount) {
+    for (const [en, cn] of Object.entries(PUNCT_PAIRS)) {
+      result = result.replaceAll(cn, en)
+    }
+  }
+
+  // 末尾标点保持一致
+  const inputEnd = inputTrimmed.at(-1)!
+  const outputEnd = result.at(-1)!
+  const inputHasTrailingPunct = TRAILING_PUNCTS.has(inputEnd)
+
+  if (inputHasTrailingPunct && !TRAILING_PUNCTS.has(outputEnd)) {
+    result += inputEnd
+  } else if (!inputHasTrailingPunct && TRAILING_PUNCTS.has(outputEnd)) {
+    result = result.slice(0, -1)
+  }
+
+  return result
+}
+
+
 /** 版本分隔符 */
 const VERSION_SEPARATOR = '---'
 
@@ -145,19 +201,26 @@ export function AIOptimizeDialog({
   const hasPipe = selectedText.includes('||')
 
   /** 确保 AI 结果保留 || 分隔符（兜底） */
-  const ensurePipeSeparator = (text: string): string => {
-    if (!hasPipe || text.includes('||')) return text
-    const pipeIdx = selectedText.indexOf('||')
-    const rightSide = selectedText.slice(pipeIdx + 2).trim()
-    return `${text} || ${rightSide}`
-  }
+  const ensurePipeSeparator = useCallback(
+    (text: string): string => {
+      if (!hasPipe || text.includes('||')) return text
+      const pipeIdx = selectedText.indexOf('||')
+      const rightSide = selectedText.slice(pipeIdx + 2).trim()
+      return `${text} || ${rightSide}`
+    },
+    [hasPipe, selectedText]
+  )
 
-  /** 确保 AI 结果包含行首 Markdown 前缀和 || 分隔符（兜底） */
-  const ensurePrefix = (text: string) => {
-    let result = prefix && !text.startsWith(prefix) ? prefix + text : text
-    result = ensurePipeSeparator(result)
-    return result
-  }
+  /** 确保 AI 结果包含行首 Markdown 前缀、|| 分隔符和标点一致性（兜底） */
+  const ensurePrefix = useCallback(
+    (text: string) => {
+      let result = normalizePunctuation(text, selectedText)
+      result = prefix && !result.startsWith(prefix) ? prefix + result : result
+      result = ensurePipeSeparator(result)
+      return result
+    },
+    [selectedText, prefix, ensurePipeSeparator]
+  )
 
   /** 从流式文本派生出版本数据 */
   const { versions, currentIndex } = useMemo(
@@ -214,7 +277,7 @@ export function AIOptimizeDialog({
       toast.success(`已应用版本 ${VERSION_LABELS[index]}`)
       onOpenChange(false)
     },
-    [versions, editedVersions, onApply, lineNumber, onOpenChange]
+    [versions, editedVersions, ensurePrefix, onApply, lineNumber, onOpenChange]
   )
 
   /** 键盘导航：↑↓ 切换目标行，Enter 快速生成（可编辑输入框内不触发） */
@@ -271,7 +334,7 @@ export function AIOptimizeDialog({
   return (
     <Dialog open={open} onOpenChange={handleClose}>
       <DialogContent
-        className="max-h-[85vh] overflow-y-auto sm:max-w-3xl"
+        className="flex max-h-[70vh] flex-col sm:max-w-3xl"
         style={{ background: 'var(--bg-secondary)', borderColor: 'var(--border)' }}
         onKeyDown={handleKeyDown}
         onOpenAutoFocus={e => {
@@ -291,7 +354,7 @@ export function AIOptimizeDialog({
           </DialogTitle>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="min-h-0 flex-1 space-y-4 overflow-y-auto">
           {/* 当前行文本展示 */}
           <div>
             <label className="mb-1.5 flex items-center justify-between text-sm font-semibold">
@@ -473,8 +536,10 @@ export function AIOptimizeDialog({
               </div>
             </>
           )}
+        </div>
 
-          {/* 底部操作栏：生成/停止/重新生成 */}
+        {/* 底部操作栏：生成/停止/重新生成 */}
+        <div className="pt-2">
           {streaming && !hasVersions ? (
             <div className="relative">
               <svg
