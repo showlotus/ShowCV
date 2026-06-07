@@ -22,7 +22,9 @@ function detectInlineMarkdown(text: string): string[] {
   if (text.includes('||')) {
     const parts = text.split('||')
     if (parts.length >= 2) {
-      formats.push(`- 分隔符 ||: 左侧="${parts[0].trim()}", 右侧="${parts.slice(1).join('||').trim()}"`)
+      formats.push(
+        `- 分隔符 ||: 左侧="${parts[0].trim()}", 右侧="${parts.slice(1).join('||').trim()}"`
+      )
     }
   }
 
@@ -86,6 +88,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const apiKey = process.env.AI_API_KEY
     const baseUrl = process.env.AI_BASE_URL
     const model = process.env.AI_MODEL
+    const thinking = process.env.AI_THINKING
 
     if (!apiKey || !baseUrl || !model) {
       return res.status(500).json({ error: 'AI service not configured' })
@@ -104,6 +107,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
           { role: 'user', content: userMessage },
         ],
         stream: true,
+        thinking: { type: thinking ? 'enabled' : 'disabled' },
       }),
     })
 
