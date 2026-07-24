@@ -10,6 +10,7 @@ lerna-debug.log*
 node_modules
 dist
 dist-ssr
+.env
 *.local
 .pnpm-store
 
@@ -25,3 +26,4 @@ dist-ssr
 *.sw?
 .vercel
 .env*.local
+data/

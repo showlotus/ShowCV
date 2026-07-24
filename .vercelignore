@@ -1,0 +1,5 @@
+/server
+/tsconfig.server.json
+/.env
+/.env.example
+/ecosystem.config.cjs

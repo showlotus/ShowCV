@@ -8,9 +8,15 @@ import path from 'path'
 export default defineConfig({
   base: '/',
   server: {
+    port: 3080,
+    strictPort: true,
     proxy: {
-      '/api': 'http://localhost:3001',
+      '/api': 'http://localhost:3070',
     },
+  },
+  preview: {
+    port: 3080,
+    strictPort: true,
   },
   plugins: [
     tailwindcss(),

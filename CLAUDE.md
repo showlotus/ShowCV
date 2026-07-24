@@ -4,7 +4,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## 项目概述
 
-ShowCV 是一个基于 Markdown 的简历编辑器，使用 React 19 + Vite + TypeScript 构建。支持实时预览、多种简历模板、PDF 导出和分享功能。前端纯客户端运行，分享功能依赖 Vercel Serverless Functions + Upstash Redis。
+ShowCV 是一个基于 Markdown 的简历编辑器，使用 React 19 + Vite + TypeScript 构建。支持实时预览、多种简历模板、PDF 导出和分享功能。前端纯客户端运行，分享与 AI 优化功能支持两种部署方式：Vercel Serverless Functions（云部署）或 Express + SQLite 自托管。
 
 ## 包管理器
 
@@ -13,9 +13,10 @@ ShowCV 是一个基于 Markdown 的简历编辑器，使用 React 19 + Vite + Ty
 ## 常用命令
 
 ```bash
-pnpm dev            # 启动前端开发服务器（Vite，端口 5173）
-pnpm vercel         # 启动 Vercel API 服务（端口 3001，需先 vercel link & env pull）
-pnpm build          # 生产构建（先 tsc -b 再 vite build）
+pnpm dev            # 启动前端开发服务器（Vite，端口 3080）
+pnpm dev:server     # 启动 Express API 服务（端口 3070，SQLite 存储）
+pnpm build          # 前端构建（tsc -b + vite build，输出到 dist/）
+pnpm build:server   # 完整构建（前端 + Express 服务，统一输出到 dist/）
 pnpm lint           # TypeScript + ESLint 检查
 pnpm lint:fix       # 自动修复 lint 问题
 pnpm format         # Prettier 格式化
@@ -27,7 +28,9 @@ pnpm test:coverage  # 运行测试并生成覆盖率报告
 
 测试使用 Vitest，配置文件为 `vitest.config.ts`，测试文件位于 `tests/` 目录。
 
-本地开发分享功能时需同时启动两个服务：`pnpm vercel`（API）+ `pnpm dev`（前端）。Vite 已配置 `/api` 代理到 `localhost:3001`。
+本地开发需同时启动两个服务：`pnpm dev:server`（Express API，端口 3070）+ `pnpm dev`（Vite 前端，端口 3080）。Vite 已配置 `/api` 代理到 `localhost:3070`。
+
+Vercel 开发模式（可选）：`pnpm vercel`（端口 3070），需先 `vercel link` + `vercel env pull`，此时需手动修改 Vite 代理目标为 3070。
 
 ## 代码风格
 
@@ -56,7 +59,7 @@ pnpm test:coverage  # 运行测试并生成覆盖率报告
 - `currentResume` 是 `resumes[]` 的缓存副本，每个 mutation action 必须同时更新两者
 - `partialize` 排除 `currentResume` 不序列化；`onRehydrateStorage` 从 `currentResumeId` 重建
 - 所有 mutation 以 `if (!state.currentResumeId) return state` 做前置守卫
-- `setTemplate()` 切换模板时仅保留 `color.primary` 和 `font.fontFamily`，其余设置重置为新模板默认值
+- `setTemplate()` 切换模板时保留 `color.primary`、`font.fontFamily`、`avatar`、`layout`，其余设置重置为新模板默认值
 
 ### 双层主题系统
 
@@ -111,12 +114,19 @@ pnpm test:coverage  # 运行测试并生成覆盖率报告
 - 读取时 Lua 脚本原子 GET+DEL（阅后即焚），解密后返回数据
 - API 实现位于 `api/share/`（Vercel Serverless Functions），工具位于 `api/_lib/`
 
+**自托管分享**（Express + SQLite）：
+- `server/index.ts` 启动 Express 服务，复用 `api/ai/optimize.ts`（AI 优化）和 `api/_lib/crypto.ts`（加解密）
+- 分享 handler 位于 `server/handlers/shareCreate.ts` 和 `server/handlers/shareGet.ts`，逻辑与 `api/share/` 一致但使用 `server/lib/db.ts`（SQLite）替代 Upstash Redis
+- SQLite 数据库默认 `data/showcv.db`，可通过 `DB_PATH` 环境变量覆盖
+- TTL 通过定时清理过期记录实现（每小时），阅后即焚通过 SQLite 事务保证原子性
+- `api/` 下文件零改动，保持 Vercel 部署兼容
+
 **客户端 hash 分享**（旧方案）：
 - 简历数据 → 紧凑编码 + fflate zlib 压缩 + Base64 → 写入 URL hash
 - 打开时解码创建简历（`fromShare: true`），随后清除 hash
 
 **API 注意事项：**
-- `api/` 中的 TypeScript 文件不在项目 tsconfig 范围内，IDE 可能报类型错误，不影响 Vercel 运行
+- `api/` 和 `server/` 不在主 tsconfig（`tsconfig.json` 引用 `tsconfig.app/node/test`，仅覆盖 `src`）范围内，IDE 可能报类型错误；但 `build:server` 通过 `tsconfig.server.json`（`include: ["api/**/*.ts", "server/**/*.ts"]`）编译它们，不影响 Vercel 运行
 - 相对导入必须带 `.js` 扩展名（ESM 规范），如 `from '../_lib/redis.js'`
 - Redis 客户端使用 `KV_REST_API_URL` / `KV_REST_API_TOKEN`（Vercel KV 环境变量），非 `UPSTASH_*`
 - 加密密钥通过 `ENCRYPTION_KEY` 环境变量配置（32 字节 hex）
@@ -128,7 +138,20 @@ pnpm test:coverage  # 运行测试并生成覆盖率报告
 - `/s/*`（分享链接）和前端路由重写到 `index.html`，`/api/*` 由 Serverless Functions 处理
 - 构建命令 `pnpm run build`，输出目录 `dist`，框架识别为 `vite`
 
-环境变量：分享功能需要 `KV_REST_API_URL` / `KV_REST_API_TOKEN` / `ENCRYPTION_KEY`；AI 功能需要 `AI_API_KEY` / `AI_BASE_URL` / `AI_MODEL`（均为可选）。
+环境变量：分享功能需要 `KV_REST_API_URL` / `KV_REST_API_TOKEN` / `ENCRYPTION_KEY`；AI 功能需要 `AI_API_KEY` / `AI_BASE_URL` / `AI_MODEL` / `AI_THINKING`（均为可选）。
+
+### 自托管部署（Express + SQLite）
+
+**构建与启动**：
+```bash
+pnpm build:server   # 完整构建（前端 + Express 服务，统一输出到 dist/）
+node dist/server/index.js     # 启动（直接 node）
+pm2 start ecosystem.config.cjs  # 启动（PM2，fork 模式，script 指向 dist/server/index.js）
+```
+
+**环境变量**：仅需 `ENCRYPTION_KEY`（32 字节 hex，`openssl rand -hex 32` 生成）；`PORT` 可选（默认 `3070`）；`DB_PATH` 可选（默认 `data/showcv.db`）；AI 功能可选配置 `AI_API_KEY` / `AI_BASE_URL` / `AI_MODEL` / `AI_THINKING`。
+
+**Nginx 反代**：参考 `nginx.conf`（项目根），SSE 端点 `/api/ai/optimize` 需单独配置 `proxy_http_version 1.1` + `proxy_buffering off`。
 
 ### 预览系统
 
@@ -151,6 +174,8 @@ pnpm test:coverage  # 运行测试并生成覆盖率报告
 
 关键类型在 `src/types/settings.ts` 和 `src/types/resume.ts`。注意跨模块依赖：`settings.ts` 从 `@/templates` 导出 `TemplateId`，从 `@/themes` 导出 `AppTheme`。
 
+`ResumeSettings` 结构：`font` / `color` / `spacing` / `avatar?` / `layout`（`LayoutSettings.headerAlign: 'left' | 'center' | 'right'` 控制头部对齐）。
+
 ### AI 文本优化
 
 `src/components/editor/AIOptimizeDialog.tsx` 提供 AI 驱动的简历文本优化，支持社招/校招两种模式，通过 Cmd/Ctrl+J 快捷键触发。
@@ -160,9 +185,9 @@ pnpm test:coverage  # 运行测试并生成覆盖率报告
 **关键实现**：
 - 行级缓存：上下箭头切换行时保留已生成结果
 - 格式保留：自动保护 `**bold**`、`||` 双栏、行内代码、链接等 Markdown 语法
-- API 实现位于 `api/ai/optimize.ts`，系统 prompt 在 `api/ai/prompts.ts`
+- 客户端封装位于 `src/services/aiService.ts`（`optimizeText` / `streamOptimizeText`），API 实现位于 `api/ai/optimize.ts`，系统 prompt 在 `api/ai/prompts.ts`
 
-**环境变量**：`AI_API_KEY`、`AI_BASE_URL`、`AI_MODEL`
+**环境变量**：`AI_API_KEY`、`AI_BASE_URL`、`AI_MODEL`、`AI_THINKING`（思考模式开关，可选）
 
 ### Avatar 存储
 
