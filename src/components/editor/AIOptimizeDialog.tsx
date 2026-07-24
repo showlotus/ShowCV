@@ -14,6 +14,7 @@ import { Textarea } from '@/components/ui/textarea'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/components/ui/tooltip'
 import { streamOptimizeText } from '@/services'
 import { toast } from 'sonner'
+import { cn } from '@/lib/utils'
 
 interface AIOptimizeDialogProps {
   open: boolean
@@ -467,15 +468,16 @@ export function AIOptimizeDialog({
                   {VERSION_LABELS.map((label, index) => {
                     const content = versions[index]
                     if (!content && currentIndex < index) return null
+                    const isCurrentStreaming = streaming && currentIndex === index
 
                     return (
                       <div
                         key={label}
-                        className="space-y-2 rounded-md border-l-[3px] p-3"
+                        className="relative overflow-hidden space-y-2 rounded-md border-l-[3px] p-3 transition-[border-color] duration-300"
                         style={{
                           background: 'var(--bg-tertiary)',
                           borderColor: 'var(--border)',
-                          borderLeftColor: VERSION_COLORS[index],
+                          borderLeftColor: isCurrentStreaming ? 'transparent' : VERSION_COLORS[index],
                         }}
                       >
                         <div className="flex items-center justify-between gap-2">
@@ -489,7 +491,7 @@ export function AIOptimizeDialog({
                           >
                             版本 {label}
                           </span>
-                          {!streaming && content.trim() && (
+                          {!isCurrentStreaming && content.trim() && (
                             <Button
                               size="sm"
                               variant={appliedIndex === index ? 'default' : 'outline'}
@@ -502,33 +504,30 @@ export function AIOptimizeDialog({
                             </Button>
                           )}
                         </div>
-                        {streaming ? (
-                          <p
-                            className="text-sm break-words whitespace-pre-wrap"
-                            style={{ color: 'var(--fg-primary)' }}
-                          >
-                            {ensurePrefix(content)}
-                            {currentIndex === index && (
-                              <span
-                                className="inline-block h-4 w-[2px] animate-pulse align-middle"
-                                style={{ background: 'var(--accent)' }}
-                              />
-                            )}
-                          </p>
-                        ) : (
-                          <Textarea
-                            value={editedVersions[index] ?? ensurePrefix(content)}
-                            onChange={e =>
-                              setEditedVersions(prev => ({ ...prev, [index]: e.target.value }))
+                        <Textarea
+                          value={isCurrentStreaming ? ensurePrefix(content) : (editedVersions[index] ?? ensurePrefix(content))}
+                          onChange={e =>
+                            setEditedVersions(prev => ({ ...prev, [index]: e.target.value }))
+                          }
+                          readOnly={isCurrentStreaming}
+                          rows={3}
+                          ref={el => {
+                            if (el) {
+                              el.style.height = 'auto'
+                              el.style.height = `${el.scrollHeight}px`
                             }
-                            rows={3}
-                            className="resize-none border-[var(--border)]"
-                            style={{
-                              background: 'var(--bg-secondary)',
-                              color: 'var(--fg-primary)',
-                            }}
-                          />
-                        )}
+                          }}
+                          className={cn(
+                            'resize-none transition-all duration-200',
+                            isCurrentStreaming
+                              ? 'min-h-20 overflow-hidden border-transparent cursor-default focus-visible:border-transparent hover:border-transparent'
+                              : 'min-h-20 border-[var(--border)]'
+                          )}
+                          style={{
+                            background: isCurrentStreaming ? 'transparent' : 'var(--bg-secondary)',
+                            color: 'var(--fg-primary)',
+                          }}
+                        />
                       </div>
                     )
                   })}
