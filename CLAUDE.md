@@ -104,6 +104,23 @@ Vercel 开发模式（可选）：`pnpm vercel`（端口 3070），需先 `verce
 
 `useCopyImageExport(ref)` 使用 `modern-screenshot` 的 `domToBlob()` 生成 2x PNG 写入剪贴板。
 
+### Markdown 批量导入
+
+一次可导入多个 `.md` 文件，每个文件生成一份新简历，**文件名（去扩展名）作为简历名称**。两个入口共用 `src/hooks/useMarkdownImport.ts`：
+
+- 侧边栏底部「导入 md」按钮 → 隐藏的 `<input type="file" accept=".md,.markdown" multiple>`
+- 拖拽到窗口任意位置 → `src/hooks/useFileDropZone.ts` + `src/components/common/MarkdownDropOverlay.tsx`
+
+**关键实现：**
+- 纯函数与文件读取在 `src/services/mdImportService.ts`：`isMarkdownFile` / `resumeNameFromFileName` / `dedupeResumeNames` / `readMarkdownFiles` / `getStorageRoom`
+- `isMarkdownFile` 按**扩展名**判断而非 `file.type`——Windows 上 `.md` 的 MIME 常为空字符串；`accept` 只是选择器的过滤提示，拖拽不受其约束，真正的守门人是这个函数
+- `useFileDropZone` 挂在 `window` 上，**只在 `dataTransfer.types` 含 `'Files'` 时 `preventDefault()`**：既阻止浏览器直接打开拖入的文件，又不干扰 CodeMirror 内部的文本拖拽；`dragleave` 在子元素间穿梭会误触发，用计数器抵消
+- 状态提升到 `App`，`importing` 与 `onImportFiles` 作为 props 传给 `Sidebar`，避免两个入口各持一份 hook 状态
+- store 新增 `importResumes(items)`：**一次 `set()`** 生成全部 `ResumeItem`，避免 N 次 localStorage 写入；`templateId` 固定 `'T1'` 且 `settings` 逐份生成（不共享引用），按文件顺序前插，`currentResume*` 指向第一份
+- 重名时 `dedupeResumeNames` 追加 ` (2)` / ` (3)`，同时避开已有简历名和同批次内已分配的名字
+- 上限：单文件 1MB、单次 50 个；导入前按字节预检 localStorage 5MB 配额，超了**整批拒绝**而非部分导入，避免「导了一半」的中间态；store 写入仍用 try/catch 兜 `QuotaExceededError`
+- **不支持 URL 导入**：浏览器不允许网页凭 URL 参数读取本机文件，所以没有 `/import` 路由（`/export` 能走 URL 是因为数据已在 localStorage 里）
+
 ### 分享机制
 
 项目实现了**服务端分享**（主方案）和**客户端 hash 分享**（旧方案）两套机制，共用 `src/services/shareService.ts` 中的 `encodeShareData` / `decodeShareData` 编解码逻辑。
