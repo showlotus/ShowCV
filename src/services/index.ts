@@ -16,3 +16,5 @@ export {
 } from './shareService'
 export { optimizeText, streamOptimizeText } from './aiService'
 export type { StreamCallbacks } from './aiService'
+export { DELETE_PATH, parseDeleteUrl, buildDeleteUrl } from './deleteUrlService'
+export type { DeleteUrlParams } from './deleteUrlService'

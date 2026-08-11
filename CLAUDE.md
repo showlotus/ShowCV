@@ -104,6 +104,29 @@ Vercel 开发模式（可选）：`pnpm vercel`（端口 3070），需先 `verce
 
 `useCopyImageExport(ref)` 使用 `modern-screenshot` 的 `domToBlob()` 生成 2x PNG 写入剪贴板。
 
+### 批量删除
+
+支持两个入口：侧边栏勾选模式（应用内）与 `/delete` 直链（URL 驱动），删除后 8 秒内可在 toast 里撤销。
+
+**侧边栏勾选模式**：标题栏 `ListChecks` 图标进入勾选模式（只有一份简历时禁用），此时列表行点击即勾选、`WaveIndicator` 换成勾选框、重命名/复制/删除按钮隐藏，底部「新建简历」换成「全选 / 删除 N 份」，`Esc` 或 `X` 退出。勾选模式下还可用 `Link2` 图标把当前选中项复制成删除直链。
+
+**删除直链**（`src/services/deleteUrlService.ts` + `src/components/delete/DeleteUrlPage.tsx`）：
+
+| 参数 | 说明 |
+| --- | --- |
+| `id` | 要删除的简历 id，可重复传或用逗号分隔（`?id=a1&id=b2` / `?id=a1,b2`） |
+| `all` | `1` / `true` / `yes` 表示删除全部；`?id=all` 等价 |
+| `confirm` | `1` / `true` / `yes` 才直接执行删除，缺省则先渲染确认页 |
+
+**关键实现：**
+- 路由与 `/export` 一样在 `src/main.tsx` 挂载前解析路径，命中就渲染 `DeleteUrlPage` 而不加载 `<App />`；SPA fallback 三种部署方式都已存在，无需改部署配置
+- **与 `parseExportUrl` 的关键差异：`id` 缺省时不回退到当前简历**——导出误操作没有代价，删除有，所以宁可报错也不猜
+- `confirm` 闸门：不带 `confirm` 时确认页列出将被删除的简历名、本地找不到的 id 数量，并提示「简历只存在本机浏览器」
+- 页面状态由 store selector 派生（`gone` / `placeholderCreated`），effect 里只调 `deleteResumes` 不 setState——否则会触发 `react-hooks/set-state-in-effect`；同理不在 render 里读 `snapshotRef.current`（`react-hooks/refs`）
+- `confirm=1` 时先经过 `'deleting'` 状态渲染 spinner，避免删除还没跑就先显示「已删除」
+- store 新增 `deleteResumes(ids)` 返回 `DeleteSnapshot`（被删简历及其**原始下标**、删空时自动补的空白简历 id、原选中 id），`restoreResumes(snapshot)` 原位插回并摘掉占位简历
+- 撤销快照只在内存里，**刷新页面即失效**；localStorage 已经被覆盖，没有第二次机会
+
 ### 分享机制
 
 项目实现了**服务端分享**（主方案）和**客户端 hash 分享**（旧方案）两套机制，共用 `src/services/shareService.ts` 中的 `encodeShareData` / `decodeShareData` 编解码逻辑。
