@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from 'react'
-import { Plus, X, Copy, Pencil } from 'lucide-react'
+import { Plus, X, Copy, Pencil, FileUp, Loader2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
 import { useShallow } from 'zustand/react/shallow'
@@ -248,149 +248,192 @@ const ResumeTab = memo(
 
 ResumeTab.displayName = 'ResumeTab'
 
-export const Sidebar = memo(({ open }: { open: boolean }) => {
-  const { resumes, currentResumeId, createResume, deleteResume, renameResume, selectResume } =
-    useResumeStore(
-      useShallow(state => ({
-        resumes: state.resumes,
-        currentResumeId: state.currentResumeId,
-        createResume: state.createResume,
-        deleteResume: state.deleteResume,
-        renameResume: state.renameResume,
-        selectResume: state.selectResume,
-      }))
-    )
+export const Sidebar = memo(
+  ({
+    open,
+    importing,
+    onImportFiles,
+  }: {
+    open: boolean
+    /** 是否正在导入 md，导入期间禁用底部按钮 */
+    importing: boolean
+    onImportFiles: (files: FileList | null) => void
+  }) => {
+    const { resumes, currentResumeId, createResume, deleteResume, renameResume, selectResume } =
+      useResumeStore(
+        useShallow(state => ({
+          resumes: state.resumes,
+          currentResumeId: state.currentResumeId,
+          createResume: state.createResume,
+          deleteResume: state.deleteResume,
+          renameResume: state.renameResume,
+          selectResume: state.selectResume,
+        }))
+      )
 
-  /** 计算 localStorage 中当前简历数据的字节占用 */
-  const storageUsage = useMemo(() => {
-    const LIMIT = 5 * 1024 * 1024 // 5MB
-    try {
-      const raw = localStorage.getItem('showcv-resume') ?? ''
-      const used = new Blob([raw]).size
-      return { used, limit: LIMIT, percent: Math.min((used / LIMIT) * 100, 100) }
-    } catch {
-      return { used: 0, limit: LIMIT, percent: 0 }
+    const fileInputRef = useRef<HTMLInputElement>(null)
+
+    /** 计算 localStorage 中当前简历数据的字节占用 */
+    const storageUsage = useMemo(() => {
+      const LIMIT = 5 * 1024 * 1024 // 5MB
+      try {
+        const raw = localStorage.getItem('showcv-resume') ?? ''
+        const used = new Blob([raw]).size
+        return { used, limit: LIMIT, percent: Math.min((used / LIMIT) * 100, 100) }
+      } catch {
+        return { used: 0, limit: LIMIT, percent: 0 }
+      }
+      // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [resumes])
+
+    /** 根据占用比例返回对应颜色变量 */
+    const storageColor = useMemo(() => {
+      if (storageUsage.percent >= 80) return 'var(--danger)'
+      if (storageUsage.percent >= 50) return 'var(--warning)'
+      return 'var(--success)'
+    }, [storageUsage.percent])
+
+    /** 格式化字节数为可读字符串 */
+    const formatBytes = (bytes: number) => {
+      if (bytes < 1024) return `${bytes} B`
+      if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
+      return `${(bytes / 1024 / 1024).toFixed(2)} MB`
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [resumes])
 
-  /** 根据占用比例返回对应颜色变量 */
-  const storageColor = useMemo(() => {
-    if (storageUsage.percent >= 80) return 'var(--danger)'
-    if (storageUsage.percent >= 50) return 'var(--warning)'
-    return 'var(--success)'
-  }, [storageUsage.percent])
+    const handleCreateResume = useCallback(() => {
+      createResume()
+      toast.success('已创建新简历')
+    }, [createResume])
 
-  /** 格式化字节数为可读字符串 */
-  const formatBytes = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`
-    return `${(bytes / 1024 / 1024).toFixed(2)} MB`
-  }
-
-  const handleCreateResume = useCallback(() => {
-    createResume()
-    toast.success('已创建新简历')
-  }, [createResume])
-
-  return (
-    <>
-      <aside
-        className="sidebar relative z-10 flex h-full w-[300px] shrink-0 flex-col overflow-hidden transition-all duration-300"
-        style={{
-          width: open ? undefined : '0px',
-          background: 'var(--bg-secondary)',
-          borderRight: open ? '1px solid var(--border)' : 'none',
-        }}
-      >
-        <div className="flex w-[300px] flex-1 flex-col overflow-hidden">
-          {/* 标题栏 */}
-          <div
-            className="flex h-[44px] shrink-0 items-center justify-between border-b p-3"
-            style={{ borderColor: 'var(--border)' }}
-          >
-            <span className="text-sm font-semibold" style={{ color: 'var(--fg-primary)' }}>
-              我的简历
-            </span>
-            <Badge
-              style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
-              className="rounded-full border-0 px-2 py-0.5 text-xs"
+    return (
+      <>
+        <aside
+          className="sidebar relative z-10 flex h-full w-[300px] shrink-0 flex-col overflow-hidden transition-all duration-300"
+          style={{
+            width: open ? undefined : '0px',
+            background: 'var(--bg-secondary)',
+            borderRight: open ? '1px solid var(--border)' : 'none',
+          }}
+        >
+          <div className="flex w-[300px] flex-1 flex-col overflow-hidden">
+            {/* 标题栏 */}
+            <div
+              className="flex h-[44px] shrink-0 items-center justify-between border-b p-3"
+              style={{ borderColor: 'var(--border)' }}
             >
-              {resumes.length}
-            </Badge>
-          </div>
-
-          {/* 简历列表 */}
-          <div className="flex-1 space-y-2 overflow-auto p-3">
-            {resumes.map((resume, index) => (
-              <div
-                key={resume.id}
-                className="animate-slide-in"
-                style={{ animationDelay: `${index * 0.05}s` }}
+              <span className="text-sm font-semibold" style={{ color: 'var(--fg-primary)' }}>
+                我的简历
+              </span>
+              <Badge
+                style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
+                className="rounded-full border-0 px-2 py-0.5 text-xs"
               >
-                <ResumeTab
-                  resume={resume}
-                  isActive={resume.id === currentResumeId}
-                  onSelect={() => selectResume(resume.id)}
-                  onRename={name => renameResume(resume.id, name)}
-                  onDuplicate={() => {
-                    createResume({
-                      name: `${resume.name} 副本`,
-                      content: resume.content,
-                      templateId: resume.templateId,
-                      settings: resume.settings,
-                    })
-                    toast.success('已复制简历')
-                  }}
-                  onDelete={() => {
-                    if (resumes.length <= 1) {
-                      toast.warning('至少保留一份简历')
-                      return
-                    }
-                    deleteResume(resume.id)
-                    toast.success(`「${resume.name}」已删除`)
-                  }}
+                {resumes.length}
+              </Badge>
+            </div>
+
+            {/* 简历列表 */}
+            <div className="flex-1 space-y-2 overflow-auto p-3">
+              {resumes.map((resume, index) => (
+                <div
+                  key={resume.id}
+                  className="animate-slide-in"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <ResumeTab
+                    resume={resume}
+                    isActive={resume.id === currentResumeId}
+                    onSelect={() => selectResume(resume.id)}
+                    onRename={name => renameResume(resume.id, name)}
+                    onDuplicate={() => {
+                      createResume({
+                        name: `${resume.name} 副本`,
+                        content: resume.content,
+                        templateId: resume.templateId,
+                        settings: resume.settings,
+                      })
+                      toast.success('已复制简历')
+                    }}
+                    onDelete={() => {
+                      if (resumes.length <= 1) {
+                        toast.warning('至少保留一份简历')
+                        return
+                      }
+                      deleteResume(resume.id)
+                      toast.success(`「${resume.name}」已删除`)
+                    }}
+                  />
+                </div>
+              ))}
+            </div>
+
+            {/* 本地存储占用进度 */}
+            <div className="shrink-0 border-t px-3 py-2.5" style={{ borderColor: 'var(--border)' }}>
+              <div className="mb-1.5 flex items-center justify-between">
+                <span className="text-[11px]" style={{ color: 'var(--fg-muted)' }}>
+                  本地存储
+                </span>
+                <span className="text-[11px]" style={{ color: storageColor }}>
+                  {formatBytes(storageUsage.used)} / 5 MB
+                </span>
+              </div>
+              <div
+                className="h-1 w-full overflow-hidden rounded-full"
+                style={{ background: 'var(--bg-tertiary)' }}
+              >
+                <div
+                  className="h-full rounded-full transition-all duration-500"
+                  style={{ width: `${storageUsage.percent}%`, background: storageColor }}
                 />
               </div>
-            ))}
-          </div>
-
-          {/* 本地存储占用进度 */}
-          <div className="shrink-0 border-t px-3 py-2.5" style={{ borderColor: 'var(--border)' }}>
-            <div className="mb-1.5 flex items-center justify-between">
-              <span className="text-[11px]" style={{ color: 'var(--fg-muted)' }}>
-                本地存储
-              </span>
-              <span className="text-[11px]" style={{ color: storageColor }}>
-                {formatBytes(storageUsage.used)} / 5 MB
-              </span>
             </div>
+
+            {/* 新建 / 导入按钮 */}
             <div
-              className="h-1 w-full overflow-hidden rounded-full"
-              style={{ background: 'var(--bg-tertiary)' }}
+              className="flex shrink-0 gap-2 border-t p-3"
+              style={{ borderColor: 'var(--border)' }}
             >
-              <div
-                className="h-full rounded-full transition-all duration-500"
-                style={{ width: `${storageUsage.percent}%`, background: storageColor }}
+              <Button
+                variant="outline"
+                className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground flex-1 gap-2 text-(--fg-secondary)"
+                onClick={handleCreateResume}
+                disabled={importing}
+              >
+                <Plus className="h-4 w-4" />
+                新建简历
+              </Button>
+              <Button
+                variant="outline"
+                className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground flex-1 gap-2 text-(--fg-secondary)"
+                onClick={() => fileInputRef.current?.click()}
+                disabled={importing}
+                title="批量导入 .md 文件，文件名作为简历名称"
+              >
+                {importing ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <FileUp className="h-4 w-4" />
+                )}
+                导入 md
+              </Button>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept=".md,.markdown"
+                multiple
+                className="hidden"
+                onChange={e => {
+                  onImportFiles(e.target.files)
+                  // 复位以便重复选择同一批文件
+                  e.target.value = ''
+                }}
               />
             </div>
           </div>
-
-          {/* 新建按钮 */}
-          <div className="shrink-0 border-t p-3" style={{ borderColor: 'var(--border)' }}>
-            <Button
-              variant="outline"
-              className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground w-full gap-2 text-(--fg-secondary)"
-              onClick={handleCreateResume}
-            >
-              <Plus className="h-4 w-4" />
-              新建简历
-            </Button>
-          </div>
-        </div>
-      </aside>
-    </>
-  )
-})
+        </aside>
+      </>
+    )
+  }
+)
 
 Sidebar.displayName = 'Sidebar'

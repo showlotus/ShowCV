@@ -59,6 +59,7 @@ interface ResumeStore {
 
   // Resume List Actions
   createResume: (initial?: Partial<Omit<ResumeItem, 'id' | 'createdAt' | 'updatedAt'>>) => string
+  importResumes: (items: Array<{ name: string; content: string }>) => number
   deleteResume: (id: string) => void
   renameResume: (id: string, name: string) => void
   selectResume: (id: string) => void
@@ -148,6 +149,29 @@ export const useResumeStore = create<ResumeStore>()(
           currentResume: newResume,
         }))
         return newResume.id
+      },
+
+      // 批量导入（md 文件），一次 set 完成，避免 N 次 localStorage 写入
+      importResumes: items => {
+        if (items.length === 0) return 0
+        const now = Date.now()
+        const newResumes: ResumeItem[] = items.map(item => ({
+          id: generateId(),
+          name: item.name,
+          content: item.content,
+          templateId: 'T1',
+          // 统一用 T1 默认样式，与「新建简历」一致；逐份生成避免共享同一 settings 引用
+          settings: normalizeResumeSettings(undefined, getTemplateDefaults('T1')),
+          createdAt: now,
+          updatedAt: now,
+        }))
+        set(state => ({
+          // 按文件顺序前插，第一个文件排在列表最上
+          resumes: [...newResumes, ...state.resumes],
+          currentResumeId: newResumes[0].id,
+          currentResume: newResumes[0],
+        }))
+        return newResumes.length
       },
 
       // 删除简历

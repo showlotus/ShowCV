@@ -6,13 +6,15 @@ import type { EditorHandle } from './components/editor'
 import { AIOptimizeDialog } from './components/editor/AIOptimizeDialog'
 import { PreviewContainer } from './components/preview'
 import { SettingsPanel } from './components/settings'
-import { Background } from './components/common'
+import { Background, MarkdownDropOverlay } from './components/common'
 import { ResizablePanelGroup, ResizablePanel, ResizableHandle } from './components/ui/resizable'
 import { Switch } from './components/ui/switch'
 import { TooltipProvider, Tooltip, TooltipTrigger, TooltipContent } from './components/ui/tooltip'
 import { Button } from './components/ui/button'
 import { useResumeStore } from './store'
 import { useShallow } from 'zustand/react/shallow'
+import { useMarkdownImport } from './hooks/useMarkdownImport'
+import { useFileDropZone } from './hooks/useFileDropZone'
 import {
   useReactToPrintExport,
   useCopyImageExport,
@@ -164,6 +166,16 @@ function App() {
   const handleExportPDF = useCallback(() => handlePrint(), [handlePrint])
   const handleCopyImagePNG = useCallback(() => handleCopyImage(), [handleCopyImage])
 
+  // md 批量导入：侧边栏按钮与全局拖拽共用同一份状态
+  const { importFiles, importing } = useMarkdownImport()
+  const handleImportFiles = useCallback(
+    (files: FileList | null) => {
+      void importFiles(files)
+    },
+    [importFiles]
+  )
+  const dragging = useFileDropZone(handleImportFiles)
+
   // const handleExportJSON = useCallback(() => {
   //   const data = exportData()
   //   downloadFile(JSON.stringify(data, null, 2), `${data.title}.json`, 'application/json')
@@ -203,7 +215,7 @@ function App() {
       {/* 三栏布局：Sidebar + [编辑器 | 分割线 | 预览] + SettingsPanel */}
       <div className="relative z-10 flex flex-1 overflow-hidden">
         {/* 简历列表 */}
-        <Sidebar open={sidebarOpen} />
+        <Sidebar open={sidebarOpen} importing={importing} onImportFiles={handleImportFiles} />
 
         {/* 中间区域：编辑器 + 可拖动分割线 + 预览区 */}
         <ResizablePanelGroup
@@ -311,6 +323,9 @@ function App() {
         onApply={handleAIApply}
         onNavigateLine={handleNavigateLine}
       />
+
+      {/* 拖入 md 文件的提示蒙层 */}
+      <MarkdownDropOverlay visible={dragging} />
     </div>
   )
 }
