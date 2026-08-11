@@ -8,6 +8,7 @@ import {
   Github,
   Star,
   Image,
+  ImageDown,
   PanelLeft,
   PanelRight,
   Loader2,
@@ -20,6 +21,7 @@ import { cn } from '@/utils'
 import { useGitHubStars } from '@/hooks/useGitHubStars'
 import { Button } from '@/components/ui/button'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { ExportImageDialog } from '@/components/export'
 
 interface HeaderProps {
   onExportPDF: () => void
@@ -71,6 +73,7 @@ export function Header({
   const [shareLoading, setShareLoading] = useState(false)
   const [copyImageSuccess, setCopyImageSuccess] = useState(false)
   const [copyImageLoading, setCopyImageLoading] = useState(false)
+  const [exportImageOpen, setExportImageOpen] = useState(false)
   const starCount = useGitHubStars('showlotus/showcv')
 
   /** 截图预览区并复制为 PNG 到剪贴板 */
@@ -210,6 +213,17 @@ export function Header({
           )}
         </Button>
 
+        {/* 批量导出 PNG */}
+        <Button
+          variant="outline"
+          size="sm"
+          onClick={() => setExportImageOpen(true)}
+          title="批量导出 PNG"
+        >
+          <ImageDown className="h-4 w-4" />
+          <span className="hidden md:inline">导出</span>
+        </Button>
+
         {/* 导出 JSON */}
         {/* <Button
           variant="outline"
@@ -262,6 +276,8 @@ export function Header({
           </a>
         </Button>
       </div>
+
+      <ExportImageDialog open={exportImageOpen} onOpenChange={setExportImageOpen} />
     </header>
   )
 }

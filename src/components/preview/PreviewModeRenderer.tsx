@@ -163,13 +163,17 @@ export const PreviewModeRenderer = ({
   zoom,
   ref,
   forceFlat,
+  forcePaginated,
 }: ResumePreviewProps & {
   ref?: React.Ref<HTMLDivElement>
   forceFlat?: boolean
+  forcePaginated?: boolean
 }) => {
   const previewMode = useResumeStore(state => state.previewMode)
+  // forceFlat 优先级最高，其次 forcePaginated（离屏导出用），最后跟随全局预览模式
+  const paginated = forceFlat ? false : (forcePaginated ?? previewMode === 'paginated')
 
-  if (!forceFlat && previewMode === 'paginated') {
+  if (paginated) {
     return (
       <PaginatedPreview
         templateId={templateId}
