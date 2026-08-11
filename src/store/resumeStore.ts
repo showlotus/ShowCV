@@ -37,6 +37,15 @@ export interface ResumeItem {
   fromShare?: boolean // 是否来自分享链接
 }
 
+// 批量删除的快照，用于撤销
+export interface DeleteSnapshot {
+  /** 被删简历及其原始下标，撤销时原位插回 */
+  deleted: Array<{ index: number; resume: ResumeItem }>
+  /** 删空后自动新建的空白简历 id，撤销时要把它摘掉 */
+  placeholderId: string | null
+  previousCurrentId: string | null
+}
+
 interface ResumeStore {
   // 主题
   theme: AppTheme
@@ -60,6 +69,8 @@ interface ResumeStore {
   // Resume List Actions
   createResume: (initial?: Partial<Omit<ResumeItem, 'id' | 'createdAt' | 'updatedAt'>>) => string
   deleteResume: (id: string) => void
+  deleteResumes: (ids: string[]) => DeleteSnapshot
+  restoreResumes: (snapshot: DeleteSnapshot) => void
   renameResume: (id: string, name: string) => void
   selectResume: (id: string) => void
 
@@ -161,6 +172,63 @@ export const useResumeStore = create<ResumeStore>()(
             resumes: newResumes.length > 0 ? newResumes : [createDefaultResume()],
             currentResumeId: newCurrentId,
             currentResume: newResumes.find(r => r.id === newCurrentId) || null,
+          }
+        })
+      },
+
+      // 批量删除（勾选模式 / 删除直链），一次 set 完成，返回快照供撤销
+      deleteResumes: ids => {
+        const targetIds = new Set(ids)
+        const state = get()
+        const deleted = state.resumes
+          .map((resume, index) => ({ index, resume }))
+          .filter(item => targetIds.has(item.resume.id))
+
+        if (deleted.length === 0) {
+          return { deleted, placeholderId: null, previousCurrentId: state.currentResumeId }
+        }
+
+        const remaining = state.resumes.filter(r => !targetIds.has(r.id))
+        // 删空时沿用 deleteResume 的兜底：补一份空白简历，不让列表为空
+        const placeholder = remaining.length === 0 ? createDefaultResume() : null
+        const newResumes = placeholder ? [placeholder] : remaining
+        // 当前简历被删掉时落到剩余列表的第一份
+        const newCurrentId =
+          state.currentResumeId && targetIds.has(state.currentResumeId)
+            ? newResumes[0].id
+            : state.currentResumeId
+        set({
+          resumes: newResumes,
+          currentResumeId: newCurrentId,
+          currentResume: newResumes.find(r => r.id === newCurrentId) ?? null,
+        })
+        return {
+          deleted,
+          placeholderId: placeholder?.id ?? null,
+          previousCurrentId: state.currentResumeId,
+        }
+      },
+
+      // 撤销批量删除，把快照里的简历插回原下标
+      restoreResumes: snapshot => {
+        if (snapshot.deleted.length === 0) return
+        set(state => {
+          // 删空时补的空白简历要摘掉，否则撤销后会多出一份
+          const kept = state.resumes.filter(r => r.id !== snapshot.placeholderId)
+          const ordered = [...snapshot.deleted].sort((a, b) => a.index - b.index)
+          const restored = [...kept]
+          // 下标升序插入才能还原原始顺序；期间新建过简历则退化为就近插入
+          for (const { index, resume } of ordered) {
+            restored.splice(Math.min(index, restored.length), 0, resume)
+          }
+          const currentId =
+            snapshot.previousCurrentId && restored.some(r => r.id === snapshot.previousCurrentId)
+              ? snapshot.previousCurrentId
+              : state.currentResumeId
+          return {
+            resumes: restored,
+            currentResumeId: currentId,
+            currentResume: restored.find(r => r.id === currentId) ?? null,
           }
         })
       },

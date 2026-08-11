@@ -30,7 +30,9 @@ const localStorageMock = (() => {
 vi.stubGlobal('localStorage', localStorageMock)
 
 // Mock document.documentElement.setAttribute
-const setAttributeSpy = vi.spyOn(document.documentElement, 'setAttribute').mockImplementation(() => '')
+const setAttributeSpy = vi
+  .spyOn(document.documentElement, 'setAttribute')
+  .mockImplementation(() => '')
 
 // Helper: get a valid resume ID from current state
 function currentId(): string {
@@ -108,6 +110,102 @@ describe('deleteResume', () => {
     const lastId = useResumeStore.getState().resumes[0].id
     useResumeStore.getState().deleteResume(lastId)
     expect(useResumeStore.getState().resumes).toHaveLength(1)
+  })
+})
+
+describe('deleteResumes / restoreResumes', () => {
+  // 这个文件的用例共用同一个 store 实例，批量删除会把后续用例依赖的默认简历（带头像）删掉，
+  // 所以先记下最初的列表，整块跑完后还原并重新选中
+  const pristine = useResumeStore.getState().resumes
+
+  afterAll(() => {
+    useResumeStore.setState({ resumes: pristine })
+    useResumeStore.getState().selectResume(pristine[0].id)
+  })
+
+  /** 建 3 份带名字的简历；createResume 是前插，所以列表头部依次为 C、B、A */
+  function seedThree() {
+    const a = useResumeStore.getState().createResume({ name: 'A' })
+    const b = useResumeStore.getState().createResume({ name: 'B' })
+    const c = useResumeStore.getState().createResume({ name: 'C' })
+    return { a, b, c }
+  }
+
+  it('removes every matched resume and keeps the order of the rest', () => {
+    const { a, b, c } = seedThree()
+    const before = useResumeStore.getState().resumes.map(r => r.id)
+    useResumeStore.getState().deleteResumes([a, c])
+    const after = useResumeStore.getState().resumes.map(r => r.id)
+    expect(after).not.toContain(a)
+    expect(after).not.toContain(c)
+    expect(after).toContain(b)
+    expect(after).toEqual(before.filter(id => id !== a && id !== c))
+  })
+
+  it('reports the original index of each deleted resume', () => {
+    const { a, c } = seedThree()
+    const snapshot = useResumeStore.getState().deleteResumes([c, a])
+    expect(snapshot.deleted.map(item => item.index)).toEqual([0, 2])
+    expect(snapshot.deleted.map(item => item.resume.name)).toEqual(['C', 'A'])
+  })
+
+  it('ignores unknown ids without touching the list', () => {
+    seedThree()
+    const before = useResumeStore.getState().resumes.map(r => r.id)
+    const snapshot = useResumeStore.getState().deleteResumes(['nope', 'also-nope'])
+    expect(snapshot.deleted).toHaveLength(0)
+    expect(useResumeStore.getState().resumes.map(r => r.id)).toEqual(before)
+  })
+
+  it('moves the selection when the current resume is deleted', () => {
+    const { c } = seedThree()
+    expect(useResumeStore.getState().currentResumeId).toBe(c)
+    useResumeStore.getState().deleteResumes([c])
+    const { resumes, currentResumeId, currentResume } = useResumeStore.getState()
+    expect(currentResumeId).toBe(resumes[0].id)
+    expect(currentResume?.id).toBe(resumes[0].id)
+  })
+
+  it('keeps the selection when other resumes are deleted', () => {
+    const { a, c } = seedThree()
+    useResumeStore.getState().deleteResumes([a])
+    expect(useResumeStore.getState().currentResumeId).toBe(c)
+  })
+
+  it('creates and selects a placeholder when everything is deleted', () => {
+    const allIds = useResumeStore.getState().resumes.map(r => r.id)
+    const snapshot = useResumeStore.getState().deleteResumes(allIds)
+    const { resumes, currentResumeId } = useResumeStore.getState()
+    expect(resumes).toHaveLength(1)
+    expect(snapshot.placeholderId).toBe(resumes[0].id)
+    expect(currentResumeId).toBe(resumes[0].id)
+  })
+
+  it('restores deleted resumes at their original positions', () => {
+    const { a, c } = seedThree()
+    const before = useResumeStore.getState().resumes.map(r => r.id)
+    const snapshot = useResumeStore.getState().deleteResumes([a, c])
+    useResumeStore.getState().restoreResumes(snapshot)
+    expect(useResumeStore.getState().resumes.map(r => r.id)).toEqual(before)
+  })
+
+  it('restores the previous selection', () => {
+    const { c } = seedThree()
+    const snapshot = useResumeStore.getState().deleteResumes([c])
+    expect(useResumeStore.getState().currentResumeId).not.toBe(c)
+    useResumeStore.getState().restoreResumes(snapshot)
+    expect(useResumeStore.getState().currentResumeId).toBe(c)
+    expect(useResumeStore.getState().currentResume?.id).toBe(c)
+  })
+
+  it('drops the placeholder when undoing a delete-all', () => {
+    seedThree()
+    const before = useResumeStore.getState().resumes.map(r => r.id)
+    const snapshot = useResumeStore.getState().deleteResumes(before)
+    useResumeStore.getState().restoreResumes(snapshot)
+    const after = useResumeStore.getState().resumes.map(r => r.id)
+    expect(after).toEqual(before)
+    expect(after).not.toContain(snapshot.placeholderId)
   })
 })
 

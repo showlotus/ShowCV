@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, memo, useCallback, useMemo } from 'react'
-import { Plus, X, Copy, Pencil } from 'lucide-react'
+import { Plus, X, Copy, Pencil, Check, ListChecks, Link2, Trash2 } from 'lucide-react'
 import { toast } from 'sonner'
 import { useResumeStore } from '@/store'
 import { useShallow } from 'zustand/react/shallow'
@@ -9,6 +9,8 @@ import { Button } from '@/components/ui/button'
 import { Badge } from '@/components/ui/badge'
 import { Input } from '@/components/ui/input'
 import { WaveIndicator } from '@/components/common/WaveIndicator'
+import { useBatchDelete } from '@/hooks/useBatchDelete'
+import { buildDeleteUrl } from '@/services/deleteUrlService'
 import type { ResumeItem } from '@/store/resumeStore'
 
 // 简历标签项
@@ -16,14 +18,21 @@ const ResumeTab = memo(
   ({
     resume,
     isActive,
+    selecting,
+    selected,
     onSelect,
+    onToggleSelect,
     onRename,
     onDuplicate,
     onDelete,
   }: {
     resume: ResumeItem
     isActive: boolean
+    /** 是否处于批量删除的勾选模式 */
+    selecting: boolean
+    selected: boolean
     onSelect: () => void
+    onToggleSelect: () => void
     onRename: (name: string) => void
     onDuplicate: () => void
     onDelete: () => void
@@ -36,16 +45,21 @@ const ResumeTab = memo(
     const inputRef = useRef<HTMLInputElement>(null)
     const nameRef = useRef<HTMLDivElement>(null)
 
+    // 勾选模式下强行退出重命名态（用派生值而非 effect 里 setState）
+    const editing = isEditing && !selecting
+    // 勾选模式下高亮跟随勾选，否则跟随当前简历
+    const highlighted = selecting ? selected : isActive
+
     const checkTruncated = useCallback(() => {
       const el = nameRef.current
       if (el) setIsTruncated(el.scrollWidth > el.clientWidth)
     }, [])
 
     useEffect(() => {
-      if (isEditing) {
+      if (editing) {
         inputRef.current?.focus()
       }
-    }, [isEditing])
+    }, [editing])
 
     const handleDoubleClick = () => {
       setIsEditing(true)
@@ -85,24 +99,45 @@ const ResumeTab = memo(
           isActive ? 'active' : ''
         }`}
         style={{
-          background: isActive ? 'var(--accent-soft)' : 'transparent',
-          border: `1px solid ${isActive ? 'var(--accent)' : 'var(--border)'}`,
+          background: highlighted ? 'var(--accent-soft)' : 'transparent',
+          border: `1px solid ${highlighted ? 'var(--accent)' : 'var(--border)'}`,
         }}
-        onClick={() => !isEditing && onSelect()}
-        onDoubleClick={handleDoubleClick}
+        onClick={() => {
+          if (selecting) {
+            onToggleSelect()
+            return
+          }
+          if (!editing) onSelect()
+        }}
+        onDoubleClick={() => {
+          if (!selecting) handleDoubleClick()
+        }}
         onMouseEnter={() => setIsHovered(true)}
         onMouseLeave={() => setIsHovered(false)}
       >
-        <WaveIndicator isActive={isActive} isEditing={isEditing} />
+        {selecting ? (
+          <span
+            className="flex h-4 w-4 shrink-0 items-center justify-center rounded-sm border transition-colors"
+            style={{
+              borderColor: selected ? 'var(--accent)' : 'var(--border)',
+              background: selected ? 'var(--accent)' : 'transparent',
+            }}
+            aria-hidden
+          >
+            {selected && <Check className="h-3 w-3" style={{ color: 'var(--bg-primary)' }} />}
+          </span>
+        ) : (
+          <WaveIndicator isActive={isActive} isEditing={editing} />
+        )}
 
         {/* 内容 */}
         <div className="relative min-w-0 flex-1">
           <div
             className="transition-all duration-200 ease-in-out"
             style={{
-              opacity: isEditing ? 0 : 1,
-              transform: isEditing ? 'translateY(4px)' : 'translateY(0)',
-              pointerEvents: isEditing ? 'none' : 'auto',
+              opacity: editing ? 0 : 1,
+              transform: editing ? 'translateY(4px)' : 'translateY(0)',
+              pointerEvents: editing ? 'none' : 'auto',
             }}
           >
             <TooltipProvider>
@@ -137,9 +172,9 @@ const ResumeTab = memo(
           <div
             className="absolute inset-0 flex items-center transition-all duration-200 ease-in-out"
             style={{
-              opacity: isEditing ? 1 : 0,
-              transform: isEditing ? 'translateY(0)' : 'translateY(-4px)',
-              pointerEvents: isEditing ? 'auto' : 'none',
+              opacity: editing ? 1 : 0,
+              transform: editing ? 'translateY(0)' : 'translateY(-4px)',
+              pointerEvents: editing ? 'auto' : 'none',
             }}
           >
             <Input
@@ -148,7 +183,7 @@ const ResumeTab = memo(
               onChange={e => setEditName(e.target.value)}
               onBlur={handleBlur}
               onKeyDown={handleKeyDown}
-              tabIndex={isEditing ? 0 : -1}
+              tabIndex={editing ? 0 : -1}
               className="h-8 w-full rounded-sm px-2 py-1 text-sm"
               style={{
                 background: 'var(--bg-primary)',
@@ -164,9 +199,9 @@ const ResumeTab = memo(
         <div
           className="flex shrink-0 items-center gap-1 overflow-hidden transition-all duration-200"
           style={{
-            opacity: isEditing ? 0 : 1,
-            maxWidth: isEditing ? 0 : 84,
-            pointerEvents: isEditing ? 'none' : 'auto',
+            opacity: editing || selecting ? 0 : 1,
+            maxWidth: editing || selecting ? 0 : 84,
+            pointerEvents: editing || selecting ? 'none' : 'auto',
           }}
         >
           <button
@@ -261,6 +296,10 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
       }))
     )
 
+  const [selecting, setSelecting] = useState(false)
+  const [selectedIds, setSelectedIds] = useState<string[]>([])
+  const { deleteWithUndo } = useBatchDelete()
+
   /** 计算 localStorage 中当前简历数据的字节占用 */
   const storageUsage = useMemo(() => {
     const LIMIT = 5 * 1024 * 1024 // 5MB
@@ -293,6 +332,51 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
     toast.success('已创建新简历')
   }, [createResume])
 
+  const exitSelecting = useCallback(() => {
+    setSelecting(false)
+    setSelectedIds([])
+  }, [])
+
+  const toggleSelected = useCallback((id: string) => {
+    setSelectedIds(prev => (prev.includes(id) ? prev.filter(v => v !== id) : [...prev, id]))
+  }, [])
+
+  const toggleSelectAll = useCallback(() => {
+    setSelectedIds(prev => (prev.length === resumes.length ? [] : resumes.map(r => r.id)))
+  }, [resumes])
+
+  const handleBatchDelete = useCallback(() => {
+    // 按列表顺序传入，让 toast 里的名称顺序与侧边栏一致
+    const ids = resumes.filter(r => selectedIds.includes(r.id)).map(r => r.id)
+    if (deleteWithUndo(ids) > 0) exitSelecting()
+  }, [resumes, selectedIds, deleteWithUndo, exitSelecting])
+
+  const handleCopyDeleteUrl = useCallback(async () => {
+    const ids = resumes.filter(r => selectedIds.includes(r.id)).map(r => r.id)
+    if (ids.length === 0) {
+      toast.warning('请至少选择一份简历')
+      return
+    }
+    const url = buildDeleteUrl(window.location.origin, { ids, confirmed: true })
+    try {
+      await navigator.clipboard.writeText(url)
+      toast.success('删除直链已复制', { description: '打开即删，且只在本机浏览器内有效' })
+    } catch (error) {
+      console.error('[CopyDeleteUrl Error]', error)
+      toast.error('复制失败，请手动复制地址栏链接')
+    }
+  }, [resumes, selectedIds])
+
+  // 勾选模式下按 Esc 退出
+  useEffect(() => {
+    if (!selecting) return
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') exitSelecting()
+    }
+    window.addEventListener('keydown', onKeyDown)
+    return () => window.removeEventListener('keydown', onKeyDown)
+  }, [selecting, exitSelecting])
+
   return (
     <>
       <aside
@@ -310,14 +394,50 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
             style={{ borderColor: 'var(--border)' }}
           >
             <span className="text-sm font-semibold" style={{ color: 'var(--fg-primary)' }}>
-              我的简历
+              {selecting ? `已选 ${selectedIds.length} / ${resumes.length}` : '我的简历'}
             </span>
-            <Badge
-              style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
-              className="rounded-full border-0 px-2 py-0.5 text-xs"
-            >
-              {resumes.length}
-            </Badge>
+            <div className="flex items-center gap-1.5">
+              {selecting && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      className="hover:bg-accent flex h-6 w-6 cursor-pointer items-center justify-center rounded transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                      disabled={selectedIds.length === 0}
+                      aria-label="复制删除直链"
+                      onClick={handleCopyDeleteUrl}
+                    >
+                      <Link2 className="h-3.5 w-3.5" style={{ color: 'var(--fg-muted)' }} />
+                    </button>
+                  </TooltipTrigger>
+                  <TooltipContent side="bottom">复制删除直链（打开即删）</TooltipContent>
+                </Tooltip>
+              )}
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button
+                    className="hover:bg-accent flex h-6 w-6 cursor-pointer items-center justify-center rounded transition-colors disabled:cursor-not-allowed disabled:opacity-40"
+                    disabled={!selecting && resumes.length <= 1}
+                    aria-label={selecting ? '退出批量删除' : '批量删除'}
+                    onClick={() => (selecting ? exitSelecting() : setSelecting(true))}
+                  >
+                    {selecting ? (
+                      <X className="h-3.5 w-3.5" style={{ color: 'var(--fg-muted)' }} />
+                    ) : (
+                      <ListChecks className="h-3.5 w-3.5" style={{ color: 'var(--fg-muted)' }} />
+                    )}
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom">
+                  {selecting ? '退出批量删除（Esc）' : '批量删除'}
+                </TooltipContent>
+              </Tooltip>
+              <Badge
+                style={{ background: 'var(--accent-soft)', color: 'var(--accent)' }}
+                className="rounded-full border-0 px-2 py-0.5 text-xs"
+              >
+                {resumes.length}
+              </Badge>
+            </div>
           </div>
 
           {/* 简历列表 */}
@@ -331,7 +451,10 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
                 <ResumeTab
                   resume={resume}
                   isActive={resume.id === currentResumeId}
+                  selecting={selecting}
+                  selected={selectedIds.includes(resume.id)}
                   onSelect={() => selectResume(resume.id)}
+                  onToggleSelect={() => toggleSelected(resume.id)}
                   onRename={name => renameResume(resume.id, name)}
                   onDuplicate={() => {
                     createResume({
@@ -376,16 +499,37 @@ export const Sidebar = memo(({ open }: { open: boolean }) => {
             </div>
           </div>
 
-          {/* 新建按钮 */}
+          {/* 新建按钮 / 勾选模式下的批量删除操作 */}
           <div className="shrink-0 border-t p-3" style={{ borderColor: 'var(--border)' }}>
-            <Button
-              variant="outline"
-              className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground w-full gap-2 text-(--fg-secondary)"
-              onClick={handleCreateResume}
-            >
-              <Plus className="h-4 w-4" />
-              新建简历
-            </Button>
+            {selecting ? (
+              <div className="flex gap-2">
+                <Button
+                  variant="outline"
+                  className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground flex-1 text-(--fg-secondary)"
+                  onClick={toggleSelectAll}
+                >
+                  {selectedIds.length === resumes.length ? '取消全选' : '全选'}
+                </Button>
+                <Button
+                  variant="destructive"
+                  className="flex-1 gap-2"
+                  disabled={selectedIds.length === 0}
+                  onClick={handleBatchDelete}
+                >
+                  <Trash2 className="h-4 w-4" />
+                  删除 {selectedIds.length} 份
+                </Button>
+              </div>
+            ) : (
+              <Button
+                variant="outline"
+                className="border-border hover:bg-accent hover:text-accent-foreground hover:border-accent-foreground w-full gap-2 text-(--fg-secondary)"
+                onClick={handleCreateResume}
+              >
+                <Plus className="h-4 w-4" />
+                新建简历
+              </Button>
+            )}
           </div>
         </div>
       </aside>
