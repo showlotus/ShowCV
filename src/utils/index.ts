@@ -23,9 +23,8 @@ export function formatDate(date: string | Date): string {
   })
 }
 
-// 下载文件
-export function downloadFile(content: string, filename: string, mimeType: string) {
-  const blob = new Blob([content], { type: mimeType })
+// 下载 Blob
+export function downloadBlob(blob: Blob, filename: string) {
   const url = URL.createObjectURL(blob)
   const link = document.createElement('a')
   link.href = url
@@ -34,4 +33,9 @@ export function downloadFile(content: string, filename: string, mimeType: string
   link.click()
   document.body.removeChild(link)
   URL.revokeObjectURL(url)
+}
+
+// 下载文件
+export function downloadFile(content: string, filename: string, mimeType: string) {
+  downloadBlob(new Blob([content], { type: mimeType }), filename)
 }

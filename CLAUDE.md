@@ -104,6 +104,25 @@ Vercel 开发模式（可选）：`pnpm vercel`（端口 3070），需先 `verce
 
 `useCopyImageExport(ref)` 使用 `modern-screenshot` 的 `domToBlob()` 生成 2x PNG 写入剪贴板。
 
+### 批量导出 PNG
+
+`src/services/imageExportService.ts` 的 `exportResumeImages(resumes, options)` 支持一次导出多份简历的图片，入口为 Header 的「图片」按钮 → `src/components/export/ExportImageDialog.tsx`（可多选简历、切换分页/长图、选择 1x~3x 倍率）。
+
+**关键实现：**
+- 预览只渲染 `currentResume`，因此批量导出用 `createRoot` 把每份简历渲染到临时离屏容器（`position: fixed; left: -9999px`，宽度 A4），截图后立即 `unmount` 并移除；**串行**处理避免高倍率图片同时占用内存
+- 分页在 `useLayoutEffect` 中测量、没有完成回调，所以用 `waitForStableLayout()` 轮询：`document.fonts.ready` → `.preview-page` 数量连续两帧不变（5s 超时兜底）→ 等 `img.decode()`
+- `PreviewModeRenderer` 的 `forcePaginated` prop 用于让离屏渲染不受全局 `previewMode` 影响（与 `forceFlat` 对称）
+- 截图时用 `style: { borderRadius: '0', boxShadow: 'none' }` 抹掉预览装饰，避免图片出现透明边角
+- 单张直接下载 PNG，多张用 `fflate.zip(files, { level: 0 })` 打包（PNG 已压缩，不再二次压缩）
+
+**图片下载直链**：`/export?id=&mode=&scale=`（`src/services/exportUrlService.ts` + `src/components/export/ExportUrlPage.tsx`）。
+
+- `src/main.tsx` 在挂载前用 `parseExportUrl(location.href)` 判断路径，命中则渲染 `ExportUrlPage` 而不加载 `<App />`；项目无路由库，与 `/s/{id}` 一样靠手动解析路径
+- 参数：`id` 可重复或逗号分隔；`id=all` / `all=1` 导出全部；`mode=flat` 为长图（默认 `paginated`）；`scale` 仅接受 1/2/3（默认 2）；`id` 缺省时导出当前简历
+- 打开即自动调用 `exportResumeImages`，`startedRef` 防止 StrictMode 下重复导出；对话框的「复制直链」用 `buildExportUrl` 生成
+- **限制**：简历数据存在本机 `localStorage`，直链发给别人打不开（找不到 id 时提示而非静默失败）；zustand persist 同步 rehydrate，因此挂载时 `getState().resumes` 已就绪
+- 部署无需额外配置：`vercel.json` 的 catch-all rewrite、nginx `location /`、Express `app.get('*')` 已覆盖 SPA fallback
+
 ### 分享机制
 
 项目实现了**服务端分享**（主方案）和**客户端 hash 分享**（旧方案）两套机制，共用 `src/services/shareService.ts` 中的 `encodeShareData` / `decodeShareData` 编解码逻辑。
